@@ -18,7 +18,6 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import java.util.Map;
 
 /**
- *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 public class Constants {
@@ -36,9 +35,14 @@ public class Constants {
     public static final String PROVIDED_SCOPE = "provided";
 
     public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
-            of(
-                    JAKARTAEE_VERSION_10, Map.of(
-                            JAKARTA_FACES_API, "4.0.1"
-                    )
-            );
+        of(
+            JAKARTAEE_VERSION_10, Map.of(
+                JAKARTA_FACES_API, "4.0.1"
+            )
+        );
+
+    public static final String JAKARTA_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
+
+    public static final String JAKARTA_FACES_SERVLET = "JakartaServlet";
+    public static final String JAKARTA_FACES_SERVLET_DEFINITION = "Jakarta Faces Servlet Definition";
 }

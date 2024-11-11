@@ -19,10 +19,10 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_API;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PROVIDED_SCOPE;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.SPECS_VERSIONS;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 
 /**
  * Utility class for handling Jakarta EE dependencies in Maven projects.
@@ -81,6 +81,31 @@ public class JakartaEeUtil {
      */
     public boolean hasJakartaFacesDependency(MavenProject mavenProject, Log log) {
         return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
+    }
+
+    /**
+     * Adds a Jakarta Faces servlet declaration to the given Maven project.
+     *
+     * @param currentPath the path to the Maven project
+     * @param urlPattern  the URL pattern to use for the servlet
+     * @param welcomeFile the welcome file to use for the servlet
+     * @param log         the logger to use for logging messages
+     * @throws IOException if an error occurs while adding the servlet declaration
+     */
+    public void addJakartaFacesServletDeclaration(Path currentPath,
+                                                  String urlPattern,
+                                                  String welcomeFile,
+                                                  Log log) throws IOException {
+        var webXmlUtil = WebXmlUtil.getInstance();
+        webXmlUtil.checkExistsFile(log, currentPath)
+                  .ifPresent(
+                      document -> {
+                          webXmlUtil.addServletDeclaration(document, urlPattern, log, JAKARTA_FACES_SERVLET,
+                              JAKARTA_FACES_SERVLET_DEFINITION);
+                          webXmlUtil.saveDocument(document, log, currentPath);
+                      });
+
+
     }
 
     private static class JakartaEeUtilHolder {

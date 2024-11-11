@@ -22,6 +22,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -29,6 +30,8 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
+
+import java.io.IOException;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
@@ -72,25 +75,40 @@ public class AddFacesMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
+        log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(urlPattern, welcomeFile));
+        log.debug("Project name:%s".formatted(mavenProject.getName()));
+
+        checkDependency(log);
+        checkJakartaFacesServletDeclaration(log);
+    }
+
+    private void checkJakartaFacesServletDeclaration(Log log) throws MojoExecutionException {
         try {
-            ProjectBuildingRequest buildingRequest = mavenSession.
-                getProjectBuildingRequest();
+            log.debug("Checking Jakarta Faces Declaration");
+            var currentPath = mavenProject.getFile().toPath().getParent();
+
+            var jakartaEeUtil = JakartaEeUtil.getInstance();
+            jakartaEeUtil.addJakartaFacesServletDeclaration(currentPath, urlPattern, welcomeFile, log);
+        } catch (IOException ex) {
+            log.error(ex);
+            throw new MojoExecutionException("Error adding Jakarta Faces Servlet Declaration", ex);
+        }
+
+    }
+
+    private void checkDependency(Log log) throws MojoExecutionException {
+        log.debug("checking Jakarta Faces dependency");
+        try {
+            ProjectBuildingRequest buildingRequest = mavenSession.getProjectBuildingRequest();
             buildingRequest.setResolveDependencies(true);
-            var result = projectBuilder.build(mavenProject.getFile(),
-                buildingRequest);
+            var result = projectBuilder.build(mavenProject.getFile(), buildingRequest);
             MavenProject fullProject = result.getProject();
 
-            log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(
-                urlPattern, welcomeFile));
-            log.debug("Project name:%s".formatted(mavenProject.getName()));
             var jakartaEeUtil = JakartaEeUtil.getInstance();
-            var hasJakartaFacesDependencies = jakartaEeUtil.
-                hasJakartaFacesDependency(fullProject, log);
-            log.debug("hasJakartaFacesDependencies:%s".formatted(
-                hasJakartaFacesDependencies));
+            var hasJakartaFacesDependencies = jakartaEeUtil.hasJakartaFacesDependency(fullProject, log);
+            log.debug("hasJakartaFacesDependencies:%s".formatted(hasJakartaFacesDependencies));
             if (!hasJakartaFacesDependencies) {
-                jakartaEeUtil.addJakartaFacesDependency(mavenProject, log,
-                    jakartaEeVersion);
+                jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
             }
 
         } catch (ProjectBuildingException ex) {
@@ -98,7 +116,6 @@ public class AddFacesMojo extends AbstractMojo {
             throw new MojoExecutionException("Error resolving dependencies", ex);
 
         }
-
     }
 
 }
