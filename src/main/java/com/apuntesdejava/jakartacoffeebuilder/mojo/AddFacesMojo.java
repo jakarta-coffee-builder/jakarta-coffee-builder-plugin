@@ -15,6 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
+
 import com.apuntesdejava.jakartacoffeebuilder.util.JakartaEeUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -32,32 +34,38 @@ import org.apache.maven.project.ProjectBuildingRequest;
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 @Mojo(
-        name = "add-faces"
+    name = "add-faces"
 )
 public class AddFacesMojo extends AbstractMojo {
 
     @Parameter(
-            property = "url-pattern",
-            defaultValue = "*.faces"
+        property = "url-pattern",
+        defaultValue = "*.faces"
     )
     private String urlPattern;
 
     @Parameter(
-            property = "welcome-file",
-            defaultValue = "index.faces"
+        property = "welcome-file",
+        defaultValue = "index.faces"
     )
     private String welcomeFile;
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
+    @Parameter(
+        property = "jakarta-ee-version",
+        defaultValue = JAKARTAEE_VERSION_10
+    )
+    private String jakartaEeVersion;
+
     @Component
     private ProjectBuilder projectBuilder;
 
     @Parameter(
-            defaultValue = "${session}",
-            readonly = true,
-            required = true
+        defaultValue = "${session}",
+        readonly = true,
+        required = true
     )
     private MavenSession mavenSession;
 
@@ -66,19 +74,25 @@ public class AddFacesMojo extends AbstractMojo {
         var log = getLog();
         try {
             ProjectBuildingRequest buildingRequest = mavenSession.
-                    getProjectBuildingRequest();
+                getProjectBuildingRequest();
             buildingRequest.setResolveDependencies(true);
             var result = projectBuilder.build(mavenProject.getFile(),
-                                          buildingRequest);
+                buildingRequest);
             MavenProject fullProject = result.getProject();
 
             log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(
-                    urlPattern, welcomeFile));
+                urlPattern, welcomeFile));
             log.debug("Project name:%s".formatted(mavenProject.getName()));
-            var hasJakartaFacesDependencies = JakartaEeUtil.getInstance().
-                    hasJakartaFacesDependency(fullProject, log);
+            var jakartaEeUtil = JakartaEeUtil.getInstance();
+            var hasJakartaFacesDependencies = jakartaEeUtil.
+                hasJakartaFacesDependency(fullProject, log);
             log.debug("hasJakartaFacesDependencies:%s".formatted(
-                    hasJakartaFacesDependencies));
+                hasJakartaFacesDependencies));
+            if (!hasJakartaFacesDependencies) {
+                jakartaEeUtil.addJakartaFacesDependency(mavenProject, log,
+                    jakartaEeVersion);
+            }
+
         } catch (ProjectBuildingException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error resolving dependencies", ex);

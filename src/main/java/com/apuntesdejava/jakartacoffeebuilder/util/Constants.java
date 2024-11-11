@@ -33,9 +33,12 @@ public class Constants {
     public static final String JAKARTAEE_VERSION_10 = "10.0.0";
     public static final String JAKARTAEE_VERSION_11 = "11.0.0";
 
-    public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.of(
-            JAKARTAEE_VERSION_10, Map.of(
-                    JAKARTA_FACES_API, "4.0.1"
-            )
-    );
+    public static final String PROVIDED_SCOPE = "provided";
+
+    public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
+            of(
+                    JAKARTAEE_VERSION_10, Map.of(
+                            JAKARTA_FACES_API, "4.0.1"
+                    )
+            );
 }
