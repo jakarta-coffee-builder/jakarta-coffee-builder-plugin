@@ -36,9 +36,13 @@ public class PomUtil {
         private static final PomUtil INSTANCE = new PomUtil();
     }
 
-    public boolean existsDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
+    public boolean existsDependency(MavenProject mavenProject, Log log,
+                                    String groupId, String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
-        return mavenProject.getArtifacts().stream().anyMatch(artifact -> StringUtils.equals(artifact.getGroupId(), groupId) && StringUtils.equals(artifact.getArtifactId(), artifactId));
+        return mavenProject.getArtifacts().stream().
+                anyMatch(artifact -> StringUtils.
+                equals(artifact.getGroupId(), groupId) && StringUtils.
+                equals(artifact.getArtifactId(), artifactId));
 
     }
 }

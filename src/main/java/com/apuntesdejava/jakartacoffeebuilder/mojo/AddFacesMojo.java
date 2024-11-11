@@ -25,6 +25,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 
 /**
@@ -64,17 +65,21 @@ public class AddFacesMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
         try {
-            ProjectBuildingRequest buildingRequest = mavenSession.getProjectBuildingRequest();
+            ProjectBuildingRequest buildingRequest = mavenSession.
+                    getProjectBuildingRequest();
             buildingRequest.setResolveDependencies(true);
-            var result = projectBuilder.build(mavenProject.getFile(), buildingRequest);
+            var result = projectBuilder.build(mavenProject.getFile(),
+                                          buildingRequest);
             MavenProject fullProject = result.getProject();
 
-
-            log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(urlPattern, welcomeFile));
+            log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(
+                    urlPattern, welcomeFile));
             log.debug("Project name:%s".formatted(mavenProject.getName()));
-            var hasJakartaFacesDependencies = JakartaEeUtil.getInstance().hasJakartaFacesDependency(fullProject, log);
-            log.debug("hasJakartaFacesDependencies:%s".formatted(hasJakartaFacesDependencies));
-        } catch (Exception ex) {
+            var hasJakartaFacesDependencies = JakartaEeUtil.getInstance().
+                    hasJakartaFacesDependency(fullProject, log);
+            log.debug("hasJakartaFacesDependencies:%s".formatted(
+                    hasJakartaFacesDependencies));
+        } catch (ProjectBuildingException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error resolving dependencies", ex);
 

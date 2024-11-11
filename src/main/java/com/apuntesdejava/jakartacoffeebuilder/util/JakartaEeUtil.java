@@ -26,20 +26,22 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACE
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 public class JakartaEeUtil {
-    
+
     private JakartaEeUtil() {
     }
-    
+
     public static JakartaEeUtil getInstance() {
         return JakartaEeUtilHolder.INSTANCE;
     }
-    
+
     private static class JakartaEeUtilHolder {
 
         private static final JakartaEeUtil INSTANCE = new JakartaEeUtil();
     }
-    
-    public boolean hasJakartaFacesDependency(MavenProject mavenProject, Log log){
-         return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
+
+    public boolean hasJakartaFacesDependency(MavenProject mavenProject, Log log) {
+        return PomUtil.getInstance().
+                existsDependency(mavenProject, log, JAKARTA_FACES,
+                                 JAKARTA_FACES_API);
     }
 }
