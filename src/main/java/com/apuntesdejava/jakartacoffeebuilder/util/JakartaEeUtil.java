@@ -106,6 +106,14 @@ public class JakartaEeUtil {
 
     }
 
+    /**
+     * Adds a welcome file to the web.xml of the given Maven project.
+     *
+     * @param currentPath the path to the Maven project
+     * @param welcomeFile the welcome file to add
+     * @param log         the logger to use for logging messages
+     * @throws IOException if an error occurs while adding the welcome file
+     */
     public void addWelcomePages(Path currentPath, String welcomeFile, Log log) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
         webXmlUtil.checkExistsFile(log, currentPath)

@@ -124,6 +124,13 @@ public class WebXmlUtil {
         XmlUtil.getInstance().saveDocument(document, log, currentPath.resolve("src/main/webapp/WEB-INF/web.xml"));
     }
 
+    /**
+     * Adds a welcome file to the `web.xml` of the given Maven project.
+     *
+     * @param document    the XML document to which the welcome file will be added
+     * @param welcomeFile the welcome file to add
+     * @param log         the logger to use for logging messages
+     */
     public void addWelcomePages(Document document, String welcomeFile, Log log) {
         var xmlUtil = XmlUtil.getInstance();
         var nodeList = xmlUtil.findElements(document, log, "//welcome-file");
