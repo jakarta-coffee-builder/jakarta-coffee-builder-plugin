@@ -80,6 +80,20 @@ public class AddFacesMojo extends AbstractMojo {
 
         checkDependency(log);
         checkJakartaFacesServletDeclaration(log);
+        checkWelcomePages(log);
+    }
+
+    private void checkWelcomePages(Log log) throws MojoExecutionException {
+        try {
+            log.debug("Checking Welcome Pages configuration");
+            var currentPath = mavenProject.getFile().toPath().getParent();
+
+            var jakartaEeUtil = JakartaEeUtil.getInstance();
+            jakartaEeUtil.addWelcomePages(currentPath, welcomeFile, log);
+        } catch (IOException ex) {
+            log.error(ex);
+            throw new MojoExecutionException("Error adding Welcome Pages", ex);
+        }
     }
 
     private void checkJakartaFacesServletDeclaration(Log log) throws MojoExecutionException {
@@ -88,7 +102,7 @@ public class AddFacesMojo extends AbstractMojo {
             var currentPath = mavenProject.getFile().toPath().getParent();
 
             var jakartaEeUtil = JakartaEeUtil.getInstance();
-            jakartaEeUtil.addJakartaFacesServletDeclaration(currentPath, urlPattern, welcomeFile, log);
+            jakartaEeUtil.addJakartaFacesServletDeclaration(currentPath, urlPattern, log);
         } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Jakarta Faces Servlet Declaration", ex);

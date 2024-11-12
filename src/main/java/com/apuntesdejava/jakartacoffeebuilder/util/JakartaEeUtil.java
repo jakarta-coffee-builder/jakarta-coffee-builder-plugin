@@ -88,13 +88,11 @@ public class JakartaEeUtil {
      *
      * @param currentPath the path to the Maven project
      * @param urlPattern  the URL pattern to use for the servlet
-     * @param welcomeFile the welcome file to use for the servlet
      * @param log         the logger to use for logging messages
      * @throws IOException if an error occurs while adding the servlet declaration
      */
     public void addJakartaFacesServletDeclaration(Path currentPath,
                                                   String urlPattern,
-                                                  String welcomeFile,
                                                   Log log) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
         webXmlUtil.checkExistsFile(log, currentPath)
@@ -106,6 +104,16 @@ public class JakartaEeUtil {
                       });
 
 
+    }
+
+    public void addWelcomePages(Path currentPath, String welcomeFile, Log log) throws IOException {
+        var webXmlUtil = WebXmlUtil.getInstance();
+        webXmlUtil.checkExistsFile(log, currentPath)
+                  .ifPresent(
+                      document -> {
+                          webXmlUtil.addWelcomePages(document, welcomeFile, log);
+                          webXmlUtil.saveDocument(document, log, currentPath);
+                      });
     }
 
     private static class JakartaEeUtilHolder {

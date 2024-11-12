@@ -124,6 +124,15 @@ public class WebXmlUtil {
         XmlUtil.getInstance().saveDocument(document, log, currentPath.resolve("src/main/webapp/WEB-INF/web.xml"));
     }
 
+    public void addWelcomePages(Document document, String welcomeFile, Log log) {
+        var xmlUtil = XmlUtil.getInstance();
+        var nodeList = xmlUtil.findElements(document, log, "//welcome-file");
+        if (nodeList.getLength() == 0) {
+            xmlUtil.addElement(document, log, "//web-app", "welcome-file-list",
+                (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
+        }
+    }
+
     private static class WebUtilHolder {
 
         private static final WebXmlUtil INSTANCE = new WebXmlUtil();
