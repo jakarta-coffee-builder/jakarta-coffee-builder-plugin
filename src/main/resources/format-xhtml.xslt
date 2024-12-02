@@ -5,7 +5,7 @@
     <xsl:strip-space elements="*"/>
 
     <xsl:template match="/">
-         <xsl:text disable-output-escaping="yes">&#10;</xsl:text>
+        <xsl:text disable-output-escaping="yes">&#10;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;&#10;</xsl:text>
         <xsl:apply-templates/>
     </xsl:template>
 
