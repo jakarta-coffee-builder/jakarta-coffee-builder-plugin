@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import com.apuntesdejava.jakartacoffeebuilder.model.NamespaceContextMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
@@ -25,7 +26,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -38,8 +38,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.XML_XSLT;
 
 /**
  * Utility class for XML operations.
@@ -68,7 +74,6 @@ import java.util.function.Consumer;
  */
 public class XmlUtil {
 
-    private final File xlstFile;
 
     public static XmlUtil getInstance() {
         return XmlUtilHolder.INSTANCE;
@@ -79,18 +84,19 @@ public class XmlUtil {
     private XmlUtil() {
         try {
             var dbFactory = DocumentBuilderFactory.newInstance();
+            dbFactory.setNamespaceAware(true);
             this.dBuilder = dbFactory.newDocumentBuilder();
-            this.xlstFile = createXsltTemp();
-        } catch (ParserConfigurationException | IOException e) {
+        } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private File createXsltTemp() throws IOException {
+    private File createXsltTemp(String xsltName) throws IOException {
         var classLoader = XmlUtil.class.getClassLoader();
-        var resourceUrl = classLoader.getResource("format-xml.xslt");
-        if (resourceUrl == null) throw new RuntimeException("Resource not found: format-xml.xslt");
+        var resourceUrl = classLoader.getResource(xsltName);
+        if (resourceUrl == null) throw new RuntimeException("Resource not found: " + xsltName);
         var tempFile = File.createTempFile("resource-temp", ".xslt");
+        tempFile.deleteOnExit();
         FileUtils.copyURLToFile(resourceUrl, tempFile);
         return tempFile;
     }
@@ -102,11 +108,37 @@ public class XmlUtil {
      * @param tagName the tag name of the new element
      * @param content the text content of the new element
      */
-    public void addElement(Element parent, String tagName,
-                           String content) {
+    public void addElement(Element parent, String tagName, String content) {
         var element = parent.getOwnerDocument().createElement(tagName);
         element.setTextContent(content);
         parent.appendChild(element);
+    }
+
+    /**
+     * Adds a new element with the specified tag name to the given parent element.
+     *
+     * @param parent  the parent element to which the new element will be added
+     * @param tagName the tag name of the new element
+     * @return the newly created element
+     */
+    public Element addElement(Element parent, String tagName) {
+        var element = parent.getOwnerDocument().createElement(tagName);
+        parent.appendChild(element);
+        return element;
+    }
+
+    /**
+     * Adds a new element with the specified namespace and tag name to the given parent element.
+     *
+     * @param parent    the parent element to which the new element will be added
+     * @param namespace the namespace URI of the new element
+     * @param tagName   the tag name of the new element
+     * @return the newly created element
+     */
+    public Element addElementNS(Element parent, String namespace, String tagName) {
+        var element = parent.getOwnerDocument().createElementNS(namespace, tagName);
+        parent.appendChild(element);
+        return element;
     }
 
     /**
@@ -136,13 +168,16 @@ public class XmlUtil {
     /**
      * Retrieves an XML document from the specified path. If the file does not exist, it creates a new document.
      *
-     * @param log        the logger to use for logging messages
-     * @param path       the path to the XML file
-     * @param postCreate a consumer to perform additional operations on the document after creation
+     * @param log                the logger to use for logging messages
+     * @param path               the path to the XML file
+     * @param createDocumentType a function to create a new document type if the file does not exist
+     * @param postCreate         a consumer to perform additional operations on the document after creation
      * @return an Optional containing the XML Document if the file exists or was created successfully, otherwise an empty Optional
-     * @throws IOException if an error occurs while accessing or creating the XML file
      */
-    public Optional<Document> getDocument(Log log, Path path, Consumer<Document> postCreate) throws IOException {
+    public Optional<Document> getDocument(Log log,
+                                          Path path,
+                                          Function<DocumentBuilder, Document> createDocumentType,
+                                          Consumer<Document> postCreate) {
         try {
 
             if (Files.exists(path)) {
@@ -151,16 +186,49 @@ public class XmlUtil {
                 return Optional.of(doc);
             }
             Files.createDirectories(path.getParent());
-            var doc = dBuilder.newDocument();
-            if (postCreate != null) {
-                postCreate.accept(doc);
-            }
+            var doc = Optional.ofNullable(createDocumentType)
+                              .map(p -> p.apply(dBuilder))
+                              .orElseGet(dBuilder::newDocument);
+            Optional.ofNullable(postCreate).ifPresent(p -> p.accept(doc));
             return Optional.of(doc);
-        } catch (SAXException e) {
+        } catch (IOException | SAXException e) {
             log.error(e.getMessage(), e);
             return Optional.empty();
-
         }
+    }
+
+    /**
+     * Retrieves an XML document from the specified file path if it exists.
+     * Parses and normalizes the document before returning it.
+     * Logs an error message if the document cannot be parsed or read.
+     *
+     * @param log  the logger to use for logging error messages
+     * @param path the file path to the XML document
+     * @return an Optional containing the XML Document if it exists and is successfully parsed,
+     * otherwise an empty Optional
+     */
+    public Optional<Document> getDocument(Log log, Path path) {
+        if (!Files.exists(path)) return Optional.empty();
+        try {
+            var doc = dBuilder.parse(path.toFile());
+            doc.getDocumentElement().normalize();
+            return Optional.of(doc);
+        } catch (SAXException | IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Retrieves an XML document from the specified path. If the file does not exist, it creates a new document.
+     *
+     * @param log        the logger to use for logging messages
+     * @param path       the path to the XML file
+     * @param postCreate a consumer to perform additional operations on the document after creation
+     * @return an Optional containing the XML Document if the file exists or was created successfully, otherwise an empty Optional
+     */
+    public Optional<Document> getDocument(Log log, Path path, Consumer<Document> postCreate) {
+        return getDocument(log, path, null, postCreate);
     }
 
     /**
@@ -173,15 +241,50 @@ public class XmlUtil {
      * @throws RuntimeException if an error occurs while evaluating the XPath expression
      */
     public NodeList findElements(Document doc, Log log, String expression) {
+        return findElements(doc, log, expression, Map.of());
+    }
+
+    /**
+     * Finds elements in the given XML document using the specified XPath expression and optional namespace mappings.
+     *
+     * @param doc        the XML document to search
+     * @param log        the logger to use for logging messages
+     * @param expression the XPath expression to evaluate
+     * @param namespaces a map of namespace prefixes to namespace URIs for resolving namespaces in the XPath expression
+     * @return a NodeList containing the elements matching the XPath expression
+     * @throws RuntimeException if an error occurs while evaluating the XPath expression
+     */
+    public NodeList findElements(Document doc, Log log, String expression, Map<String, String> namespaces) {
         try {
             var xPathFactory = XPathFactory.newInstance();
             var xPath = xPathFactory.newXPath();
+            if (namespaces != null)
+                namespaces.forEach((key, value) -> xPath.setNamespaceContext(new NamespaceContextMap(key, value)));
             var xPathExpression = xPath.compile(expression);
             return (NodeList) xPathExpression.evaluate(doc, XPathConstants.NODESET);
         } catch (XPathExpressionException ex) {
             log.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Finds elements in the given XML document based on the provided XPath expression and
+     * returns them as a stream of {@code Element} objects.
+     *
+     * @param doc        the XML document to search
+     * @param log        the logger to use for logging messages
+     * @param expression the XPath expression used to evaluate and find matching elements
+     * @return a {@code Stream} containing the matching {@code Element} objects
+     */
+    public Stream<Element> findElementsStream(Document doc,
+                                              Log log,
+                                              String expression,
+                                              Map<String, String> namespaces) {
+        var nodeList = findElements(doc, log, expression, namespaces);
+        return IntStream.range(0, nodeList.getLength())
+                        .mapToObj(nodeList::item)
+                        .map(node -> (Element) node);
     }
 
     /**
@@ -192,17 +295,28 @@ public class XmlUtil {
      * @param xmlPath  the path to save the XML document
      */
     public void saveDocument(Document document, Log log, Path xmlPath) {
+        saveDocument(document, log, xmlPath, XML_XSLT);
+    }
+
+    /**
+     * Saves the specified XML document to the given path, applying an XSLT transformation.
+     *
+     * @param document the XML document to save
+     * @param log      the logger to use for logging messages
+     * @param xmlPath  the path to save the transformed XML document
+     * @param xsltName the name of the XSLT file to apply for the transformation
+     */
+    public void saveDocument(Document document, Log log, Path xmlPath, String xsltName) {
         try {
+            var xlstFile = createXsltTemp(xsltName);
             var transformerFactory = TransformerFactory.newInstance();
             var styleSource = new StreamSource(xlstFile);
             var transformer = transformerFactory.newTransformer(styleSource);
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             var source = new DOMSource(document);
             var result = new StreamResult(xmlPath.toFile());
             transformer.transform(source, result);
             log.debug("Saved document to: " + xmlPath);
-        } catch (TransformerException ex) {
+        } catch (TransformerException | IOException ex) {
             log.error(ex.getMessage(), ex);
         }
     }

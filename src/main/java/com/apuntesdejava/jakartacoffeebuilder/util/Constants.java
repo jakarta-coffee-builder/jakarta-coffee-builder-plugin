@@ -29,6 +29,10 @@ public class Constants {
     public static final String JAKARTA_FACES = "jakarta.faces";
     public static final String JAKARTA_FACES_API = "jakarta.faces-api";
 
+    public static final String JAKARTA_ENTERPRISE = "jakarta.enterprise";
+    public static final String JAKARTA_ENTERPRISE_CDI_API = "jakarta.enterprise.cdi-api";
+
+
     public static final String JAKARTAEE_VERSION_10 = "10.0.0";
     public static final String JAKARTAEE_VERSION_11 = "11.0.0";
 
@@ -37,7 +41,8 @@ public class Constants {
     public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
         of(
             JAKARTAEE_VERSION_10, Map.of(
-                JAKARTA_FACES_API, "4.0.1"
+                JAKARTA_FACES_API, "4.0.1",
+                JAKARTA_ENTERPRISE_CDI_API, "4.0.1"
             )
         );
 
@@ -45,4 +50,14 @@ public class Constants {
 
     public static final String JAKARTA_FACES_SERVLET = "JakartaServlet";
     public static final String JAKARTA_FACES_SERVLET_DEFINITION = "Jakarta Faces Servlet Definition";
+
+    public static final String FACES_NS_CORE = "jakarta.faces.core";
+    public static final String FACES_NS_HTML = "jakarta.faces.html";
+    public static final String FACES_NS_UI = "jakarta.faces.facelets";
+
+    public static final String SLASH = "/";
+    
+    public static final String XML_XSLT = "format-xml.xslt";
+    public static final String XHTML_XSLT = "format-xhtml.xslt";
+    public static final String XHTML_COMPOSITION_XSLT = "format-xhtml-composition.xslt";
 }

@@ -57,6 +57,24 @@ public class JakartaEeUtil {
     }
 
     /**
+     * Adds a Jakarta CDI dependency to the given Maven project.
+     *
+     * @param mavenProject     the Maven project to which the dependency will be added
+     * @param log              the logger to use for logging messages
+     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
+     * @throws MojoExecutionException if an error occurs while adding the dependency
+     */
+    public void addJakartaCdiDependency(MavenProject mavenProject,
+                                        Log log,
+                                        String jakartaEeVersion) throws MojoExecutionException {
+        var pomUtil = PomUtil.getInstance();
+        var jakartaCdiVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_ENTERPRISE_CDI_API);
+        pomUtil.addDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API, jakartaCdiVersion,
+            PROVIDED_SCOPE);
+        pomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    /**
      * Adds a Jakarta Faces dependency to the given Maven project.
      *
      * @param mavenProject     the Maven project to which the dependency will be added
@@ -64,7 +82,8 @@ public class JakartaEeUtil {
      * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
      * @throws MojoExecutionException if an error occurs while adding the dependency
      */
-    public void addJakartaFacesDependency(MavenProject mavenProject, Log log,
+    public void addJakartaFacesDependency(MavenProject mavenProject,
+                                          Log log,
                                           String jakartaEeVersion) throws MojoExecutionException {
         var pomUtil = PomUtil.getInstance();
         var jakartaFacesVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_FACES_API);
@@ -81,6 +100,18 @@ public class JakartaEeUtil {
      */
     public boolean hasJakartaFacesDependency(MavenProject mavenProject, Log log) {
         return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
+    }
+
+    /**
+     * Checks if the given Maven project has a dependency on Jakarta CDI.
+     *
+     * @param mavenProject the Maven project to check
+     * @param log          the logger to use for logging messages
+     * @return true if the project has a Jakarta CDI dependency, false otherwise
+     */
+    public boolean hasJakartaCdiDependency(MavenProject mavenProject, Log log) {
+        return PomUtil.getInstance()
+                      .existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
     }
 
     /**
