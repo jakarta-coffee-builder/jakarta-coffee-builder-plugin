@@ -42,3 +42,19 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-faces
 </web-app>
 
 ```
+
+### Add Jakarta Faces Page
+
+Add a Face page, associating it with a Managed Bean. It can also be done by using a specified Facelet template
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
+```
+
+**Parameters**
+
+| Parameter      | Definition                                                                                            | Default value |
+|----------------|-------------------------------------------------------------------------------------------------------|---------------|
+| `name`         | Name of the Face page to create                                                                       |               |
+| `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |
+| `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               |
