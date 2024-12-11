@@ -54,7 +54,11 @@ public class AddFacePageMojo extends AbstractMojo {
         var log = getLog();
         log.info("Adding face page " + pageName);
         try {
-            JakartaFacesUtil.getInstance().addFacePage(mavenProject, log, pageName, createManagedBean);
+            var jakartaFacesUtil = JakartaFacesUtil.getInstance();
+            jakartaFacesUtil.addFacePage(mavenProject, log, pageName,createManagedBean);
+            if (createManagedBean)
+                jakartaFacesUtil.createManagedBean(mavenProject, log, pageName);
+
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

@@ -119,11 +119,11 @@ public class AddFacesMojo extends AbstractMojo {
             MavenProject fullProject = result.getProject();
 
             var jakartaEeUtil = JakartaEeUtil.getInstance();
-            var hasJakartaFacesDependencies = jakartaEeUtil.hasJakartaFacesDependency(fullProject, log);
-            log.debug("hasJakartaFacesDependencies:%s".formatted(hasJakartaFacesDependencies));
-            if (!hasJakartaFacesDependencies) {
+            if (!jakartaEeUtil.hasJakartaFacesDependency(fullProject, log)) {
                 jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
             }
+            if(!jakartaEeUtil.hasJakartaCdiDependency(fullProject, log))
+                jakartaEeUtil.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
 
         } catch (ProjectBuildingException ex) {
             log.error(ex);
