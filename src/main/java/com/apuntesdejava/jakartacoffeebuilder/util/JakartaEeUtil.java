@@ -102,10 +102,6 @@ public class JakartaEeUtil {
         return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
     }
 
-    public boolean hasJakartaCdi(MavenProject mavenProject,Log log){
-        return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
-    }
-
     /**
      * Checks if the given Maven project has a dependency on Jakarta CDI.
      *
