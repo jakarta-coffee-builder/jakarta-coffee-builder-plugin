@@ -41,6 +41,14 @@ public class TemplateUtil {
         return TemplateUtilHolder.INSTANCE;
     }
 
+    /**
+     * Generates a Java Bean file using a template and writes it to the specified file path.
+     *
+     * @param log      the logger used to log messages and errors
+     * @param data     the data model map containing values to populate the Java Bean template
+     * @param javaPath the file path where the generated Java Bean will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
     public void createJavaBeanFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
         var template = configuration.getTemplate("JavaBean.ftl");
         try (var writer = new FileWriter(javaPath.toFile())) {

@@ -35,6 +35,13 @@ public class MavenProjectUtil {
         private static final MavenProjectUtil INSTANCE = new MavenProjectUtil();
     }
 
+    /**
+     * Constructs a package name based on the group ID and artifact ID of the given Maven project.
+     * Non-alphanumeric characters in the group ID and artifact ID are replaced with dots.
+     *
+     * @param mavenProject the Maven project containing the group ID and artifact ID
+     * @return the generated package name as a string
+     */
     public String getProjectPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(RegExUtils.replaceAll(mavenProject.getGroupId(), "[^a-zA-Z0-9]", "."),
             RegExUtils.replaceAll(mavenProject.getArtifactId(), "[^a-zA-Z0-9]", "."));

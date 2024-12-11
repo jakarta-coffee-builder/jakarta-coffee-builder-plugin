@@ -51,9 +51,13 @@ public class Constants {
     public static final String JAKARTA_FACES_SERVLET = "JakartaServlet";
     public static final String JAKARTA_FACES_SERVLET_DEFINITION = "Jakarta Faces Servlet Definition";
 
-    public static final String FACES_NS_CORE = "http://xmlns.jcp.org/jsf/core";
-    public static final String FACES_NS_HTML = "http://xmlns.jcp.org/jsf/html";
+    public static final String FACES_NS_CORE = "jakarta.faces.core";
+    public static final String FACES_NS_HTML = "jakarta.faces.html";
+    public static final String FACES_NS_UI = "jakarta.faces.facelets";
 
+    public static final String SLASH = "/";
+    
     public static final String XML_XSLT = "format-xml.xslt";
     public static final String XHTML_XSLT = "format-xhtml.xslt";
+    public static final String XHTML_COMPOSITION_XSLT = "format-xhtml-composition.xslt";
 }
