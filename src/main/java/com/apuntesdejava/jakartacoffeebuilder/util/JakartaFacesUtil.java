@@ -29,7 +29,9 @@ import java.util.Optional;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Utility class for managing Jakarta Faces (JSF) operations in a Maven project.
+ * This class provides methods to create JSF face pages, managed beans, and Facelet templates,
+ * enabling integration of JSF features into a Java web application.
  */
 public class JakartaFacesUtil {
 
@@ -184,6 +186,50 @@ public class JakartaFacesUtil {
                        });
             }).orElseThrow();
             xmlUtil.saveDocument(facePage, log, xhtml, XHTML_COMPOSITION_XSLT);
+        });
+    }
+
+    /**
+     * Adds a new Facelet template to the specified Maven project's web application directory.
+     * This method generates an XHTML file based on the provided templateName,
+     * and optionally includes <ui:insert> elements with the names specified in the inserts list.
+     *
+     * @param mavenProject the Maven project for which the template will be created
+     * @param log          the logger for outputting warnings and informational messages
+     * @param templateName the name of the Facelet template, which determines the base structure
+     *                     of the generated XHTML page
+     * @param inserts      a list of insert names to be added as <ui:insert> elements in the
+     *                     generated XHTML file; may be null or empty
+     * @throws IOException if an input/output error occurs during file creation or modification
+     */
+    public void addFaceTemplate(MavenProject mavenProject,
+                                Log log,
+                                String templateName,
+                                List<String> inserts) throws IOException {
+        createXhtmlFile(mavenProject, log,
+            StringUtils.removeStart(StringUtils.removeEnd(templateName, ".xhtml"), SLASH)).ifPresent(xhtml -> {
+            var xmlUtil = XmlUtil.getInstance();
+            var facePage = xmlUtil.getDocument(log, xhtml, (documentBuilder) -> {
+                var docType = documentBuilder.getDOMImplementation()
+                                             .createDocumentType("html", "-//W3C//DTD XHTML 1.0 Transitional//EN",
+                                                 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+                return documentBuilder.getDOMImplementation().createDocument(null, "html", docType);
+            }, document -> {
+                var htmlElem = document.getDocumentElement();
+                htmlElem.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+                htmlElem.setAttribute("xmlns:h", FACES_NS_HTML);
+                htmlElem.setAttribute("xmlns:f", FACES_NS_CORE);
+                htmlElem.setAttribute("xmlns:ui", FACES_NS_UI);
+
+                var bodyElem = xmlUtil.addElementNS(htmlElem, FACES_NS_HTML, "h:body");
+                Optional.ofNullable(inserts).ifPresent(insertList -> insertList.forEach(insert -> {
+                    var insertElem = xmlUtil.addElementNS(bodyElem, FACES_NS_UI, "ui:insert");
+                    insertElem.setAttribute("name", insert);
+                    insertElem.setTextContent(insert);
+                }));
+
+            }).orElseThrow();
+            xmlUtil.saveDocument(facePage, log, xhtml, XHTML_XSLT);
         });
     }
 

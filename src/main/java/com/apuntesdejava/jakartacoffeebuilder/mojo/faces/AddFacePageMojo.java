@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.mojo;
+package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.JakartaFacesUtil;
 import org.apache.commons.lang3.StringUtils;

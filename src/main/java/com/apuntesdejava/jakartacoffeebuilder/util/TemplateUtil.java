@@ -25,7 +25,12 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Utility class for generating files using predefined templates with Freemarker.
+ *
+ * This singleton class provides methods to process template files with a specified data model.
+ * It centralizes template configuration and ensures consistent usage throughout the application.
+ *
+ * The templates are loaded from a predefined location on the classpath, and the default encoding is set to UTF-8.
  */
 public class TemplateUtil {
 

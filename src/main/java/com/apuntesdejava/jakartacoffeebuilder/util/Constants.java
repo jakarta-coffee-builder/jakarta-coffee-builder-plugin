@@ -18,7 +18,24 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import java.util.Map;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * The Constants class serves as a centralized repository for constant values
+ * used throughout the application. These constants include string identifiers,
+ * version numbers, servlet definitions, namespace identifiers, and other
+ * fixed values that are shared among various components.
+ *
+ * The purpose of this class is to provide a consistent and reusable set of values
+ * that can be referenced across the application, minimizing hardcoding and
+ * potential duplication. Many constants are related to Jakarta EE specifications
+ * and versions.
+ *
+ * Key constant groups include:
+ * - Jakarta EE specifications and APIs, such as Jakarta Faces and CDI specifications.
+ * - Supported Jakarta EE versions.
+ * - Servlet and namespace definitions.
+ * - XSLT file names for formatting.
+ *
+ * Developers should use this class to retrieve any predefined constant values
+ * referenced in the application.
  */
 public class Constants {
 
