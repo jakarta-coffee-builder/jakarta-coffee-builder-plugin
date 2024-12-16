@@ -19,6 +19,8 @@ import javax.xml.namespace.NamespaceContext;
 import java.util.Iterator;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
@@ -32,7 +34,7 @@ public class NamespaceContextMap implements NamespaceContext {
 
     @Override
     public String getNamespaceURI(String prefix) {
-        return PREF_MAP.getOrDefault(prefix, "");
+        return PREF_MAP.getOrDefault(prefix, EMPTY);
     }
 
     @Override

@@ -13,45 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.mojo;
+package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.JakartaFacesUtil;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 @Mojo(
-    name = "add-face-page"
+    name = "add-face-template"
 )
-public class AddFacePageMojo extends AbstractMojo {
+public class AddFaceTemplateMojo extends AbstractMojo {
 
     @Parameter(
         required = true,
         property = "name"
     )
-    private String pageName;
+    private String templateName;
 
     @Parameter(
-        required = false,
-        property = "managed-bean",
-        defaultValue = "true"
+        property = "inserts"
     )
-    private boolean createManagedBean;
-
-    @Parameter(
-        required = false,
-        property = "template"
-    )
-    private String templateFacelet;
+    private List<String> inserts;
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
@@ -59,19 +54,13 @@ public class AddFacePageMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
-        log.info("Adding face page " + pageName);
         try {
+            log.info("Adding Template face page " + templateName);
             var jakartaFacesUtil = JakartaFacesUtil.getInstance();
-            if (StringUtils.isBlank(templateFacelet))
-                jakartaFacesUtil.addFacePage(mavenProject, log, pageName, createManagedBean);
-            else
-                jakartaFacesUtil.addFacePageWithFaceletTemplate(mavenProject, log, pageName, templateFacelet,
-                    createManagedBean);
-            if (createManagedBean)
-                jakartaFacesUtil.createManagedBean(mavenProject, log, pageName);
-
+            jakartaFacesUtil.addFaceTemplate(mavenProject,log,templateName,inserts);
         } catch (IOException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
+            log.error(e.getMessage(),e);
+            throw new MojoExecutionException(e);
         }
     }
 

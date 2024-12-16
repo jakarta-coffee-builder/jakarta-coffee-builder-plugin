@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.mojo;
+package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
 
@@ -34,7 +34,28 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import java.io.IOException;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Mojo implementation for adding necessary Jakarta Faces configurations to a Maven project.
+ * This includes adding a URL pattern for Faces requests, configuring the welcome file,
+ * and ensuring required dependencies are included in the project.
+ *
+ * This Mojo performs the following tasks:
+ * - Checks and adds the necessary Jakarta Faces and CDI dependencies.
+ * - Configures and validates the Jakarta Faces servlet declaration in the project descriptor.
+ * - Updates the web application's welcome file configuration with the specified value.
+ *
+ * Goal: add-faces
+ * Configuration Parameters:
+ * - url-pattern: Specifies the URL pattern to be used for Faces requests (default: "*.faces").
+ * - welcome-file: Specifies the welcome file name (default: "index.faces").
+ * - jakarta-ee-version: Defines the Jakarta EE version to use (default: Jakarta EE 10).
+ * - mavenProject: Represents the Maven project being processed.
+ * - mavenSession: Provides the Maven execution session information.
+ * - projectBuilder: Helper to build Maven project instances.
+ *
+ * Execution:
+ * - Executes the above tasks in sequence, logging relevant information or errors as
+ *   applicable.
+ * - Throws MojoExecutionException or MojoFailureException if issues occur during execution.
  */
 @Mojo(
     name = "add-faces"
