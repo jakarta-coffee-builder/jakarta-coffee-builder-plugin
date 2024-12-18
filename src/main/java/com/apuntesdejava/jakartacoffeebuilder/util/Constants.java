@@ -22,18 +22,18 @@ import java.util.Map;
  * used throughout the application. These constants include string identifiers,
  * version numbers, servlet definitions, namespace identifiers, and other
  * fixed values that are shared among various components.
- *
+ * <p>
  * The purpose of this class is to provide a consistent and reusable set of values
  * that can be referenced across the application, minimizing hardcoding and
  * potential duplication. Many constants are related to Jakarta EE specifications
  * and versions.
- *
+ * <p>
  * Key constant groups include:
  * - Jakarta EE specifications and APIs, such as Jakarta Faces and CDI specifications.
  * - Supported Jakarta EE versions.
  * - Servlet and namespace definitions.
  * - XSLT file names for formatting.
- *
+ * <p>
  * Developers should use this class to retrieve any predefined constant values
  * referenced in the application.
  */
@@ -45,6 +45,9 @@ public class Constants {
 
     public static final String JAKARTA_FACES = "jakarta.faces";
     public static final String JAKARTA_FACES_API = "jakarta.faces-api";
+
+    public static final String JAKARTA_PERSISTENCE = "jakarta.persistence";
+    public static final String JAKARTA_PERSISTENCE_API = "jakarta.persistence-api";
 
     public static final String JAKARTA_ENTERPRISE = "jakarta.enterprise";
     public static final String JAKARTA_ENTERPRISE_CDI_API = "jakarta.enterprise.cdi-api";
@@ -59,6 +62,7 @@ public class Constants {
         of(
             JAKARTAEE_VERSION_10, Map.of(
                 JAKARTA_FACES_API, "4.0.1",
+                JAKARTA_PERSISTENCE_API, "3.1.0",
                 JAKARTA_ENTERPRISE_CDI_API, "4.0.1"
             )
         );
@@ -73,7 +77,7 @@ public class Constants {
     public static final String FACES_NS_UI = "jakarta.faces.facelets";
 
     public static final String SLASH = "/";
-    
+
     public static final String XML_XSLT = "format-xml.xslt";
     public static final String XHTML_XSLT = "format-xhtml.xslt";
     public static final String XHTML_COMPOSITION_XSLT = "format-xhtml-composition.xslt";

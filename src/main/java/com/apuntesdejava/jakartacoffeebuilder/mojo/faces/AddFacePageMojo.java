@@ -27,6 +27,10 @@ import org.apache.maven.project.MavenProject;
 import java.io.IOException;
 
 /**
+ * Add a new JSF page to the project.
+ * The plugin creates a new JSF page in the specified location.
+ * You can specify a template to use for the new page.
+ *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 @Mojo(
