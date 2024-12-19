@@ -16,7 +16,10 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import org.apache.commons.lang3.RegExUtils;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
@@ -33,6 +36,15 @@ public class MavenProjectUtil {
     private static class MavenProjectUtilHolder {
 
         private static final MavenProjectUtil INSTANCE = new MavenProjectUtil();
+    }
+
+    public MavenProject getFullProject(MavenSession mavenSession,
+                                       ProjectBuilder projectBuilder,
+                                       MavenProject mavenProject) throws ProjectBuildingException {
+        var buildingRequest = mavenSession.getProjectBuildingRequest();
+        buildingRequest.setResolveDependencies(true);
+        var result = projectBuilder.build(mavenProject.getFile(), buildingRequest);
+        return result.getProject();
     }
 
     /**

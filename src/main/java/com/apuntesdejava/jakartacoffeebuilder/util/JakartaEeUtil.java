@@ -109,9 +109,9 @@ public class JakartaEeUtil {
      * @param log          the logger to use for logging messages
      * @return true if the project has a Jakarta CDI dependency, false otherwise
      */
-    public boolean hasJakartaCdiDependency(MavenProject mavenProject, Log log) {
-        return PomUtil.getInstance()
-                      .existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
+    public boolean hasNotJakartaCdiDependency(MavenProject mavenProject, Log log) {
+        return !PomUtil.getInstance()
+                       .existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
     }
 
     /**
@@ -153,6 +153,26 @@ public class JakartaEeUtil {
                           webXmlUtil.addWelcomePages(document, welcomeFile, log);
                           webXmlUtil.saveDocument(document, log, currentPath);
                       });
+    }
+
+    public boolean hasJakartaPersistenceDependency(MavenProject mavenProject, Log log) {
+        return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
+    }
+
+    public void addJakartaPersistenceDependency(MavenProject mavenProject,
+                                                Log log,
+                                                String jakartaEeVersion) throws MojoExecutionException {
+        var pomUtil = PomUtil.getInstance();
+        var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_PERSISTENCE_API);
+        pomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
+            jakartaPersistenceVersion, PROVIDED_SCOPE);
+        pomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public void createPersistenceXml(Path currentPath, Log log, String jakartaEeVersion, String persistenceUnitName) {
+        var persistenceXmlUtil = PersistenceXmlUtil.getInstance();
+        persistenceXmlUtil.createPersistenceXml(currentPath, log, jakartaEeVersion, persistenceUnitName)
+                          .ifPresent(document -> persistenceXmlUtil.savePersistenceXml(currentPath, log, document));
     }
 
     private static class JakartaEeUtilHolder {

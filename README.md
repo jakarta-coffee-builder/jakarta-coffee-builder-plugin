@@ -58,3 +58,20 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
 | `name`         | Name of the Face page to create                                                                       |               |
 | `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |
 | `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               |
+
+
+## Jakarta Persistence
+
+### Add Jakarta Persistence Configuration
+
+Add Jakarta Persistence configuration in `persistence.xml` file
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
+```
+
+**Parameters**
+
+| Parameter               | Definition                                                                                                             | Default value |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------|
+| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. | `defaultPU`   |

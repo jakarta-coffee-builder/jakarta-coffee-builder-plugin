@@ -16,20 +16,18 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.JakartaFacesUtil;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
+ * Add a new template to the faces project.
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 @Mojo(
