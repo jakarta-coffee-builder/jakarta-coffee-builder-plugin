@@ -15,7 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.JakartaFacesUtil;
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaFacesHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -65,7 +65,7 @@ public class AddFacePageMojo extends AbstractMojo {
         var log = getLog();
         log.info("Adding face page " + pageName);
         try {
-            var jakartaFacesUtil = JakartaFacesUtil.getInstance();
+            var jakartaFacesUtil = JakartaFacesHelper.getInstance();
             if (StringUtils.isBlank(templateFacelet))
                 jakartaFacesUtil.addFacePage(mavenProject, log, pageName, createManagedBean);
             else

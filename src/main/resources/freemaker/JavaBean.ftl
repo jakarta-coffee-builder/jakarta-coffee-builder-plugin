@@ -5,14 +5,24 @@ package ${packageName};
 import ${importItem};
 </#list>
 </#if>
+<#if (annotations??) && (annotations?size > 0)>
+    <#list annotations?keys as importItem>
+import ${importItem};
+    </#list>
+</#if>
 
 <#if (annotations??) && (annotations?size > 0)>
-<#list annotations as annotation>
-@${annotation}
+<#list annotations as annotation,properties>
+@${annotation?keep_after_last(".")}<#if (properties??) && (properties?size > 0)>(
+  <#list properties as property,value>
+    ${property} = ${value}<#if property_has_next>, </#if>
+  </#list>
+)</#if>
 </#list>
 </#if>
 public class ${className} {
 
+<#if (fields??) && (fields?size > 0)>
 <#list fields as field>
     private ${field.type} ${field.name};
 </#list>
@@ -26,4 +36,5 @@ public class ${className} {
         this.${field.name} = ${field.name};
     }
 </#list>
+</#if>
 }

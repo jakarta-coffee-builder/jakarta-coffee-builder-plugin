@@ -13,26 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.util;
+package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import java.nio.file.Path;
 import java.util.Optional;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 
 /**
+ * Helper class for managing `persistence.xml` files.
+ * Provides methods to create and save `persistence.xml` documents.
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
-public class PersistenceXmlUtil {
+public class PersistenceXmlHelper {
 
-    private PersistenceXmlUtil() {
+    private PersistenceXmlHelper() {
     }
 
-    public static PersistenceXmlUtil getInstance() {
+    public static PersistenceXmlHelper getInstance() {
         return PersistenceXmlUtilHolder.INSTANCE;
     }
 
+    /**
+     * Creates a new `persistence.xml` document.
+     *
+     * @param currentPath the current path where the `persistence.xml` will be created
+     * @param log the logger to use for logging messages
+     * @param jakartaEeVersion the Jakarta EE version to use
+     * @param persistenceUnitName the name of the persistence unit
+     * @return an `Optional` containing the created `Document`, or an empty `Optional` if the document could not be created
+     */
     public Optional<Document> createPersistenceXml(Path currentPath, Log log, String jakartaEeVersion,
                                                    String persistenceUnitName) {
         var xmlUtil = XmlUtil.getInstance();
@@ -52,6 +64,13 @@ public class PersistenceXmlUtil {
         });
     }
 
+    /**
+     * Saves the `persistence.xml` document to the specified path.
+     *
+     * @param currentPath the current path where the `persistence.xml` will be saved
+     * @param log the logger to use for logging messages
+     * @param document the `Document` to be saved
+     */
     public void savePersistenceXml(Path currentPath, Log log, Document document) {
         XmlUtil.getInstance().saveDocument(document, log, getPersistencePath(currentPath));
     }
@@ -66,6 +85,6 @@ public class PersistenceXmlUtil {
 
     private static class PersistenceXmlUtilHolder {
 
-        private static final PersistenceXmlUtil INSTANCE = new PersistenceXmlUtil();
+        private static final PersistenceXmlHelper INSTANCE = new PersistenceXmlHelper();
     }
 }

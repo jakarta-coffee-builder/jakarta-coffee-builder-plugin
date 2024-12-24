@@ -81,4 +81,7 @@ public class Constants {
     public static final String XML_XSLT = "format-xml.xslt";
     public static final String XHTML_XSLT = "format-xhtml.xslt";
     public static final String XHTML_COMPOSITION_XSLT = "format-xhtml-composition.xslt";
+
+    public static final String DATASOURCE_DECLARE_WEB = "web.xml";
+    public static final String DATASOURCE_DECLARE_CLASS = "class";
 }

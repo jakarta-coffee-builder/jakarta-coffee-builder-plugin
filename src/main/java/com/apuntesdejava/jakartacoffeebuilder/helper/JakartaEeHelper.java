@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.util;
+package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreatorFactory;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
+import jakarta.json.JsonObject;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -47,13 +51,13 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
  * Author: Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
  * </p>
  */
-public class JakartaEeUtil {
+public class JakartaEeHelper {
 
-    public static JakartaEeUtil getInstance() {
+    public static JakartaEeHelper getInstance() {
         return JakartaEeUtilHolder.INSTANCE;
     }
 
-    private JakartaEeUtil() {
+    private JakartaEeHelper() {
     }
 
     /**
@@ -155,10 +159,25 @@ public class JakartaEeUtil {
                       });
     }
 
+    /**
+     * Checks if the given Maven project has a dependency on Jakarta Persistence.
+     *
+     * @param mavenProject the Maven project to check
+     * @param log          the logger to use for logging messages
+     * @return true if the project has a Jakarta Persistence dependency, false otherwise
+     */
     public boolean hasJakartaPersistenceDependency(MavenProject mavenProject, Log log) {
         return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
     }
 
+    /**
+     * Adds a Jakarta Persistence dependency to the given Maven project.
+     *
+     * @param mavenProject     the Maven project to which the dependency will be added
+     * @param log              the logger to use for logging messages
+     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
+     * @throws MojoExecutionException if an error occurs while adding the dependency
+     */
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) throws MojoExecutionException {
@@ -169,14 +188,54 @@ public class JakartaEeUtil {
         pomUtil.saveMavenProject(mavenProject, log);
     }
 
+    /**
+     * Creates a `persistence.xml` file in the given Maven project.
+     *
+     * @param currentPath         the path to the Maven project
+     * @param log                 the logger to use for logging messages
+     * @param jakartaEeVersion    the version of Jakarta EE to use for the `persistence.xml`
+     * @param persistenceUnitName the name of the persistence unit to be created
+     */
     public void createPersistenceXml(Path currentPath, Log log, String jakartaEeVersion, String persistenceUnitName) {
-        var persistenceXmlUtil = PersistenceXmlUtil.getInstance();
+        var persistenceXmlUtil = PersistenceXmlHelper.getInstance();
         persistenceXmlUtil.createPersistenceXml(currentPath, log, jakartaEeVersion, persistenceUnitName)
                           .ifPresent(document -> persistenceXmlUtil.savePersistenceXml(currentPath, log, document));
     }
 
+    /**
+     * Adds a data source to the given Maven project.
+     *
+     * @param mavenProject         the Maven project to which the data source will be added
+     * @param log                  the logger to use for logging messages
+     * @param declare              the declaration string for the data source
+     * @param coordinatesJdbcDriver the coordinates of the JDBC driver
+     * @param persistenceUnit      the name of the persistence unit
+     * @param json                 the JSON object containing data source parameters
+     */
+    public void addDataSource(MavenProject mavenProject,
+                              Log log,
+                              String declare,
+                              String coordinatesJdbcDriver,
+                              String persistenceUnit,
+                              JsonObject json) {
+        log.debug("Datasource:%s".formatted(json));
+        DataSourceCreatorFactory.getDataSourceCreator(mavenProject, log, declare)
+                                .ifPresent(
+                                    dataSourceCreator -> {
+                                        try {
+                                            dataSourceCreator.coordinatesJdbcDriver(coordinatesJdbcDriver)
+                                                             .persistenceUnit(persistenceUnit)
+                                                             .dataSourceParameters(json)
+                                                             .build();
+                                        } catch (IOException e) {
+                                            log.error("Error creating datasource", e);
+                                            throw new RuntimeException(e);
+                                        }
+                                    });
+    }
+
     private static class JakartaEeUtilHolder {
 
-        private static final JakartaEeUtil INSTANCE = new JakartaEeUtil();
+        private static final JakartaEeHelper INSTANCE = new JakartaEeHelper();
     }
 }

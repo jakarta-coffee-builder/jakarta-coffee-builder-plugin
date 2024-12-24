@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.util;
+package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 /**
  *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
-public class JakartaPersistenceUtil {
+public class JakartaPersistenceHelper {
     
-    private JakartaPersistenceUtil() {
+    private JakartaPersistenceHelper() {
     }
     
-    public static JakartaPersistenceUtil getInstance() {
+    public static JakartaPersistenceHelper getInstance() {
         return JakartaPersistenceUtilHolder.INSTANCE;
     }
     
     private static class JakartaPersistenceUtilHolder {
 
-        private static final JakartaPersistenceUtil INSTANCE = new JakartaPersistenceUtil();
+        private static final JakartaPersistenceHelper INSTANCE = new JakartaPersistenceHelper();
     }
 }

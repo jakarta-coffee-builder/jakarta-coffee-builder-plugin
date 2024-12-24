@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.util;
+package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -33,20 +34,17 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
  * This class provides methods to create JSF face pages, managed beans, and Facelet templates,
  * enabling integration of JSF features into a Java web application.
  */
-public class JakartaFacesUtil {
+public class JakartaFacesHelper {
 
-    private JakartaFacesUtil() {
+    private JakartaFacesHelper() {
     }
 
-    public static JakartaFacesUtil getInstance() {
+    public static JakartaFacesHelper getInstance() {
         return JakartaFacesUtilHolder.INSTANCE;
     }
 
     private Optional<Path> createXhtmlFile(MavenProject mavenProject, Log log, String pageName) throws IOException {
-        var currentDir = mavenProject.getBasedir();
-        var webdir = currentDir.toPath().resolve("src").resolve("main").resolve("webapp");
-        if (!Files.exists(webdir))
-            Files.createDirectories(webdir);
+        var webdir = PathsUtil.getWebappPath(mavenProject);
         var xhtml = webdir.resolve(pageName + ".xhtml");
         if (Files.exists(xhtml)) {
             log.warn("File " + xhtml + " already exists");
@@ -106,18 +104,13 @@ public class JakartaFacesUtil {
      */
     public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
         log.debug("Creating managed bean for " + pageName);
-        var currentDir = mavenProject.getBasedir();
-        var javaDir = currentDir.toPath().resolve("src").resolve("main").resolve("java");
-        if (!Files.exists(javaDir))
-            Files.createDirectories(javaDir);
-        var mavenProjectUtil = MavenProjectUtil.getInstance();
-        var packageDefinition = mavenProjectUtil.getProjectPackage(mavenProject) + ".managedbean";
-        var packageDir = javaDir.resolve(packageDefinition.replace(".", "/"));
-        if (!Files.exists(packageDir))
-            Files.createDirectories(packageDir);
-        log.debug("packageDir: " + packageDir);
+        var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".managedbean";
         var className = StringsUtil.getInstance().toPascalCase(pageName) + "Bean";
-        var managedBean = packageDir.resolve(className + ".java");
+        var managedBean = PathsUtil.getJavaPath(mavenProject,"managedbean",className);
+        var annotationsClasses = Map.of(
+            "jakarta.enterprise.context.Dependent", Map.of(),
+            "jakarta.inject.Named", Map.of()
+        );
         TemplateUtil.getInstance().createJavaBeanFile(log,
             Map.of("packageName", packageDefinition,
                 "className", className,
@@ -125,11 +118,7 @@ public class JakartaFacesUtil {
                     Map.of("type", "String",
                         "name", "name")
                 ),
-                "importsList", List.of(
-                    "jakarta.enterprise.context.Dependent",
-                    "jakarta.inject.Named"
-                ),
-                "annotations", List.of("Dependent", "Named")), managedBean);
+                "annotations", annotationsClasses), managedBean);
     }
 
     /**
@@ -236,6 +225,6 @@ public class JakartaFacesUtil {
 
     private static class JakartaFacesUtilHolder {
 
-        private static final JakartaFacesUtil INSTANCE = new JakartaFacesUtil();
+        private static final JakartaFacesHelper INSTANCE = new JakartaFacesHelper();
     }
 }

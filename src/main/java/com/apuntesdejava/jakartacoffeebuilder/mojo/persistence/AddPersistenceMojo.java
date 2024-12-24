@@ -15,8 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.JakartaEeUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
+import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -74,9 +74,9 @@ public class AddPersistenceMojo extends AbstractMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Persistence dependency");
         try {
-            var fullProject = MavenProjectUtil.getInstance()
-                                              .getFullProject(mavenSession, projectBuilder, mavenProject);
-            var jakartaEeUtil = JakartaEeUtil.getInstance();
+            var fullProject = MavenProjectHelper.getInstance()
+                                                .getFullProject(mavenSession, projectBuilder, mavenProject);
+            var jakartaEeUtil = JakartaEeHelper.getInstance();
             if (jakartaEeUtil.hasNotJakartaCdiDependency(fullProject, log))
                 jakartaEeUtil.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
             if (!jakartaEeUtil.hasJakartaPersistenceDependency(fullProject, log))
@@ -91,7 +91,7 @@ public class AddPersistenceMojo extends AbstractMojo {
 
     private void createPersistenceXml(Log log) {
         var currentPath = mavenProject.getFile().toPath().getParent();
-        JakartaEeUtil.getInstance().createPersistenceXml(currentPath, log, jakartaEeVersion, persistenceUnitName);
+        JakartaEeHelper.getInstance().createPersistenceXml(currentPath, log, jakartaEeVersion, persistenceUnitName);
 
     }
 
