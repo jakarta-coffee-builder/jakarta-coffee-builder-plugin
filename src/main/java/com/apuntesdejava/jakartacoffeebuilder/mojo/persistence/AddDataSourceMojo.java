@@ -26,7 +26,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-import java.util.Map;
+import java.util.Arrays;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
 
@@ -89,7 +89,7 @@ public class AddDataSourceMojo extends AbstractMojo {
     @Parameter(
         property = "properties"
     )
-    private Map<String, String> properties;
+    private String properties;
 
 
     @Parameter(
@@ -119,9 +119,9 @@ public class AddDataSourceMojo extends AbstractMojo {
         if (StringUtils.isNotBlank(user)) jsonBuilder.add("user", user);
         if (StringUtils.isNotBlank(serverName)) jsonBuilder.add("serverName", serverName);
         if (portNumber != null) jsonBuilder.add("portNumber", portNumber);
-        if (properties != null && !properties.isEmpty()) {
-            var propertiesBuilder = Json.createObjectBuilder();
-            properties.forEach(propertiesBuilder::add);
+        if (StringUtils.isNotBlank(properties)) {
+            var propertiesBuilder = Json.createArrayBuilder();
+            Arrays.stream(properties.split(",")).forEach(propertiesBuilder::add);
             jsonBuilder.add("properties", propertiesBuilder);
         }
         return jsonBuilder.build();
