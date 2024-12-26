@@ -15,16 +15,17 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
-import java.nio.file.Path;
-import java.util.Optional;
-
 import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 
+import java.nio.file.Path;
+import java.util.Optional;
+
 /**
  * Helper class for managing `persistence.xml` files.
  * Provides methods to create and save `persistence.xml` documents.
+ *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 public class PersistenceXmlHelper {
@@ -39,9 +40,9 @@ public class PersistenceXmlHelper {
     /**
      * Creates a new `persistence.xml` document.
      *
-     * @param currentPath the current path where the `persistence.xml` will be created
-     * @param log the logger to use for logging messages
-     * @param jakartaEeVersion the Jakarta EE version to use
+     * @param currentPath         the current path where the `persistence.xml` will be created
+     * @param log                 the logger to use for logging messages
+     * @param jakartaEeVersion    the Jakarta EE version to use
      * @param persistenceUnitName the name of the persistence unit
      * @return an `Optional` containing the created `Document`, or an empty `Optional` if the document could not be created
      */
@@ -68,8 +69,8 @@ public class PersistenceXmlHelper {
      * Saves the `persistence.xml` document to the specified path.
      *
      * @param currentPath the current path where the `persistence.xml` will be saved
-     * @param log the logger to use for logging messages
-     * @param document the `Document` to be saved
+     * @param log         the logger to use for logging messages
+     * @param document    the `Document` to be saved
      */
     public void savePersistenceXml(Path currentPath, Log log, Document document) {
         XmlUtil.getInstance().saveDocument(document, log, getPersistencePath(currentPath));

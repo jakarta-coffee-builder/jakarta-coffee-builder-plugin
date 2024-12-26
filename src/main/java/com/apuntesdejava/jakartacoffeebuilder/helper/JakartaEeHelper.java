@@ -205,12 +205,12 @@ public class JakartaEeHelper {
     /**
      * Adds a data source to the given Maven project.
      *
-     * @param mavenProject         the Maven project to which the data source will be added
-     * @param log                  the logger to use for logging messages
-     * @param declare              the declaration string for the data source
+     * @param mavenProject          the Maven project to which the data source will be added
+     * @param log                   the logger to use for logging messages
+     * @param declare               the declaration string for the data source
      * @param coordinatesJdbcDriver the coordinates of the JDBC driver
-     * @param persistenceUnit      the name of the persistence unit
-     * @param json                 the JSON object containing data source parameters
+     * @param persistenceUnit       the name of the persistence unit
+     * @param json                  the JSON object containing data source parameters
      */
     public void addDataSource(MavenProject mavenProject,
                               Log log,

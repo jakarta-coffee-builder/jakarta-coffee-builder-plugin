@@ -16,18 +16,17 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 /**
- *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 public class JakartaPersistenceHelper {
-    
+
     private JakartaPersistenceHelper() {
     }
-    
+
     public static JakartaPersistenceHelper getInstance() {
         return JakartaPersistenceUtilHolder.INSTANCE;
     }
-    
+
     private static class JakartaPersistenceUtilHolder {
 
         private static final JakartaPersistenceHelper INSTANCE = new JakartaPersistenceHelper();

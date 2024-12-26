@@ -15,7 +15,10 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.*;
+import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -106,7 +109,7 @@ public class JakartaFacesHelper {
         log.debug("Creating managed bean for " + pageName);
         var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".managedbean";
         var className = StringsUtil.getInstance().toPascalCase(pageName) + "Bean";
-        var managedBean = PathsUtil.getJavaPath(mavenProject,"managedbean",className);
+        var managedBean = PathsUtil.getJavaPath(mavenProject, "managedbean", className);
         var annotationsClasses = Map.of(
             "jakarta.enterprise.context.Dependent", Map.of(),
             "jakarta.inject.Named", Map.of()

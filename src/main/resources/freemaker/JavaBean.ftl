@@ -16,9 +16,9 @@ import ${importItem};
 @${annotation?keep_after_last(".")}<#if (properties??) && (properties?size > 0)>(
   <#list properties as property,value>
     <#if value?is_string>
-        ${property} = "${value}" <#if property_has_next>,</#if>
+        ${property} = "${value}"<#if property_has_next>,</#if>
     <#elseif value?is_number>
-        ${property} = ${value?string("0")} <#if property_has_next>,</#if>
+        ${property} = ${value?string("0")}<#if property_has_next>,</#if>
     <#elseif value?is_sequence>
         ${property} = {
           <#list value as line>

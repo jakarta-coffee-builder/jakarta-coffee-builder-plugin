@@ -66,7 +66,7 @@ public class PathsUtil {
      * Returns the path to a package directory within the specified base directory. Creates the directory if it doesn't
      * exist. The package name is converted to a path using '/' as a separator.
      *
-     * @param javaDir The base directory.
+     * @param javaDir     The base directory.
      * @param packageName The package name (e.g., "com.example.mypackage").
      * @return The Path object representing the package directory.
      * @throws IOException If an I/O error occurs during directory creation.
@@ -83,9 +83,9 @@ public class PathsUtil {
      * Returns the path to a Java source file within a specified package directory within the Maven project. Creates
      * necessary directories if they don't exist.
      *
-     * @param mavenProject The Maven project object.
+     * @param mavenProject   The Maven project object.
      * @param subPackageName The sub-package name relative to the project's base package.
-     * @param javaClassName The name of the Java class (without the .java extension).
+     * @param javaClassName  The name of the Java class (without the .java extension).
      * @return The Path object representing the Java source file.
      * @throws IOException If an I/O error occurs during directory creation.
      */

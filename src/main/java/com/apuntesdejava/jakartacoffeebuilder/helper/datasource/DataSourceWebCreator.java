@@ -6,7 +6,7 @@ import org.apache.maven.project.MavenProject;
 public class DataSourceWebCreator extends DataSourceCreator {
 
     public DataSourceWebCreator(MavenProject mavenProject, Log log) {
-        super(mavenProject,log);
+        super(mavenProject, log);
     }
 
     @Override
