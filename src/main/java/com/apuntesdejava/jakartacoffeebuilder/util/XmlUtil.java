@@ -84,7 +84,6 @@ public class XmlUtil {
     private XmlUtil() {
         try {
             var dbFactory = DocumentBuilderFactory.newInstance();
-            dbFactory.setNamespaceAware(true);
             this.dBuilder = dbFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
@@ -245,6 +244,22 @@ public class XmlUtil {
     }
 
     /**
+     * Finds elements in the given XML document based on the provided XPath expression and
+     * returns them as a stream of {@code Element} objects.
+     *
+     * @param doc        the XML document to search
+     * @param log        the logger to use for logging messages
+     * @param expression the XPath expression used to evaluate and find matching elements
+     * @return a {@code Stream} containing the matching {@code Element} objects
+     */
+    public Stream<Element> findElementsStream(Document doc, Log log, String expression) {
+        var nodeList = findElements(doc, log, expression, Map.of());
+        return IntStream.range(0, nodeList.getLength())
+                        .mapToObj(nodeList::item)
+                        .map(node -> (Element) node);
+    }
+
+    /**
      * Finds elements in the given XML document using the specified XPath expression and optional namespace mappings.
      *
      * @param doc        the XML document to search
@@ -258,7 +273,7 @@ public class XmlUtil {
         try {
             var xPathFactory = XPathFactory.newInstance();
             var xPath = xPathFactory.newXPath();
-            if (namespaces != null)
+            if (namespaces != null && !namespaces.isEmpty())
                 namespaces.forEach((key, value) -> xPath.setNamespaceContext(new NamespaceContextMap(key, value)));
             var xPathExpression = xPath.compile(expression);
             return (NodeList) xPathExpression.evaluate(doc, XPathConstants.NODESET);

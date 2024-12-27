@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.util;
+package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.maven.execution.MavenSession;
@@ -22,22 +22,35 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
 /**
+ * Helper class for Maven project operations.
+ * Provides methods to retrieve full Maven projects with resolved dependencies
+ * and to construct package names based on Maven project details.
+ *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
-public class MavenProjectUtil {
+public class MavenProjectHelper {
 
-    private MavenProjectUtil() {
+    private MavenProjectHelper() {
     }
 
-    public static MavenProjectUtil getInstance() {
+    public static MavenProjectHelper getInstance() {
         return MavenProjectUtilHolder.INSTANCE;
     }
 
     private static class MavenProjectUtilHolder {
 
-        private static final MavenProjectUtil INSTANCE = new MavenProjectUtil();
+        private static final MavenProjectHelper INSTANCE = new MavenProjectHelper();
     }
 
+    /**
+     * Retrieves the full Maven project with resolved dependencies.
+     *
+     * @param mavenSession   the current Maven session
+     * @param projectBuilder the project builder to use
+     * @param mavenProject   the Maven project to build
+     * @return the fully built Maven project with resolved dependencies
+     * @throws ProjectBuildingException if an error occurs during project building
+     */
     public MavenProject getFullProject(MavenSession mavenSession,
                                        ProjectBuilder projectBuilder,
                                        MavenProject mavenProject) throws ProjectBuildingException {

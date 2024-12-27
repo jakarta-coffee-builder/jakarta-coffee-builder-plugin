@@ -18,7 +18,6 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -65,9 +64,8 @@ public class WebXmlUtil {
      * @param log         the logger to use for logging messages
      * @param currentPath the path to the Maven project
      * @return an Optional containing the XML Document if the file exists or was created successfully, otherwise an empty Optional
-     * @throws IOException if an error occurs while accessing or creating the `web.xml` file
      */
-    public Optional<Document> checkExistsFile(Log log, Path currentPath) throws IOException {
+    public Optional<Document> checkExistsFile(Log log, Path currentPath) {
         var webXmlPath = currentPath.resolve("src/main/webapp/WEB-INF/web.xml");
         return XmlUtil.getInstance().getDocument(log, webXmlPath, document -> {
             var webAppElement = document.createElement("web-app");

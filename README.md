@@ -75,3 +75,28 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
 | Parameter               | Definition                                                                                                             | Default value |
 |-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------|
 | `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. | `defaultPU`   |
+
+### Add DataSource configuration
+
+Add DataSource configuration 
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
+```
+
+**Parameters**
+
+| Parameter          | Definition                                                                                                              | Default value                 |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------|-------------------------------|
+| `name`             | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.    |                               |
+| `class-name`       | This parameter defines the driver class of the DataSource. This value will be included in the DataSource configuration. | `org.h2.jdbcx.JdbcDataSource` |
+| `url`              | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.          |                               |
+| `username`         | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.     |                               |
+| `password`         | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.     |                               |
+| `coordinates-jdbc` | This parameter defines the coordinates of the JDBC driver. This value will be included in the DataSource configuration. | `com.h2database:h2:1.4.200`   |
+| `declare`          | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`                | `class`                       |
+| `server-name`      | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration.  |                               |
+| `port-number`      | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration.  |                               |
+| `properties`       | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.   |                               |
+| `persistence-unit` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration.  |                               | 
+

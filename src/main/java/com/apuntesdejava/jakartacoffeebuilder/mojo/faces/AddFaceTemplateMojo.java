@@ -15,7 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.JakartaFacesUtil;
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaFacesHelper;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -28,6 +28,7 @@ import java.util.List;
 
 /**
  * Add a new template to the faces project.
+ *
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
 @Mojo(
@@ -54,10 +55,9 @@ public class AddFaceTemplateMojo extends AbstractMojo {
         var log = getLog();
         try {
             log.info("Adding Template face page " + templateName);
-            var jakartaFacesUtil = JakartaFacesUtil.getInstance();
-            jakartaFacesUtil.addFaceTemplate(mavenProject,log,templateName,inserts);
+            JakartaFacesHelper.getInstance().addFaceTemplate(mavenProject, log, templateName, inserts);
         } catch (IOException e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(), e);
             throw new MojoExecutionException(e);
         }
     }

@@ -15,8 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.JakartaEeUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
+import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -110,8 +110,7 @@ public class AddFacesMojo extends AbstractMojo {
             log.debug("Checking Welcome Pages configuration");
             var currentPath = mavenProject.getFile().toPath().getParent();
 
-            var jakartaEeUtil = JakartaEeUtil.getInstance();
-            jakartaEeUtil.addWelcomePages(currentPath, welcomeFile, log);
+            JakartaEeHelper.getInstance().addWelcomePages(currentPath, welcomeFile, log);
         } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Welcome Pages", ex);
@@ -123,8 +122,7 @@ public class AddFacesMojo extends AbstractMojo {
             log.debug("Checking Jakarta Faces Declaration");
             var currentPath = mavenProject.getFile().toPath().getParent();
 
-            var jakartaEeUtil = JakartaEeUtil.getInstance();
-            jakartaEeUtil.addJakartaFacesServletDeclaration(currentPath, urlPattern, log);
+            JakartaEeHelper.getInstance().addJakartaFacesServletDeclaration(currentPath, urlPattern, log);
         } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Jakarta Faces Servlet Declaration", ex);
@@ -135,10 +133,10 @@ public class AddFacesMojo extends AbstractMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Faces dependency");
         try {
-            var fullProject = MavenProjectUtil.getInstance()
-                                              .getFullProject(mavenSession, projectBuilder, mavenProject);
+            var fullProject = MavenProjectHelper.getInstance()
+                                                .getFullProject(mavenSession, projectBuilder, mavenProject);
 
-            var jakartaEeUtil = JakartaEeUtil.getInstance();
+            var jakartaEeUtil = JakartaEeHelper.getInstance();
             if (!jakartaEeUtil.hasJakartaFacesDependency(fullProject, log)) {
                 jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
             }
