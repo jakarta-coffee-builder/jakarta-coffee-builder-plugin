@@ -19,6 +19,7 @@ import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreato
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
 import jakarta.json.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -198,7 +199,7 @@ public class JakartaEeHelper {
      */
     public void createPersistenceXml(Path currentPath, Log log, String jakartaEeVersion, String persistenceUnitName) {
         var persistenceXmlUtil = PersistenceXmlHelper.getInstance();
-        persistenceXmlUtil.createPersistenceXml(currentPath, log, jakartaEeVersion, persistenceUnitName)
+        persistenceXmlUtil.createPersistenceXml(currentPath, log, persistenceUnitName)
                           .ifPresent(document -> persistenceXmlUtil.savePersistenceXml(currentPath, log, document));
     }
 
@@ -224,7 +225,6 @@ public class JakartaEeHelper {
                                     dataSourceCreator -> {
                                         try {
                                             dataSourceCreator.coordinatesJdbcDriver(coordinatesJdbcDriver)
-                                                             .persistenceUnit(persistenceUnit)
                                                              .dataSourceParameters(json)
                                                              .build();
                                         } catch (IOException e) {
@@ -232,6 +232,12 @@ public class JakartaEeHelper {
                                             throw new RuntimeException(e);
                                         }
                                     });
+        if (StringUtils.isNotBlank(persistenceUnit)) {
+            var currentPath = mavenProject.getFile().toPath().getParent();
+            PersistenceXmlHelper.getInstance()
+                                .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
+                                    json.getString("name"));
+        }
     }
 
     private static class JakartaEeUtilHolder {

@@ -10,7 +10,6 @@ public abstract class DataSourceCreator {
     protected final MavenProject mavenProject;
     protected final Log log;
     protected String coordinatesJdbcDriver;
-    protected String persistenceUnit;
     protected JsonObject dataSourceParameters;
 
     public DataSourceCreator(MavenProject mavenProject, Log log) {
@@ -23,10 +22,6 @@ public abstract class DataSourceCreator {
         return this;
     }
 
-    public DataSourceCreator persistenceUnit(String persistenceUnit) {
-        this.persistenceUnit = persistenceUnit;
-        return this;
-    }
 
     public DataSourceCreator dataSourceParameters(JsonObject dataSourceParameters) {
         this.dataSourceParameters = dataSourceParameters;

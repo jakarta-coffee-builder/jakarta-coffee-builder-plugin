@@ -42,12 +42,10 @@ public class PersistenceXmlHelper {
      *
      * @param currentPath         the current path where the `persistence.xml` will be created
      * @param log                 the logger to use for logging messages
-     * @param jakartaEeVersion    the Jakarta EE version to use
      * @param persistenceUnitName the name of the persistence unit
      * @return an `Optional` containing the created `Document`, or an empty `Optional` if the document could not be created
      */
-    public Optional<Document> createPersistenceXml(Path currentPath, Log log, String jakartaEeVersion,
-                                                   String persistenceUnitName) {
+    public Optional<Document> createPersistenceXml(Path currentPath, Log log, String persistenceUnitName) {
         var xmlUtil = XmlUtil.getInstance();
         var xmlPath = getPersistencePath(currentPath);
         return xmlUtil.getDocument(log, xmlPath, document -> {
@@ -82,6 +80,31 @@ public class PersistenceXmlHelper {
                           .resolve("resources")
                           .resolve("META-INF")
                           .resolve("persistence.xml");
+    }
+
+    /**
+     * Adds a data source to the `persistence.xml` file.
+     *
+     * @param currentPath     the current path where the `persistence.xml` is located
+     * @param log             the logger to use for logging messages
+     * @param persistenceUnit the name of the persistence unit to which the data source will be added
+     * @param name            the name of the data source to be added
+     */
+    public void addDataSourceToPersistenceXml(Path currentPath, Log log, String persistenceUnit, String name) {
+        createPersistenceXml(currentPath, log, persistenceUnit)
+            .ifPresent(document -> {
+                log.info("xml:%s".formatted(document.getDocumentElement().getTextContent()));
+                var xmlUtil = XmlUtil.getInstance();
+                xmlUtil.findElementsStream(document, log,
+//                           "//persistence-unit"
+                           "//persistence-unit[@name='%s' and not(jta-data-source/text()='%s')]"
+                               .formatted(persistenceUnit, name))
+                       .findFirst()
+                       .ifPresent(element -> {
+                           xmlUtil.addElement(element, "jta-data-source").setTextContent(name);
+                           savePersistenceXml(currentPath, log, document);
+                       });
+            });
     }
 
     private static class PersistenceXmlUtilHolder {
