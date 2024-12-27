@@ -84,7 +84,6 @@ public class XmlUtil {
     private XmlUtil() {
         try {
             var dbFactory = DocumentBuilderFactory.newInstance();
-            dbFactory.setNamespaceAware(true);
             this.dBuilder = dbFactory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);

@@ -39,12 +39,12 @@ public class NamespaceContextMap implements NamespaceContext {
 
     @Override
     public String getPrefix(String namespaceURI) {
-        for (Map.Entry<String, String> entry : PREF_MAP.entrySet()) {
-            if (entry.getValue().equals(namespaceURI)) {
-                return entry.getKey();
-            }
-        }
-        return null;
+        return PREF_MAP.entrySet()
+                       .stream()
+                       .filter(entry -> entry.getValue().equals(namespaceURI))
+                       .findFirst()
+                       .map(Map.Entry::getKey)
+                       .orElse(null);
     }
 
     @Override

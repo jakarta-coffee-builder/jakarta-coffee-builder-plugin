@@ -74,7 +74,7 @@ public class PersistenceXmlHelper {
         XmlUtil.getInstance().saveDocument(document, log, getPersistencePath(currentPath));
     }
 
-    private Path getPersistencePath(Path currentPath) {
+   protected Path getPersistencePath(Path currentPath) {
         return currentPath.resolve("src")
                           .resolve("main")
                           .resolve("resources")
@@ -93,10 +93,8 @@ public class PersistenceXmlHelper {
     public void addDataSourceToPersistenceXml(Path currentPath, Log log, String persistenceUnit, String name) {
         createPersistenceXml(currentPath, log, persistenceUnit)
             .ifPresent(document -> {
-                log.info("xml:%s".formatted(document.getDocumentElement().getTextContent()));
                 var xmlUtil = XmlUtil.getInstance();
                 xmlUtil.findElementsStream(document, log,
-//                           "//persistence-unit"
                            "//persistence-unit[@name='%s' and not(jta-data-source/text()='%s')]"
                                .formatted(persistenceUnit, name))
                        .findFirst()
