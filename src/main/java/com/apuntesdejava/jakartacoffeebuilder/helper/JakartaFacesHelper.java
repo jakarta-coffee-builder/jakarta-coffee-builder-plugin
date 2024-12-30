@@ -70,7 +70,7 @@ public class JakartaFacesHelper {
                             Log log,
                             String pageName,
                             boolean createManagedBean) throws IOException {
-        var beanClassName = StringsUtil.getInstance().toPascalCase(pageName) + "Bean";
+        var beanClassName = StringsUtil.toPascalCase(pageName) + "Bean";
         createXhtmlFile(mavenProject, log, pageName).ifPresent(xhtml -> {
             var xmlUtil = XmlUtil.getInstance();
             var facePage = xmlUtil.getDocument(log, xhtml, (documentBuilder) -> {
@@ -108,7 +108,7 @@ public class JakartaFacesHelper {
     public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
         log.debug("Creating managed bean for " + pageName);
         var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".managedbean";
-        var className = StringsUtil.getInstance().toPascalCase(pageName) + "Bean";
+        var className = StringsUtil.toPascalCase(pageName) + "Bean";
         var managedBean = PathsUtil.getJavaPath(mavenProject, "managedbean", className);
         var annotationsClasses = Map.of(
             "jakarta.enterprise.context.Dependent", Map.of(),
@@ -143,8 +143,7 @@ public class JakartaFacesHelper {
                                                String pageName,
                                                String templateFacelet,
                                                boolean createManagedBean) throws IOException {
-        var stringsUtil = StringsUtil.getInstance();
-        var beanClassName = stringsUtil.toPascalCase(pageName) + "Bean";
+        var beanClassName = StringsUtil.toPascalCase(pageName) + "Bean";
 
         createXhtmlFile(mavenProject, log, pageName).ifPresent(xhtml -> {
 
@@ -164,7 +163,7 @@ public class JakartaFacesHelper {
                 htmlElem.setAttribute("template", templateFacelet);
 
                 var template = xmlUtil.getDocument(log,
-                    xhtml.getParent().resolve(stringsUtil.removeCharacterRoot(templateFacelet))).orElseThrow();
+                    xhtml.getParent().resolve(StringsUtil.removeCharacterRoot(templateFacelet))).orElseThrow();
 
                 xmlUtil.findElementsStream(template, log, "//ui:insert",
                            Map.of("ui", FACES_NS_UI))

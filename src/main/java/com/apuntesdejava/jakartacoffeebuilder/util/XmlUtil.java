@@ -149,12 +149,12 @@ public class XmlUtil {
      * @param nodeName   the name of the new element to be added
      * @param postCreate a consumer to perform additional operations on the new element after creation
      */
-    public void addElement(Document parent, Log log, String parentNode,
-                           String nodeName, Consumer<Element> postCreate) {
+    public Element addElement(Document parent, Log log, String parentNode,
+                              String nodeName, Consumer<Element> postCreate) {
         var nodeList = findElements(parent, log, parentNode);
         if (nodeList.getLength() == 0) {
             log.error("Parent node not found: " + parentNode);
-            return;
+            return null;
         }
         var node = nodeList.item(0);
         var element = parent.createElement(nodeName);
@@ -162,6 +162,21 @@ public class XmlUtil {
             postCreate.accept(element);
         }
         node.appendChild(element);
+        return element;
+    }
+
+    /**
+     * Adds a new element to the specified parent node in the given XML document.
+     *
+     * @param parent     the XML document to which the new element will be added
+     * @param log        the logger to use for logging messages
+     * @param parentNode the XPath expression to locate the parent node
+     * @param nodeName   the name of the new element to be added
+     * @return the newly created element
+     */
+    public Element addElement(Document parent, Log log, String parentNode,
+                              String nodeName) {
+        return addElement(parent, log, parentNode, nodeName, null);
     }
 
     /**

@@ -28,8 +28,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  */
 public class StringsUtil {
 
-    private StringsUtil() {
-    }
 
     /**
      * Removes the root character (e.g., a leading forward slash) from the beginning of the
@@ -38,7 +36,7 @@ public class StringsUtil {
      * @param path the input string path to be processed; it may or may not start with a leading slash
      * @return the path string without the leading slash if it was present; otherwise, the original string
      */
-    public String removeCharacterRoot(String path) {
+    public static String removeCharacterRoot(String path) {
         if (StringUtils.startsWith(path, SLASH))
             return StringUtils.removeStart(path, SLASH);
         return path;
@@ -53,7 +51,7 @@ public class StringsUtil {
      * @return the string converted to PascalCase, or an empty string if the input is null, blank,
      * or contains no alphanumeric characters
      */
-    public String toPascalCase(String string) {
+    public static String toPascalCase(String string) {
         if (StringUtils.isBlank(string))
             return EMPTY;
 
@@ -64,12 +62,16 @@ public class StringsUtil {
                      .collect(Collectors.joining());
     }
 
-    public static StringsUtil getInstance() {
-        return StringsUtilHolder.INSTANCE;
+    /**
+     * Converts a camelCase string to param-case (kebab-case).
+     *
+     * @param camelCase the input string in camelCase format
+     * @return the string converted to param-case format
+     */
+    public static String camelCaseToParamCase(String camelCase) {
+        return StringUtils.join(
+            StringUtils.splitByCharacterTypeCamelCase(camelCase), '-'
+        ).toLowerCase();
     }
 
-    private static class StringsUtilHolder {
-
-        private static final StringsUtil INSTANCE = new StringsUtil();
-    }
 }

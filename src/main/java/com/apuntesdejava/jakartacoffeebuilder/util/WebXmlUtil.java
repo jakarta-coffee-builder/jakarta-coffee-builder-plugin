@@ -15,10 +15,13 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_WEBAPP_FACES_SERVLET;
@@ -136,6 +139,33 @@ public class WebXmlUtil {
             xmlUtil.addElement(document, log, "//web-app", "welcome-file-list",
                 (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
         }
+    }
+
+    /**
+     * Adds a data source configuration to the `web.xml` of the given Maven project.
+     *
+     * @param document   the XML document to which the data source configuration will be added
+     * @param log        the logger to use for logging messages
+     * @param properties a map containing the data source properties, where the key is the property name
+     *                   and the value is either a single value or a collection of values
+     */
+    public void addDataSource(Document document, Log log, Map<String, Object> properties) {
+        var xmlUtil = XmlUtil.getInstance();
+        var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
+        properties.forEach((key, value) -> {
+            if (value instanceof Collection<?> collection) {
+                collection.forEach(item -> {
+                    var propertyElem = xmlUtil.addElement(datasourceElem, "property");
+                    var values = StringUtils.split(item.toString(), "=");
+                    xmlUtil.addElement(propertyElem, "name", values[0]);
+                    xmlUtil.addElement(propertyElem, "value", values[1]);
+                });
+            } else {
+                var newKey = StringsUtil.camelCaseToParamCase(key);
+                xmlUtil.addElement(datasourceElem, newKey, value.toString());
+            }
+        });
+
     }
 
     private static class WebUtilHolder {
