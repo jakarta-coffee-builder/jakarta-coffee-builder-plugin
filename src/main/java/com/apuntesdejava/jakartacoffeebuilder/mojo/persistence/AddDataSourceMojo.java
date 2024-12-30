@@ -52,7 +52,7 @@ public class AddDataSourceMojo extends AbstractMojo {
     @Parameter(
         property = "coordinates-jdbc",
         required = true,
-        defaultValue = "com.h2database:h2:2.3.232"
+        defaultValue = "com.h2database:h2"
     )
     private String coordinatesJdbcDriver;
 

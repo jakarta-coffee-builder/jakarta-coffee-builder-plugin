@@ -72,11 +72,10 @@ public class JakartaEeHelper {
     public void addJakartaCdiDependency(MavenProject mavenProject,
                                         Log log,
                                         String jakartaEeVersion) throws MojoExecutionException {
-        var pomUtil = PomUtil.getInstance();
         var jakartaCdiVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_ENTERPRISE_CDI_API);
-        pomUtil.addDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API, jakartaCdiVersion,
+        PomUtil.addDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API, jakartaCdiVersion,
             PROVIDED_SCOPE);
-        pomUtil.saveMavenProject(mavenProject, log);
+        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     /**
@@ -90,10 +89,9 @@ public class JakartaEeHelper {
     public void addJakartaFacesDependency(MavenProject mavenProject,
                                           Log log,
                                           String jakartaEeVersion) throws MojoExecutionException {
-        var pomUtil = PomUtil.getInstance();
         var jakartaFacesVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_FACES_API);
-        pomUtil.addDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API, jakartaFacesVersion, PROVIDED_SCOPE);
-        pomUtil.saveMavenProject(mavenProject, log);
+        PomUtil.addDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API, jakartaFacesVersion, PROVIDED_SCOPE);
+        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     /**
@@ -104,7 +102,7 @@ public class JakartaEeHelper {
      * @return true if the project has a Jakarta Faces dependency, false otherwise
      */
     public boolean hasJakartaFacesDependency(MavenProject mavenProject, Log log) {
-        return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
+        return PomUtil.existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
     }
 
     /**
@@ -115,8 +113,7 @@ public class JakartaEeHelper {
      * @return true if the project has a Jakarta CDI dependency, false otherwise
      */
     public boolean hasNotJakartaCdiDependency(MavenProject mavenProject, Log log) {
-        return !PomUtil.getInstance()
-                       .existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
+        return PomUtil.existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
     }
 
     /**
@@ -168,7 +165,7 @@ public class JakartaEeHelper {
      * @return true if the project has a Jakarta Persistence dependency, false otherwise
      */
     public boolean hasJakartaPersistenceDependency(MavenProject mavenProject, Log log) {
-        return PomUtil.getInstance().existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
+        return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
     }
 
     /**
@@ -182,11 +179,10 @@ public class JakartaEeHelper {
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) throws MojoExecutionException {
-        var pomUtil = PomUtil.getInstance();
         var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_PERSISTENCE_API);
-        pomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
+        PomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
             jakartaPersistenceVersion, PROVIDED_SCOPE);
-        pomUtil.saveMavenProject(mavenProject, log);
+        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     /**
@@ -236,6 +232,9 @@ public class JakartaEeHelper {
             PersistenceXmlHelper.getInstance()
                                 .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
                                     json.getString("name"));
+        }
+        if (StringUtils.isNotBlank(coordinatesJdbcDriver)) {
+            PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
         }
     }
 
