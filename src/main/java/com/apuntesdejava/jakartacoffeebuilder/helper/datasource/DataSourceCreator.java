@@ -32,7 +32,6 @@ import java.util.Optional;
 public abstract class DataSourceCreator {
     protected final MavenProject mavenProject;
     protected final Log log;
-    protected String coordinatesJdbcDriver;
     protected JsonObject dataSourceParameters;
 
     /**
@@ -44,17 +43,6 @@ public abstract class DataSourceCreator {
     public DataSourceCreator(MavenProject mavenProject, Log log) {
         this.log = log;
         this.mavenProject = mavenProject;
-    }
-
-    /**
-     * Sets the coordinates for the JDBC driver.
-     *
-     * @param coordinatesJdbcDriver the coordinates of the JDBC driver
-     * @return the current instance of DataSourceCreator
-     */
-    public DataSourceCreator coordinatesJdbcDriver(String coordinatesJdbcDriver) {
-        this.coordinatesJdbcDriver = coordinatesJdbcDriver;
-        return this;
     }
 
     /**

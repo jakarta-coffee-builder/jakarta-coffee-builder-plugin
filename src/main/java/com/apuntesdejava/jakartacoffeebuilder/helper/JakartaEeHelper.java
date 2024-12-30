@@ -224,8 +224,7 @@ public class JakartaEeHelper {
                                 .ifPresent(
                                     dataSourceCreator -> {
                                         try {
-                                            dataSourceCreator.coordinatesJdbcDriver(coordinatesJdbcDriver)
-                                                             .dataSourceParameters(json)
+                                            dataSourceCreator.dataSourceParameters(json)
                                                              .build();
                                         } catch (IOException e) {
                                             log.error("Error creating datasource", e);
