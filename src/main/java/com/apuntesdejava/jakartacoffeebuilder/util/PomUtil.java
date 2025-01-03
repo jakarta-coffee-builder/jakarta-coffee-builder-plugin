@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import jakarta.json.Json;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -24,6 +25,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Utility class for handling Maven POM file operations.
@@ -51,13 +53,6 @@ import java.io.IOException;
 public class PomUtil {
 
 
-    public static PomUtil getInstance() {
-        return PomUtilHolder.INSTANCE;
-    }
-
-    private PomUtil() {
-    }
-
     /**
      * Adds a dependency to the given Maven project.
      *
@@ -68,21 +63,65 @@ public class PomUtil {
      * @param version      the version of the dependency
      * @param scope        the scope of the dependency
      */
-    public void addDependency(MavenProject mavenProject,
-                              Log log,
-                              String groupId,
-                              String artifactId,
-                              String version,
-                              String scope) {
-        var dependency = new Dependency();
-        dependency.setArtifactId(artifactId);
-        dependency.setGroupId(groupId);
-        dependency.setVersion(version);
-        if (StringUtils.isNotBlank(scope)) {
-            dependency.setScope(scope);
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version,
+                                     String scope) {
+        var model = mavenProject.getOriginalModel();
+        if (model.getDependencies().stream()
+                 .filter(dependency -> StringUtils.equals(dependency.getGroupId(), groupId) &&
+                     StringUtils.equals(dependency.getArtifactId(), artifactId))
+                 .findFirst().isEmpty()) {
+            var dependency = new Dependency();
+            dependency.setArtifactId(artifactId);
+            dependency.setGroupId(groupId);
+            dependency.setVersion(version);
+            if (StringUtils.isNotBlank(scope)) {
+                dependency.setScope(scope);
+            }
+            log.debug("adding dependency %s".formatted(dependency));
+            model.addDependency(dependency);
         }
-        log.debug("adding dependency %s".formatted(dependency));
-        mavenProject.getOriginalModel().addDependency(dependency);
+    }
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version) {
+        addDependency(mavenProject, log, groupId, artifactId, version, null);
+    }
+
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String coordinates) {
+        try {
+            var coordinatesSplit = StringUtils.split(coordinates, ":");
+            var groupId = coordinatesSplit[0];
+            var artifactId = coordinatesSplit[1];
+            var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : getLastVersion(groupId, artifactId);
+            log.debug("adding dependency %s".formatted(coordinates));
+            log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId, version));
+            addDependency(mavenProject, log, groupId, artifactId, version);
+        } catch (IOException ex) {
+            log.error("Error getting last version of %s".formatted(coordinates), ex);
+        }
+    }
+
+    private static String getLastVersion(String groupId, String artifactId) throws IOException {
+        var params = "p:jar AND a:%s AND g:%s".formatted(artifactId, groupId);
+        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select", responseString -> {
+            try (var reader = Json.createReader(new StringReader(responseString))) {
+                return reader.readObject();
+            }
+        }, new HttpUtil.Parameter("q", params));
+        return response.getJsonObject("response")
+                       .getJsonArray("docs")
+                       .getJsonObject(0)
+                       .getString("latestVersion");
     }
 
     /**
@@ -94,7 +133,7 @@ public class PomUtil {
      * @param artifactId   the artifact ID of the dependency to check
      * @return true if the dependency exists, false otherwise
      */
-    public boolean existsDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
+    public static boolean existsDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
         return mavenProject.getArtifacts().stream().
                            anyMatch(artifact -> StringUtils.
@@ -110,7 +149,7 @@ public class PomUtil {
      * @param log          the logger to use for logging messages
      * @throws MojoExecutionException if an error occurs while saving the POM file
      */
-    public void saveMavenProject(MavenProject mavenProject, Log log) throws MojoExecutionException {
+    public static void saveMavenProject(MavenProject mavenProject, Log log) throws MojoExecutionException {
         try (var writer = new FileWriter(mavenProject.getFile())) {
             var mavenWriter = new MavenXpp3Writer();
             mavenWriter.write(writer, mavenProject.getOriginalModel());
@@ -121,8 +160,4 @@ public class PomUtil {
     }
 
 
-    private static class PomUtilHolder {
-
-        private static final PomUtil INSTANCE = new PomUtil();
-    }
 }
