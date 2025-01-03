@@ -16,7 +16,6 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -70,16 +69,31 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      String scope) {
-        var dependency = new Dependency();
-        dependency.setArtifactId(artifactId);
-        dependency.setGroupId(groupId);
-        dependency.setVersion(version);
-        if (StringUtils.isNotBlank(scope)) {
-            dependency.setScope(scope);
+        var model = mavenProject.getOriginalModel();
+        if (model.getDependencies().stream()
+                 .filter(dependency -> StringUtils.equals(dependency.getGroupId(), groupId) &&
+                     StringUtils.equals(dependency.getArtifactId(), artifactId))
+                 .findFirst().isEmpty()) {
+            var dependency = new Dependency();
+            dependency.setArtifactId(artifactId);
+            dependency.setGroupId(groupId);
+            dependency.setVersion(version);
+            if (StringUtils.isNotBlank(scope)) {
+                dependency.setScope(scope);
+            }
+            log.debug("adding dependency %s".formatted(dependency));
+            model.addDependency(dependency);
         }
-        log.debug("adding dependency %s".formatted(dependency));
-        mavenProject.getOriginalModel().addDependency(dependency);
     }
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version) {
+        addDependency(mavenProject, log, groupId, artifactId, version, null);
+    }
+
 
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -91,17 +105,19 @@ public class PomUtil {
             var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : getLastVersion(groupId, artifactId);
             log.debug("adding dependency %s".formatted(coordinates));
             log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId, version));
+            addDependency(mavenProject, log, groupId, artifactId, version);
         } catch (IOException ex) {
             log.error("Error getting last version of %s".formatted(coordinates), ex);
         }
     }
 
     private static String getLastVersion(String groupId, String artifactId) throws IOException {
-        var response= HttpUtil.getContent("https://search.maven.org/solrsearch/select", responseString -> {
+        var params = "p:jar AND a:%s AND g:%s".formatted(artifactId, groupId);
+        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select", responseString -> {
             try (var reader = Json.createReader(new StringReader(responseString))) {
                 return reader.readObject();
             }
-        }, new HttpUtil.Parameter("q", groupId), new HttpUtil.Parameter("a", artifactId));
+        }, new HttpUtil.Parameter("q", params));
         return response.getJsonObject("response")
                        .getJsonArray("docs")
                        .getJsonObject(0)

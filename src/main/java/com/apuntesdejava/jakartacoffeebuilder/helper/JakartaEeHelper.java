@@ -214,7 +214,7 @@ public class JakartaEeHelper {
                               String declare,
                               String coordinatesJdbcDriver,
                               String persistenceUnit,
-                              JsonObject json) {
+                              JsonObject json) throws MojoExecutionException {
         log.debug("Datasource:%s".formatted(json));
         DataSourceCreatorFactory.getDataSourceCreator(mavenProject, log, declare)
                                 .ifPresent(
@@ -235,6 +235,7 @@ public class JakartaEeHelper {
         }
         if (StringUtils.isNotBlank(coordinatesJdbcDriver)) {
             PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
+            PomUtil.saveMavenProject(mavenProject, log);
         }
     }
 
