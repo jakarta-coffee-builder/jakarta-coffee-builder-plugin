@@ -17,7 +17,9 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.JsonUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.maven.plugin.logging.Log;
@@ -25,10 +27,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
@@ -44,10 +43,12 @@ public class JakartaPersistenceHelper {
 
     public void addEntities(MavenProject mavenProject, Log log, Path jsonPath) throws IOException {
         var jsonContent = JsonUtil.readJsonValue(jsonPath);
-        if (jsonContent.getValueType() == JsonValue.ValueType.ARRAY)
-            jsonContent.asJsonArray().stream()
-                       .map(JsonValue::asJsonObject)
-                       .forEach(entity -> addEntity(mavenProject, log, entity));
+        if (jsonContent.getValueType() == JsonValue.ValueType.ARRAY) jsonContent.asJsonArray()
+                                                                                .stream()
+                                                                                .map(JsonValue::asJsonObject)
+                                                                                .forEach(
+                                                                                    entity -> addEntity(mavenProject,
+                                                                                        log, entity));
         else if (jsonContent.getValueType() == JsonValue.ValueType.OBJECT)
             addEntity(mavenProject, log, jsonContent.asJsonObject());
     }
@@ -60,47 +61,71 @@ public class JakartaPersistenceHelper {
             var entityPath = PathsUtil.getJavaPath(mavenProject, "entity", entityName);
 
             var fieldsJson = entity.getJsonArray("fields");
-            var fields = fieldsJson.stream()
-                                   .map(JsonValue::asJsonObject)
-                                   .map(field -> {
-                                       Map<String, Object> item = new LinkedHashMap<>();
-                                       item.put("name", field.getString("name"));
-                                       item.put("type", field.getString("type"));
-                                       if (field.containsKey("column")) {
-                                           item.put("Column", getMapFromJsonObject(field.getJsonObject("column")));
-                                       }
-                                       if (field.containsKey("isId")) {
-                                           item.put("isId", field.getBoolean("isId", false));
-                                       }
-                                       return item;
-                                   })
-                                   .toList();
-            Collection<String> importsList = new TreeSet<>();
-            fields.stream().map(Map.class::cast)
-                  .filter(entry -> entry.containsKey("Column"))
-                  .findFirst().ifPresent(entry -> importsList.add("jakarta.persistence.Column"));
+            var fields = createFieldsDefinitions(fieldsJson);
+            Collection<String> importsList = createImportsCollection(fieldsJson);
 
             TemplateUtil.getInstance()
                         .createEntityFile(log,
-                            Map.of("packageName", packageDefinition,
-                                "className", entityName,
-                                "importsList", importsList,
-                                "fields", fields),
-                            entityPath);
+                            Map.of("packageName", packageDefinition, "className", entityName, "importsList",
+                                importsList, "fields", fields), entityPath);
         } catch (Exception ex) {
             log.error("Error adding entity: " + entity.getString("name"), ex);
         }
     }
 
-    private Map<String, Object> getMapFromJsonObject(JsonObject column) {
-        return column.entrySet().stream()
+    private Collection<String> createImportsCollection(JsonArray fieldsJson) {
+        return fieldsJson.stream()
+                         .map(JsonValue::asJsonObject)
+                         .map(JsonObject::keySet)
+                         .flatMap(Set::stream)
+                         .map(key -> StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS, key))
+                         .filter(Objects::nonNull)
+                         .map(key -> "jakarta.persistence." + key)
+                         .toList();
+    }
+
+    private static Map<String, Object> getMapFromJsonObject(JsonObject column) {
+        return column.entrySet()
+                     .stream()
                      .collect(LinkedHashMap::new,
-                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())),
-                         Map::putAll);
+                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
     }
 
     private static class JakartaPersistenceUtilHolder {
 
         private static final JakartaPersistenceHelper INSTANCE = new JakartaPersistenceHelper();
     }
+
+    private static String getKeyName(Set<String> keys, String otherName) {
+        return keys.stream().filter(key -> key.equalsIgnoreCase(otherName)).findFirst().orElse(null);
+    }
+
+    private static List<Map<String, Object>> createFieldsDefinitions(JsonArray fieldsJson) {
+        return fieldsJson.stream().map(JsonValue::asJsonObject).map(field -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("name", field.getString("name"));
+            item.put("type", field.getString("type"));
+            var keys = field.keySet();
+            if (StringsUtil.containsAnyIgnoreCase(SEARCH_ANNOTATIONS, keys)) {
+                List<String> annotationsList = StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS, keys);
+                List<Map<String, Object>> annotations = annotationsList.stream().map(annotationName -> {
+                    Map<String, Object> annotationMap = new LinkedHashMap<>();
+                    annotationMap.put("name", annotationName);
+                    var aField = field.get(getKeyName(keys, annotationName));
+                    if (aField.getValueType() == JsonValue.ValueType.OBJECT) {
+                        annotationMap.put("description", getMapFromJsonObject(aField.asJsonObject()));
+                    }
+                    return annotationMap;
+                }).toList();
+                item.put("annotations", annotations);
+            }
+            if (field.containsKey("isId")) {
+                item.put("isId", field.getBoolean("isId", false));
+            }
+            return item;
+        }).toList();
+    }
+
+
+    private static final Set<String> SEARCH_ANNOTATIONS = Set.of("Column", "JoinColumn", "ManyToOne");
 }

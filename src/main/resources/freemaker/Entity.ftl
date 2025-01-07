@@ -20,18 +20,20 @@ public class ${className} {
         <#if field.isId?? && field.isId?string('y','n') == 'y'>
     @Id
         </#if>
-        <#if field.Column??>
-    @Column(
-            <#list field.Column as key,value>
-                <#if value?is_string>
+        <#if field.annotations??>
+            <#list field.annotations as annotation>
+    @${annotation.name}<#if annotation.description??> (
+                <#list annotation.description as key,value>
+                    <#if value?is_string>
         ${key} = "${value}"<#if key_has_next>,</#if>
-                <#elseif value?is_number>
+                    <#elseif value?is_number>
         ${key} = ${value?string("0")}<#if key_has_next>,</#if>
-                <#elseif value?is_boolean>
+                    <#elseif value?is_boolean>
         ${key} = ${value?string("true","false")}<#if key_has_next>,</#if>
-        </#if>
+            </#if>
+                </#list>
+    )</#if>
             </#list>
-    )
         </#if>
     private ${field.type} ${field.name};
 

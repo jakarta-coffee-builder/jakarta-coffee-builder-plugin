@@ -33,7 +33,12 @@
       },
       {
         "name": "coffee",
-        "type": "Coffee"
+        "type": "Coffee",
+        "manyToOne": true,
+        "joinColumn": {
+          "name": "coffee_id",
+          "nullable": false
+        }
       },
       {
         "name": "quantity",

@@ -18,6 +18,8 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.SLASH;
@@ -74,4 +76,22 @@ public class StringsUtil {
         ).toLowerCase();
     }
 
+    public static boolean containsIgnoreCase(Set<String> set, String value) {
+        return set.stream().anyMatch(str -> str.equalsIgnoreCase(value));
+    }
+
+    public static boolean containsAnyIgnoreCase(Set<String> set, Set<String> search) {
+        return set.stream().anyMatch(str -> containsIgnoreCase(search, str));
+    }
+
+    public static List<String> findIgnoreCase(Set<String> searchAnnotations, Set<String> strings) {
+        return searchAnnotations.stream().filter(str -> containsIgnoreCase(strings, str)).toList();
+    }
+
+    public static String findIgnoreCase(Set<String> searchAnnotations, String search) {
+        return searchAnnotations.stream()
+                                .filter(item -> StringUtils.equalsIgnoreCase(item, search))
+                                .findFirst()
+                                .orElse(null);
+    }
 }
