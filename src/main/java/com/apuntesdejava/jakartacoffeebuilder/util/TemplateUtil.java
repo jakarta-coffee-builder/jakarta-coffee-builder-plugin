@@ -37,7 +37,7 @@ public class TemplateUtil {
     private final Configuration configuration;
 
     private TemplateUtil() {
-        this.configuration = new Configuration(Configuration.VERSION_2_3_33);
+        this.configuration = new Configuration(Configuration.VERSION_2_3_34);
         configuration.setClassForTemplateLoading(TemplateUtil.class, "/freemaker");
         configuration.setDefaultEncoding("UTF-8");
     }
@@ -55,7 +55,18 @@ public class TemplateUtil {
      * @throws IOException if an I/O error occurs during file writing
      */
     public void createJavaBeanFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
-        var template = configuration.getTemplate("JavaBean.ftl");
+        createJavaFile(log, data, javaPath, "JavaBean.ftl");
+    }
+
+    public void createEntityFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
+        createJavaFile(log, data, javaPath, "Entity.ftl");
+    }
+
+    private void createJavaFile(Log log,
+                                Map<String, Object> data,
+                                Path javaPath,
+                                String templateName) throws IOException {
+        var template = configuration.getTemplate(templateName);
         try (var writer = new FileWriter(javaPath.toFile())) {
             template.process(data, writer);
         } catch (TemplateException e) {

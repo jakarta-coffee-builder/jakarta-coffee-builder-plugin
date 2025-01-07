@@ -1,4 +1,4 @@
- package ${packageName};
+package ${packageName};
 
 <#if (importsList??) && (importsList?size > 0)>
 <#list importsList as importItem>

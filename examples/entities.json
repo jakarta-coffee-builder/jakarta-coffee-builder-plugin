@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Coffee",
+    "fields": [
+      {
+        "name": "id",
+        "type": "Long",
+        "isId": true
+      },
+      {
+        "name": "name",
+        "type": "String"
+      },
+      {
+        "name": "price",
+        "type": "Double"
+      }
+    ]
+  },
+  {
+    "name": "Order",
+    "fields": [
+      {
+        "name": "id",
+        "type": "Long",
+        "isId": true
+      },
+      {
+        "name": "coffee",
+        "type": "Coffee"
+      },
+      {
+        "name": "quantity",
+        "type": "Integer"
+      }
+    ]
+  }
+]
