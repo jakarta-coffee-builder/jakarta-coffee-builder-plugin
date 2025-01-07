@@ -9,7 +9,13 @@
       },
       {
         "name": "name",
-        "type": "String"
+        "type": "String",
+        "column": {
+          "name": "coffee_name",
+          "length": 100,
+          "unique": true,
+          "nullable": false
+        }
       },
       {
         "name": "price",

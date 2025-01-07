@@ -25,8 +25,10 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
@@ -64,8 +66,8 @@ public class JakartaPersistenceHelper {
                                        Map<String, Object> item = new LinkedHashMap<>();
                                        item.put("name", field.getString("name"));
                                        item.put("type", field.getString("type"));
-                                       if (field.containsKey("length")) {
-                                           item.put("length", field.getInt("length"));
+                                       if (field.containsKey("column")) {
+                                           item.put("Column", getMapFromJsonObject(field.getJsonObject("column")));
                                        }
                                        if (field.containsKey("isId")) {
                                            item.put("isId", field.getBoolean("isId", false));
@@ -73,14 +75,28 @@ public class JakartaPersistenceHelper {
                                        return item;
                                    })
                                    .toList();
+            Collection<String> importsList = new TreeSet<>();
+            fields.stream().map(Map.class::cast)
+                  .filter(entry -> entry.containsKey("Column"))
+                  .findFirst().ifPresent(entry -> importsList.add("jakarta.persistence.Column"));
 
             TemplateUtil.getInstance()
                         .createEntityFile(log,
-                            Map.of("packageName", packageDefinition, "className", entityName, "fields", fields),
+                            Map.of("packageName", packageDefinition,
+                                "className", entityName,
+                                "importsList", importsList,
+                                "fields", fields),
                             entityPath);
         } catch (Exception ex) {
             log.error("Error adding entity: " + entity.getString("name"), ex);
         }
+    }
+
+    private Map<String, Object> getMapFromJsonObject(JsonObject column) {
+        return column.entrySet().stream()
+                     .collect(LinkedHashMap::new,
+                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())),
+                         Map::putAll);
     }
 
     private static class JakartaPersistenceUtilHolder {

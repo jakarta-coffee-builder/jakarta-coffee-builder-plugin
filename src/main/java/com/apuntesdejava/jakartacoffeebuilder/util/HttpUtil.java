@@ -41,7 +41,7 @@ public class HttpUtil {
         }
     }
 
-    public static record Parameter(String name, String value) {
+    public record Parameter(String name, String value) {
 
     }
 
