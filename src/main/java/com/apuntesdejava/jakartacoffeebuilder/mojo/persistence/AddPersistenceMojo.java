@@ -29,7 +29,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
@@ -43,7 +43,7 @@ public class AddPersistenceMojo extends AbstractMojo {
 
     @Parameter(
         property = "jakarta-ee-version",
-        defaultValue = JAKARTAEE_VERSION_10
+        defaultValue = JAKARTAEE_VERSION_11
     )
     private String jakartaEeVersion;
     @Component

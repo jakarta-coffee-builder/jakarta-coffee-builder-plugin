@@ -113,7 +113,7 @@ public class JakartaEeHelper {
      * @return true if the project has a Jakarta CDI dependency, false otherwise
      */
     public boolean hasNotJakartaCdiDependency(MavenProject mavenProject, Log log) {
-        return PomUtil.existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
+        return !PomUtil.existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
     }
 
     /**

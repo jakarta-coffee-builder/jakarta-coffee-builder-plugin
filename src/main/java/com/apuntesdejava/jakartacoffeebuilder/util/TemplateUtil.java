@@ -58,6 +58,14 @@ public class TemplateUtil {
         createJavaFile(log, data, javaPath, "JavaBean.ftl");
     }
 
+    /**
+     * Generates an Entity file using a template and writes it to the specified file path.
+     *
+     * @param log      the logger used to log messages and errors
+     * @param data     the data model map containing values to populate the Entity template
+     * @param javaPath the file path where the generated Entity file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
     public void createEntityFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
         createJavaFile(log, data, javaPath, "Entity.ftl");
     }
