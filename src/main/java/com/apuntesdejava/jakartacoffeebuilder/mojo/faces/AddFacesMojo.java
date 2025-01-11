@@ -31,7 +31,7 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
 /**
  * Mojo implementation for adding necessary Jakarta Faces configurations to a Maven project.
@@ -80,7 +80,7 @@ public class AddFacesMojo extends AbstractMojo {
 
     @Parameter(
         property = "jakarta-ee-version",
-        defaultValue = JAKARTAEE_VERSION_10
+        defaultValue = JAKARTAEE_VERSION_11
     )
     private String jakartaEeVersion;
 

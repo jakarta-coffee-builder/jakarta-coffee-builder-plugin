@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Objects;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class PersistenceXmlHelperTest {

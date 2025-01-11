@@ -64,6 +64,11 @@ public class Constants {
                 JAKARTA_FACES_API, "4.0.1",
                 JAKARTA_PERSISTENCE_API, "3.1.0",
                 JAKARTA_ENTERPRISE_CDI_API, "4.0.1"
+            ),
+            JAKARTAEE_VERSION_11, Map.of(
+                JAKARTA_FACES_API, "4.1.2",
+                JAKARTA_PERSISTENCE_API, "3.2.0",
+                JAKARTA_ENTERPRISE_CDI_API, "4.1.0"
             )
         );
 

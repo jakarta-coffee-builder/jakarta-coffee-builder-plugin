@@ -88,7 +88,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.33</version>
+            <version>2.3.34</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
@@ -101,12 +101,12 @@
             <version>5.4.1</version>
         </dependency>
 
-        <dependency>
+    <!--    <dependency>
             <groupId>org.apache.maven.plugin-testing</groupId>
             <artifactId>maven-plugin-testing-harness</artifactId>
             <version>3.3.0</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -119,6 +119,14 @@
             <version>5.11.4</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

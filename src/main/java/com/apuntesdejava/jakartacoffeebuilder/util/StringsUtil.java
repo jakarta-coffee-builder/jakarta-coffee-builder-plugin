@@ -18,13 +18,18 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.SLASH;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Utility class for string manipulation operations.
+ * <p>
+ * This class provides methods for processing and transforming strings, such as removing characters,
+ * converting to PascalCase, camelCase, and kebab-case, and checking for string matches.
  */
 public class StringsUtil {
 
@@ -74,4 +79,52 @@ public class StringsUtil {
         ).toLowerCase();
     }
 
+    /**
+     * Checks if the specified value is present in the given set, ignoring case differences.
+     *
+     * @param set   the set of strings to search within
+     * @param value the string value to be matched against the set
+     * @return true if the set contains the value, ignoring case; false otherwise
+     */
+    public static boolean containsIgnoreCase(Set<String> set, String value) {
+        return set.stream().anyMatch(str -> str.equalsIgnoreCase(value));
+    }
+
+    /**
+     * Checks if any string in the given set matches any string in the search set, ignoring case differences.
+     *
+     * @param set    the set of strings to search within
+     * @param search the set of strings to be matched against
+     * @return true if any string in the set matches any string in the search set, ignoring case; false otherwise
+     */
+    public static boolean containsAnyIgnoreCase(Set<String> set, Set<String> search) {
+        return set.stream().anyMatch(str -> containsIgnoreCase(search, str));
+    }
+
+    /**
+     * Finds and returns a list of strings from the searchAnnotations set that are present
+     * in the strings set, ignoring case differences.
+     *
+     * @param searchAnnotations the set of strings to search within
+     * @param strings           the set of strings to be matched against
+     * @return a list of strings from searchAnnotations that match any string in strings, ignoring case
+     */
+    public static Collection<String> findIgnoreCase(Set<String> searchAnnotations, Set<String> strings) {
+        return searchAnnotations.stream().filter(str -> containsIgnoreCase(strings, str)).collect(Collectors.toSet());
+    }
+
+    /**
+     * Finds and returns a list of strings from the searchAnnotations set that are present
+     * in the strings set, ignoring case differences.
+     *
+     * @param searchAnnotations the set of strings to search within
+     * @param search            the set of strings to be matched against
+     * @return a list of strings from searchAnnotations that match any string in strings, ignoring case
+     */
+    public static String findIgnoreCase(Set<String> searchAnnotations, String search) {
+        return searchAnnotations.stream()
+                                .filter(item -> StringUtils.equalsIgnoreCase(item, search))
+                                .findFirst()
+                                .orElse(null);
+    }
 }
