@@ -18,24 +18,18 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import java.util.Map;
 
 /**
- * The Constants class serves as a centralized repository for constant values
- * used throughout the application. These constants include string identifiers,
- * version numbers, servlet definitions, namespace identifiers, and other
- * fixed values that are shared among various components.
+ * The Constants class serves as a centralized repository for constant values used throughout the application. These
+ * constants include string identifiers, version numbers, servlet definitions, namespace identifiers, and other fixed
+ * values that are shared among various components.
  * <p>
- * The purpose of this class is to provide a consistent and reusable set of values
- * that can be referenced across the application, minimizing hardcoding and
- * potential duplication. Many constants are related to Jakarta EE specifications
+ * The purpose of this class is to provide a consistent and reusable set of values that can be referenced across the
+ * application, minimizing hardcoding and potential duplication. Many constants are related to Jakarta EE specifications
  * and versions.
  * <p>
- * Key constant groups include:
- * - Jakarta EE specifications and APIs, such as Jakarta Faces and CDI specifications.
- * - Supported Jakarta EE versions.
- * - Servlet and namespace definitions.
- * - XSLT file names for formatting.
+ * Key constant groups include: - Jakarta EE specifications and APIs, such as Jakarta Faces and CDI specifications. -
+ * Supported Jakarta EE versions. - Servlet and namespace definitions. - XSLT file names for formatting.
  * <p>
- * Developers should use this class to retrieve any predefined constant values
- * referenced in the application.
+ * Developers should use this class to retrieve any predefined constant values referenced in the application.
  */
 public class Constants {
 
@@ -52,11 +46,23 @@ public class Constants {
     public static final String JAKARTA_ENTERPRISE = "jakarta.enterprise";
     public static final String JAKARTA_ENTERPRISE_CDI_API = "jakarta.enterprise.cdi-api";
 
+    public static final String JAKARTA_DATA = "jakarta.data";
+    public static final String JAKARTA_DATA_API = "jakarta.data-api";
+
+    public static final String JAKARTA_MVC = "jakarta.mvc";
+    public static final String JAKARTA_MVC_API = "jakarta.mvc-api";
 
     public static final String JAKARTAEE_VERSION_10 = "10.0.0";
     public static final String JAKARTAEE_VERSION_11 = "11.0.0";
 
     public static final String PROVIDED_SCOPE = "provided";
+
+    public static final String NAME = "name";
+    public static final String IS_ID = "isId";
+    public static final String PACKAGE_NAME = "packageName";
+    public static final String CLASS_NAME = "className";
+    public static final String FIELDS = "fields";
+    public static final String IMPORTS_LIST = "importsList";
 
     public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
         of(
@@ -68,7 +74,9 @@ public class Constants {
             JAKARTAEE_VERSION_11, Map.of(
                 JAKARTA_FACES_API, "4.1.2",
                 JAKARTA_PERSISTENCE_API, "3.2.0",
-                JAKARTA_ENTERPRISE_CDI_API, "4.1.0"
+                JAKARTA_ENTERPRISE_CDI_API, "4.1.0",
+                JAKARTA_DATA_API, "1.0.0",
+                JAKARTA_MVC_API, "3.0.0"
             )
         );
 

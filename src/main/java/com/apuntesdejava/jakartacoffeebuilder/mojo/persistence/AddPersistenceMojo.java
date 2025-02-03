@@ -38,6 +38,7 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
     name = "add-persistence"
 )
 public class AddPersistenceMojo extends AbstractMojo {
+
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
@@ -46,6 +47,7 @@ public class AddPersistenceMojo extends AbstractMojo {
         defaultValue = JAKARTAEE_VERSION_11
     )
     private String jakartaEeVersion;
+
     @Component
     private ProjectBuilder projectBuilder;
 
@@ -79,8 +81,11 @@ public class AddPersistenceMojo extends AbstractMojo {
             var jakartaEeUtil = JakartaEeHelper.getInstance();
             if (jakartaEeUtil.hasNotJakartaCdiDependency(fullProject, log))
                 jakartaEeUtil.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
-            if (!jakartaEeUtil.hasJakartaPersistenceDependency(fullProject, log))
+            if (jakartaEeUtil.hasNotJakartaPersistenceDependency(fullProject, log))
                 jakartaEeUtil.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
+            if (jakartaEeUtil.hasNotJakartaDataDependency(fullProject, log)
+                && jakartaEeUtil.isValidAddJakartaDataDependency(fullProject, log))
+                jakartaEeUtil.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
         } catch (ProjectBuildingException ex) {
             log.error(ex);

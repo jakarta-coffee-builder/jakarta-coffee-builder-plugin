@@ -164,8 +164,12 @@ public class JakartaEeHelper {
      * @param log          the logger to use for logging messages
      * @return true if the project has a Jakarta Persistence dependency, false otherwise
      */
-    public boolean hasJakartaPersistenceDependency(MavenProject mavenProject, Log log) {
-        return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
+    public boolean hasNotJakartaPersistenceDependency(MavenProject mavenProject, Log log) {
+        return !PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
+    }
+
+    public boolean hasNotJakartaDataDependency(MavenProject mavenProject, Log log) {
+        return !PomUtil.existsDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API);
     }
 
     /**
@@ -237,6 +241,28 @@ public class JakartaEeHelper {
             PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
             PomUtil.saveMavenProject(mavenProject, log);
         }
+    }
+
+    /**
+     * Adds a Jakarta Data dependency to the given Maven project.
+     *
+     * @param mavenProject     the Maven project to which the dependency will be added
+     * @param log              the logger to use for logging messages
+     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
+     * @throws MojoExecutionException if an error occurs while adding the dependency
+     */
+    public void addJakartaDataDependency(MavenProject mavenProject,
+                                         Log log,
+                                         String jakartaEeVersion) throws MojoExecutionException {
+        var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_DATA_API);
+        PomUtil.addDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API,
+            jakartaPersistenceVersion, PROVIDED_SCOPE);
+        PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public boolean isValidAddJakartaDataDependency(MavenProject mavenProject, Log log) {
+        return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
+            SPECS_VERSIONS.get(JAKARTAEE_VERSION_11).get(JAKARTA_PERSISTENCE_API));
     }
 
     private static class JakartaEeUtilHolder {

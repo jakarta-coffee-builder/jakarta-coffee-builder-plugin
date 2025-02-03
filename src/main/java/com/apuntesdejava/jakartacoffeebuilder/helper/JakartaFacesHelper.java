@@ -115,9 +115,9 @@ public class JakartaFacesHelper {
             "jakarta.inject.Named", Map.of()
         );
         TemplateUtil.getInstance().createJavaBeanFile(log,
-            Map.of("packageName", packageDefinition,
-                "className", className,
-                "fields", List.of(
+            Map.of(PACKAGE_NAME, packageDefinition,
+                CLASS_NAME, className,
+                FIELDS, List.of(
                     Map.of("type", "String",
                         "name", "name")
                 ),

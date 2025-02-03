@@ -17,29 +17,41 @@ package com.apuntesdejava.jakartacoffeebuilder.model;
 
 import javax.xml.namespace.NamespaceContext;
 import java.util.Iterator;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * A simple implementation of the NamespaceContext interface that maps a single
+ * prefix to a namespace URI. This class provides methods to retrieve the
+ * namespace URI for a given prefix, the prefix for a given namespace URI, and
+ * an iterator over all prefixes.
+ *
+ * <p>This implementation uses a singleton map to store the prefix-URI mapping,
+ * making it suitable for scenarios where only one prefix-URI pair is needed.
+ *
+ * <p>Note: This class returns an empty string for unknown prefixes and null
+ * for unknown namespace URIs.
+ *
+ * @author Diego Silva
  */
 public class NamespaceContextMap implements NamespaceContext {
 
-    private final Map<String, String> PREF_MAP;
+    private final Map<String, String> prefMap;
 
     public NamespaceContextMap(String prefix, String uri) {
-        this.PREF_MAP = Map.of(prefix, uri);
+        this.prefMap = Collections.singletonMap(prefix, uri);
     }
 
     @Override
     public String getNamespaceURI(String prefix) {
-        return PREF_MAP.getOrDefault(prefix, EMPTY);
+        return prefMap.getOrDefault(prefix, EMPTY);
     }
 
     @Override
     public String getPrefix(String namespaceURI) {
-        return PREF_MAP.entrySet()
+        return prefMap.entrySet()
                        .stream()
                        .filter(entry -> entry.getValue().equals(namespaceURI))
                        .findFirst()
@@ -49,6 +61,6 @@ public class NamespaceContextMap implements NamespaceContext {
 
     @Override
     public Iterator<String> getPrefixes(String namespaceURI) {
-        return PREF_MAP.keySet().iterator();
+        return prefMap.keySet().iterator();
     }
 }
