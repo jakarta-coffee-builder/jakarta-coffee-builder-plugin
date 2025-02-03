@@ -136,9 +136,25 @@ public class PomUtil {
     public static boolean existsDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
         return mavenProject.getArtifacts().stream().
-                           anyMatch(artifact -> StringUtils.
-                               equals(artifact.getGroupId(), groupId) && StringUtils.
-                               equals(artifact.getArtifactId(), artifactId));
+                           anyMatch(artifact ->
+                               StringUtils.equals(artifact.getGroupId(), groupId)
+                                   && StringUtils.equals(artifact.getArtifactId(), artifactId)
+                           );
+
+    }
+
+    public static boolean existsDependency(MavenProject mavenProject,
+                                           Log log,
+                                           String groupId,
+                                           String artifactId,
+                                           String version) {
+        log.debug("groupId:%s | artifactId:%s | version: %s".formatted(groupId, artifactId, version));
+        return mavenProject.getArtifacts().stream().
+                           anyMatch(artifact ->
+                               StringUtils.equals(artifact.getGroupId(), groupId)
+                                   && StringUtils.equals(artifact.getArtifactId(), artifactId)
+                                   && StringUtils.equals(artifact.getVersion(), version)
+                           );
 
     }
 

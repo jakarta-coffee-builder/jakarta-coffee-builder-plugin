@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+
 /**
  * A helper class for managing Jakarta Persistence entities within a Maven project.
  * Provides methods to read JSON data and add entity definitions to the project.
@@ -75,14 +77,14 @@ public class JakartaPersistenceHelper {
     private static List<Map<String, Object>> createFieldsDefinitions(JsonArray fieldsJson) {
         return fieldsJson.stream().map(JsonValue::asJsonObject).map(field -> {
             Map<String, Object> item = new LinkedHashMap<>();
-            item.put("name", field.getString("name"));
+            item.put(NAME, field.getString(NAME));
             item.put("type", field.getString("type"));
             var keys = field.keySet();
             if (StringsUtil.containsAnyIgnoreCase(SEARCH_ANNOTATIONS, keys)) {
                 var annotationsList = StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS, keys);
                 List<Map<String, Object>> annotations = annotationsList.stream().map(annotationName -> {
                     Map<String, Object> annotationMap = new LinkedHashMap<>();
-                    annotationMap.put("name", annotationName);
+                    annotationMap.put(NAME, annotationName);
                     var aField = field.get(getKeyName(keys, annotationName));
                     if (aField.getValueType() == JsonValue.ValueType.OBJECT) {
                         annotationMap.put("description", getMapFromJsonObject(aField.asJsonObject()));
@@ -91,8 +93,8 @@ public class JakartaPersistenceHelper {
                 }).toList();
                 item.put("annotations", annotations);
             }
-            if (field.containsKey("isId")) {
-                item.put("isId", field.getBoolean("isId", false));
+            if (field.containsKey(IS_ID)) {
+                item.put(IS_ID, field.getBoolean(IS_ID, false));
             }
             return item;
         }).toList();
@@ -120,22 +122,35 @@ public class JakartaPersistenceHelper {
     }
 
     private void addEntity(MavenProject mavenProject, Log log, JsonObject entity) {
-        try {
-            var entityName = entity.getString("name");
-            log.debug("Adding entity: " + entityName);
-            var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".entity";
-            var entityPath = PathsUtil.getJavaPath(mavenProject, "entity", entityName);
+        addEntityClass(mavenProject, log, entity);
+        addRepositoryClass(mavenProject, log, entity);
+    }
 
-            var fieldsJson = entity.getJsonArray("fields");
+    private void addRepositoryClass(MavenProject mavenProject, Log log, JsonObject entity) {
+        var entityName = entity.getString(NAME);
+        log.debug("Adding repository for entity: " + entityName);
+        var repositoryBuilder = RepositoryBuilder.getInstance();
+        repositoryBuilder.buildRepository(mavenProject, log, entity);
+
+    }
+
+    private void addEntityClass(MavenProject mavenProject, Log log, JsonObject entity) {
+        try {
+            var entityName = entity.getString(NAME);
+            log.debug("Adding entity: " + entityName);
+            var packageDefinition = MavenProjectHelper.getInstance().getEntityPackage(mavenProject);
+            var entityPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, entityName);
+
+            var fieldsJson = entity.getJsonArray(FIELDS);
             var fields = createFieldsDefinitions(fieldsJson);
             Collection<String> importsList = createImportsCollection(fieldsJson);
 
             TemplateUtil.getInstance()
                         .createEntityFile(log,
-                            Map.of("packageName", packageDefinition, "className", entityName, "importsList",
-                                importsList, "fields", fields), entityPath);
+                            Map.of(PACKAGE_NAME, packageDefinition, CLASS_NAME, entityName, IMPORTS_LIST,
+                                importsList, FIELDS, fields), entityPath);
         } catch (Exception ex) {
-            log.error("Error adding entity: " + entity.getString("name"), ex);
+            log.error("Error adding entity: " + entity.getString(NAME), ex);
         }
     }
 

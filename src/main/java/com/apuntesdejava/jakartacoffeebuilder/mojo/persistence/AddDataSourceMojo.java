@@ -28,6 +28,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.util.Arrays;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
 /**
  * Mojo to add a datasource to the Maven project.
@@ -115,7 +116,7 @@ public class AddDataSourceMojo extends AbstractMojo {
     private JsonObject createDataSourceParameters() {
         var jsonBuilder = Json.createObjectBuilder()
                               .add("name", datasourceName)
-                              .add("className", className);
+                              .add(CLASS_NAME, className);
         if (StringUtils.isNotBlank(serverName)) jsonBuilder.add("serverName", serverName);
         if (portNumber != null) jsonBuilder.add("portNumber", portNumber);
         if (StringUtils.isNotBlank(url)) jsonBuilder.add("url", url);

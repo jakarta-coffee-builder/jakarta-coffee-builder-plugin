@@ -24,6 +24,9 @@ import org.apache.maven.project.MavenProject;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+
 /**
  * This class is responsible for creating the DataSource class.
  */
@@ -34,16 +37,16 @@ public class DataSourceClassCreator extends DataSourceCreator {
 
     @Override
     public void build() throws IOException {
-        var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".provider";
+        var packageDefinition = MavenProjectHelper.getInstance().getProviderPackage(mavenProject);
         var className = "DataSourceProvider";
-        var dataSourceClassPath = PathsUtil.getJavaPath(mavenProject, "provider", className);
+        var dataSourceClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var properties = getDataSourceParameters();
         var annotationClasses = Map.of(
             "jakarta.annotation.sql.DataSourceDefinition", properties
         );
         TemplateUtil.getInstance().createJavaBeanFile(log,
-            Map.of("packageName", packageDefinition,
-                "className", className,
+            Map.of(PACKAGE_NAME, packageDefinition,
+                CLASS_NAME, className,
                 "annotations", annotationClasses), dataSourceClassPath);
     }
 }

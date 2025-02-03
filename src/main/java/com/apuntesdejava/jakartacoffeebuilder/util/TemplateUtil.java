@@ -70,6 +70,11 @@ public class TemplateUtil {
         createJavaFile(log, data, javaPath, "Entity.ftl");
     }
 
+    public void createRepositoryFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
+        createJavaFile(log, data, javaPath, "Repository.ftl");
+
+    }
+
     private void createJavaFile(Log log,
                                 Map<String, Object> data,
                                 Path javaPath,

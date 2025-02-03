@@ -1,6 +1,7 @@
 [
   {
     "name": "Coffee",
+    "repository": "crud",
     "fields": [
       {
         "name": "id",
@@ -25,6 +26,7 @@
   },
   {
     "name": "Order",
+    "repository": "data",
     "fields": [
       {
         "name": "id",
