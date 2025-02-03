@@ -88,7 +88,7 @@ public class JakartaFacesHelper {
                 var bodyElem = xmlUtil.addElementNS(viewElem, FACES_NS_HTML, "h:body");
                 if (createManagedBean) {
                     var labelElem = xmlUtil.addElementNS(bodyElem, FACES_NS_HTML, "h:outputText");
-                    labelElem.setAttribute("value", "#{%s.name}".formatted(beanClassName));
+                    labelElem.setAttribute("value", "#{%s.name}".formatted(StringUtils.uncapitalize(beanClassName)));
                 }
             }).orElseThrow();
             xmlUtil.saveDocument(facePage, log, xhtml, XHTML_XSLT);
