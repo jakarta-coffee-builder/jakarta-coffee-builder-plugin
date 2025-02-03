@@ -84,16 +84,14 @@ public class PathsUtil {
      * necessary directories if they don't exist.
      *
      * @param mavenProject   The Maven project object.
-     * @param subPackageName The sub-package name relative to the project's base package.
      * @param javaClassName  The name of the Java class (without the .java extension).
      * @return The Path object representing the Java source file.
      * @throws IOException If an I/O error occurs during directory creation.
      */
     public static Path getJavaPath(MavenProject mavenProject,
-                                   String subPackageName,
+                                   String packageDefinition,
                                    String javaClassName) throws IOException {
         var javaDir = PathsUtil.getJavaPath(mavenProject);
-        var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + "." + subPackageName;
         var packageDir = PathsUtil.packageToPath(javaDir, packageDefinition);
         return packageDir.resolve(javaClassName + ".java");
     }

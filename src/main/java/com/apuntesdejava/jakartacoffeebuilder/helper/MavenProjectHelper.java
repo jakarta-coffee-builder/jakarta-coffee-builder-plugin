@@ -71,4 +71,20 @@ public class MavenProjectHelper {
         return "%s.%s".formatted(RegExUtils.replaceAll(mavenProject.getGroupId(), "[^a-zA-Z0-9]", "."),
             RegExUtils.replaceAll(mavenProject.getArtifactId(), "[^a-zA-Z0-9]", "."));
     }
+
+    public String getEntityPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
+    }
+
+    public String getRepositoryPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "repository");
+    }
+
+    public String getProviderPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
+    }
+
+    public String getFacesPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "faces");
+    }
 }
