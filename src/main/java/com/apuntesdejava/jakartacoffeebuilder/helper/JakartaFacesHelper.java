@@ -107,9 +107,9 @@ public class JakartaFacesHelper {
      */
     public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
         log.debug("Creating managed bean for " + pageName);
-        var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".managedbean";
+        var packageDefinition = MavenProjectHelper.getInstance().getFacesPackage(mavenProject) ;
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
-        var managedBean = PathsUtil.getJavaPath(mavenProject, "managedbean", className);
+        var managedBean = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var annotationsClasses = Map.of(
             "jakarta.enterprise.context.Dependent", Map.of(),
             "jakarta.inject.Named", Map.of()

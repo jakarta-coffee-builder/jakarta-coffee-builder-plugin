@@ -34,9 +34,9 @@ public class DataSourceClassCreator extends DataSourceCreator {
 
     @Override
     public void build() throws IOException {
-        var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".provider";
+        var packageDefinition = MavenProjectHelper.getInstance().getProviderPackage(mavenProject);
         var className = "DataSourceProvider";
-        var dataSourceClassPath = PathsUtil.getJavaPath(mavenProject, "provider", className);
+        var dataSourceClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var properties = getDataSourceParameters();
         var annotationClasses = Map.of(
             "jakarta.annotation.sql.DataSourceDefinition", properties

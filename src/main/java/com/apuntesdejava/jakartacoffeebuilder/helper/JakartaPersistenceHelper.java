@@ -123,8 +123,8 @@ public class JakartaPersistenceHelper {
         try {
             var entityName = entity.getString("name");
             log.debug("Adding entity: " + entityName);
-            var packageDefinition = MavenProjectHelper.getInstance().getProjectPackage(mavenProject) + ".entity";
-            var entityPath = PathsUtil.getJavaPath(mavenProject, "entity", entityName);
+            var packageDefinition = MavenProjectHelper.getInstance().getEntityPackage(mavenProject);
+            var entityPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, entityName);
 
             var fieldsJson = entity.getJsonArray("fields");
             var fields = createFieldsDefinitions(fieldsJson);
