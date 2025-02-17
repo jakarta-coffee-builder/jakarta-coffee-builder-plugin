@@ -265,6 +265,41 @@ public class JakartaEeHelper {
             SPECS_VERSIONS.get(JAKARTAEE_VERSION_11).get(JAKARTA_PERSISTENCE_API));
     }
 
+    /**
+     * Checks and adds the necessary Jakarta EE dependencies to the Maven project.
+     *
+     * @param mavenProject the Maven project to which the dependencies will be added
+     * @param log          the logger used to log messages
+     */
+    public void checkDependencies(MavenProject mavenProject, Log log) {
+        PomUtil.getDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API).ifPresent(
+            artifact -> {
+                var version = artifact.getVersion();
+                log.debug("Jakarta CDI dependency found: %s".formatted(version));
+                var jakartaSpec = SPECS_VERSIONS.entrySet().stream()
+                        .filter(spec -> spec.getValue().entrySet().stream()
+                                            .anyMatch(
+                                                entry -> StringUtils.equals(entry.getKey(),
+                                                    JAKARTA_ENTERPRISE_CDI_API)
+                                                    && StringUtils.equals(entry.getValue(),
+                                                    version))).findFirst();
+                jakartaSpec.ifPresent(spec -> {
+                    var jakartaEEVersion = spec.getKey();
+                    log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
+                    try {
+                        if (StringUtils.equals(spec.getKey(), JAKARTAEE_VERSION_11))
+                            addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
+                        else
+                            addJakartaPersistenceDependency(mavenProject, log, jakartaEEVersion);
+                    } catch (MojoExecutionException e) {
+                        log.error("Error adding Jakarta dependency", e);
+                    }
+
+                });
+
+            });
+    }
+
     private static class JakartaEeUtilHolder {
 
         private static final JakartaEeHelper INSTANCE = new JakartaEeHelper();

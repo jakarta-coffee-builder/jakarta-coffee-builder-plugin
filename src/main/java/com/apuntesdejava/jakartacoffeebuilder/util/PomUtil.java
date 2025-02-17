@@ -17,6 +17,7 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.Json;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -26,6 +27,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Optional;
 
 /**
  * Utility class for handling Maven POM file operations.
@@ -86,6 +88,15 @@ public class PomUtil {
         }
     }
 
+    /**
+     * Adds a dependency to the given Maven project.
+     *
+     * @param mavenProject the Maven project to which the dependency will be added
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency
+     * @param artifactId   the artifact ID of the dependency
+     * @param version      the version of the dependency
+     */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String groupId,
@@ -94,7 +105,13 @@ public class PomUtil {
         addDependency(mavenProject, log, groupId, artifactId, version, null);
     }
 
-
+    /**
+     * Adds a dependency to the given Maven project using the specified coordinates.
+     *
+     * @param mavenProject the Maven project to which the dependency will be added
+     * @param log          the logger to use for logging messages
+     * @param coordinates  the coordinates of the dependency in the format groupId:artifactId:version
+     */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String coordinates) {
@@ -135,14 +152,39 @@ public class PomUtil {
      */
     public static boolean existsDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
-        return mavenProject.getArtifacts().stream().
-                           anyMatch(artifact ->
-                               StringUtils.equals(artifact.getGroupId(), groupId)
-                                   && StringUtils.equals(artifact.getArtifactId(), artifactId)
-                           );
+        return getDependency(mavenProject, log, groupId, artifactId).isPresent();
 
     }
 
+    /**
+     * Retrieves a dependency with the specified group ID and artifact ID from the given Maven project.
+     *
+     * @param mavenProject the Maven project to retrieve the dependency from
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency to retrieve
+     * @param artifactId   the artifact ID of the dependency to retrieve
+     * @return an Optional containing the dependency if found, or an empty Optional if not found
+     */
+    public static Optional<Artifact> getDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
+        log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
+        return mavenProject.getArtifacts().stream().
+                           filter(artifact ->
+                               StringUtils.equals(artifact.getGroupId(), groupId)
+                                   && StringUtils.equals(artifact.getArtifactId(), artifactId)
+                           ).findFirst();
+
+    }
+
+    /**
+     * Checks if a dependency with the specified group ID, artifact ID, and version exists in the given Maven project.
+     *
+     * @param mavenProject the Maven project to check for the dependency
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency to check
+     * @param artifactId   the artifact ID of the dependency to check
+     * @param version      the version of the dependency to check
+     * @return true if the dependency exists, false otherwise
+     */
     public static boolean existsDependency(MavenProject mavenProject,
                                            Log log,
                                            String groupId,
