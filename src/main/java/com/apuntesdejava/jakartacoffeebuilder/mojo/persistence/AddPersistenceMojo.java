@@ -96,7 +96,7 @@ public class AddPersistenceMojo extends AbstractMojo {
 
     private void createPersistenceXml(Log log) {
         var currentPath = mavenProject.getFile().toPath().getParent();
-        JakartaEeHelper.getInstance().createPersistenceXml(currentPath, log, jakartaEeVersion, persistenceUnitName);
+        JakartaEeHelper.getInstance().createPersistenceXml(currentPath, log, persistenceUnitName);
 
     }
 
