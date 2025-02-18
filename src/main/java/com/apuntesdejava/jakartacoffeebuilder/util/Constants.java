@@ -75,7 +75,7 @@ public class Constants {
                 JAKARTA_FACES_API, "4.1.2",
                 JAKARTA_PERSISTENCE_API, "3.2.0",
                 JAKARTA_ENTERPRISE_CDI_API, "4.1.0",
-                JAKARTA_DATA_API, "1.0.0",
+                JAKARTA_DATA_API, "1.0.1",
                 JAKARTA_MVC_API, "3.0.0"
             )
         );
