@@ -62,7 +62,7 @@ public class AddEntitiesMojo extends AbstractMojo {
             var log = getLog();
             var fullProject = MavenProjectHelper.getInstance()
                                                 .getFullProject(mavenSession, projectBuilder, mavenProject);
-            JakartaEeHelper.getInstance().checkDependencies(fullProject, log);
+            JakartaEeHelper.getInstance().checkDataDependencies(fullProject, log);
             log.info("Adding entities from file: " + entitiesFile.getAbsolutePath());
             if (!entitiesFile.exists()) {
                 log.error("Entities file not found: " + entitiesFile.getAbsolutePath());

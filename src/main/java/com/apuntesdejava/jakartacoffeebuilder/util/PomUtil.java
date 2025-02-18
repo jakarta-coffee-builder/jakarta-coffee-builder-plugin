@@ -16,9 +16,11 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -165,7 +167,10 @@ public class PomUtil {
      * @param artifactId   the artifact ID of the dependency to retrieve
      * @return an Optional containing the dependency if found, or an empty Optional if not found
      */
-    public static Optional<Artifact> getDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
+    public static Optional<Artifact> getDependency(MavenProject mavenProject,
+                                                   Log log,
+                                                   String groupId,
+                                                   String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
         return mavenProject.getArtifacts().stream().
                            filter(artifact ->
@@ -218,4 +223,28 @@ public class PomUtil {
     }
 
 
+    public static void setProperty(MavenProject mavenProject, Log log, String propertyName, String propertyValue) {
+        var model = mavenProject.getOriginalModel();
+        model.getProperties().setProperty(propertyName, propertyValue);
+        log.debug("setting property %s=%s".formatted(propertyName, propertyValue));
+    }
+
+    public static void addPlugin(MavenProject mavenProject,
+                                 Log log,
+                                 String artifactId,
+                                 String version,
+                                 JsonObject configuration) {
+        var model = mavenProject.getOriginalModel();
+        var build = model.getBuild();
+
+        var plugin = new Plugin();
+        plugin.setArtifactId(artifactId);
+        plugin.setVersion(version);
+        if (configuration != null) {
+            var config = JsonUtil.jsonToXpp3Dom("configuration", configuration);
+            plugin.setConfiguration(config);
+        }
+        build.addPlugin(plugin);
+        log.debug("adding plugin %s".formatted(plugin));
+    }
 }
