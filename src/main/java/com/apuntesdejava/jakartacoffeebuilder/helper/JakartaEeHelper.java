@@ -169,6 +169,13 @@ public class JakartaEeHelper {
         return !PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
     }
 
+    /**
+     * Checks if the Jakarta Data dependency can be added to the given Maven project.
+     *
+     * @param mavenProject the Maven project to check
+     * @param log          the logger to use for logging messages
+     * @return true if the Jakarta Data dependency can be added, false otherwise
+     */
     public boolean hasNotJakartaDataDependency(MavenProject mavenProject, Log log) {
         return !PomUtil.existsDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API);
     }
@@ -276,13 +283,18 @@ public class JakartaEeHelper {
             artifact -> {
                 var version = artifact.getVersion();
                 log.debug("Jakarta CDI dependency found: %s".formatted(version));
-                var jakartaSpec = SPECS_VERSIONS.entrySet().stream()
-                                                .filter(spec -> spec.getValue().entrySet().stream()
-                                                                    .anyMatch(
-                                                                        entry -> StringUtils.equals(entry.getKey(),
-                                                                            JAKARTA_ENTERPRISE_CDI_API)
-                                                                            && StringUtils.equals(entry.getValue(),
-                                                                            version))).findFirst();
+                var jakartaSpec = SPECS_VERSIONS
+                    .entrySet()
+                    .stream()
+                    .filter(spec -> spec
+                        .getValue()
+                        .entrySet()
+                        .stream()
+                        .anyMatch(
+                            entry -> StringUtils.equals(entry.getKey(),
+                                JAKARTA_ENTERPRISE_CDI_API)
+                                && StringUtils.equals(entry.getValue(),
+                                version))).findFirst();
                 jakartaSpec.ifPresent(spec -> {
                     var jakartaEEVersion = spec.getKey();
                     log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
@@ -302,7 +314,8 @@ public class JakartaEeHelper {
     }
 
     private void addHibernateProvider(MavenProject mavenProject, Log log) {
-        PersistenceXmlHelper.getInstance().addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log);
+        PersistenceXmlHelper.getInstance()
+                            .addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log);
     }
 
     private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
@@ -320,7 +333,7 @@ public class JakartaEeHelper {
                                     "hibernate-jpamodelgen")
                                 .add("version",
                                     "${hibernate.version}"))).build()
-                                );
+        );
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
