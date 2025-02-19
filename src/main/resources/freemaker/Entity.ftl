@@ -1,6 +1,9 @@
 package ${packageName};
 
 import jakarta.persistence.Entity;
+<#if (tableName??)>
+import jakarta.persistence.Table;
+</#if>
 <#list fields as field>
     <#if field.isId?? && field.isId?string('y','n') == 'y'>
 import jakarta.persistence.Id;
@@ -13,6 +16,9 @@ import ${importItem};
 </#if>
 
 @Entity
+<#if (tableName??)>
+@Table(name = "${tableName}")
+</#if>
 public class ${className} {
 
 <#if (fields??) && (fields?size > 0)>

@@ -26,6 +26,7 @@
   },
   {
     "name": "Order",
+    "table": "order_",
     "repository": "data",
     "fields": [
       {
