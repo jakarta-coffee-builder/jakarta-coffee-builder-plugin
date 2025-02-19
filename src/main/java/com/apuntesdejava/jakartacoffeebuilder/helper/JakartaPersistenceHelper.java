@@ -149,7 +149,7 @@ public class JakartaPersistenceHelper {
                         .createEntityFile(log,
                             Map.of(PACKAGE_NAME, packageDefinition, CLASS_NAME, entityName, IMPORTS_LIST,
                                 importsList, FIELDS, fields), entityPath);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             log.error("Error adding entity: " + entity.getString(NAME), ex);
         }
     }
