@@ -130,14 +130,11 @@ public class JakartaEeHelper {
                                                   Log log) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
         webXmlUtil.checkExistsFile(log, currentPath)
-                  .ifPresent(
-                      document -> {
-                          webXmlUtil.addServletDeclaration(document, urlPattern, log, JAKARTA_FACES_SERVLET,
-                              JAKARTA_FACES_SERVLET_DEFINITION);
-                          webXmlUtil.saveDocument(document, log, currentPath);
-                      });
-
-
+                  .ifPresent(document -> {
+                      webXmlUtil.addServletDeclaration(document, urlPattern, log, JAKARTA_FACES_SERVLET,
+                          JAKARTA_FACES_SERVLET_DEFINITION);
+                      webXmlUtil.saveDocument(document, log, currentPath);
+                  });
     }
 
     /**
@@ -151,11 +148,10 @@ public class JakartaEeHelper {
     public void addWelcomePages(Path currentPath, String welcomeFile, Log log) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
         webXmlUtil.checkExistsFile(log, currentPath)
-                  .ifPresent(
-                      document -> {
-                          webXmlUtil.addWelcomePages(document, welcomeFile, log);
-                          webXmlUtil.saveDocument(document, log, currentPath);
-                      });
+                  .ifPresent(document -> {
+                      webXmlUtil.addWelcomePages(document, welcomeFile, log);
+                      webXmlUtil.saveDocument(document, log, currentPath);
+                  });
     }
 
     /**
@@ -227,22 +223,25 @@ public class JakartaEeHelper {
                               String persistenceUnit,
                               JsonObject json) throws MojoExecutionException {
         log.debug("Datasource:%s".formatted(json));
-        DataSourceCreatorFactory.getDataSourceCreator(mavenProject, log, declare)
-                                .ifPresent(
-                                    dataSourceCreator -> {
-                                        try {
-                                            dataSourceCreator.dataSourceParameters(json)
-                                                             .build();
-                                        } catch (IOException e) {
-                                            log.error("Error creating datasource", e);
-                                            throw new RuntimeException(e);
-                                        }
-                                    });
+        DataSourceCreatorFactory
+            .getDataSourceCreator(mavenProject, log, declare)
+            .ifPresent(
+                dataSourceCreator -> {
+                    try {
+                        dataSourceCreator
+                            .dataSourceParameters(json)
+                            .build();
+                    } catch (IOException e) {
+                        log.error("Error creating datasource", e);
+                        throw new RuntimeException(e);
+                    }
+                });
         if (StringUtils.isNotBlank(persistenceUnit)) {
             var currentPath = mavenProject.getFile().toPath().getParent();
-            PersistenceXmlHelper.getInstance()
-                                .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
-                                    json.getString("name"));
+            PersistenceXmlHelper
+                .getInstance()
+                .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
+                    json.getString("name"));
         }
         if (StringUtils.isNotBlank(coordinatesJdbcDriver)) {
             PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
@@ -307,9 +306,7 @@ public class JakartaEeHelper {
                     } catch (MojoExecutionException e) {
                         log.error("Error adding Jakarta dependency", e);
                     }
-
                 });
-
             });
     }
 
