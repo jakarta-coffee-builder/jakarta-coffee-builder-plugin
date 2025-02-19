@@ -256,7 +256,7 @@ public class JakartaEeHelper {
                                          String jakartaEeVersion) throws MojoExecutionException {
         var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_DATA_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API,
-            jakartaPersistenceVersion, PROVIDED_SCOPE);
+            jakartaPersistenceVersion);
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
@@ -290,6 +290,7 @@ public class JakartaEeHelper {
                         if (StringUtils.equals(spec.getKey(), JAKARTAEE_VERSION_11)) {
                             addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
                             addHibernateDependency(mavenProject, log);
+                            addHibernateProvider(mavenProject, log);
                         }
                     } catch (MojoExecutionException e) {
                         log.error("Error adding Jakarta dependency", e);
@@ -300,8 +301,12 @@ public class JakartaEeHelper {
             });
     }
 
+    private void addHibernateProvider(MavenProject mavenProject, Log log) {
+        PersistenceXmlHelper.getInstance().addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log);
+    }
+
     private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
-        PomUtil.setProperty(mavenProject, log, "hibernate.version", "6.6.6.Final");
+        PomUtil.setProperty(mavenProject, log, "hibernate.version", "6.6.8.Final");
         PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
         PomUtil.addPlugin(mavenProject, log, "maven-compiler-plugin", "3.13.0",
             Json.createObjectBuilder()
@@ -312,7 +317,7 @@ public class JakartaEeHelper {
                                 .add("groupId",
                                     "org.hibernate.orm")
                                 .add("artifactId",
-                                    "org.hibernate.orm")
+                                    "hibernate-jpamodelgen")
                                 .add("version",
                                     "${hibernate.version}"))).build()
                                 );

@@ -20,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -113,6 +114,12 @@ public class XmlUtil {
         parent.appendChild(element);
     }
 
+    public void addElement(Element parent, String tagName, Map<String,String> properties) {
+        var element = parent.getOwnerDocument().createElement(tagName);
+        properties.forEach(element::setAttribute);
+        parent.appendChild(element);
+    }
+
     /**
      * Adds a new element with the specified tag name to the given parent element.
      *
@@ -123,6 +130,25 @@ public class XmlUtil {
     public Element addElement(Element parent, String tagName) {
         var element = parent.getOwnerDocument().createElement(tagName);
         parent.appendChild(element);
+        return element;
+    }
+
+    /**
+     * Adds a new element with the specified tag name to the given parent element.
+     *
+     * @param parent  the parent element to which the new element will be added
+     * @param tagName the tag name of the new element
+     * @return the newly created element
+     */
+    public Element addElementAtStart(Element parent, Log log, String tagName, String textContent) {
+        if (findElementsStream(parent.getOwnerDocument(), log, tagName).findFirst().isPresent()) return null;
+        var element = parent.getOwnerDocument().createElement(tagName);
+        element.setTextContent(textContent);
+        if (parent.getFirstChild() != null) {
+            parent.insertBefore(element, parent.getFirstChild());
+        } else {
+            parent.appendChild(element);
+        }
         return element;
     }
 
@@ -284,7 +310,7 @@ public class XmlUtil {
      * @return a NodeList containing the elements matching the XPath expression
      * @throws RuntimeException if an error occurs while evaluating the XPath expression
      */
-    public NodeList findElements(Document doc, Log log, String expression, Map<String, String> namespaces) {
+    public NodeList findElements(Node doc, Log log, String expression, Map<String, String> namespaces) {
         try {
             var xPathFactory = XPathFactory.newInstance();
             var xPath = xPathFactory.newXPath();
@@ -307,7 +333,7 @@ public class XmlUtil {
      * @param expression the XPath expression used to evaluate and find matching elements
      * @return a {@code Stream} containing the matching {@code Element} objects
      */
-    public Stream<Element> findElementsStream(Document doc,
+    public Stream<Element> findElementsStream(Node doc,
                                               Log log,
                                               String expression,
                                               Map<String, String> namespaces) {
@@ -349,6 +375,21 @@ public class XmlUtil {
         } catch (TransformerException | IOException ex) {
             log.error(ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Retrieves the first child element with the specified tag name from the given parent element.
+     *
+     * @param parentElement the parent element to search within
+     * @param elementName   the tag name of the child element to retrieve
+     * @return the first child element with the specified tag name, or a new element if not found
+     */
+    public Optional<Element> getElement(Element parentElement, String elementName) {
+        NodeList nodeList = parentElement.getElementsByTagName(elementName);
+        if (nodeList.getLength() > 0) {
+            return Optional.of((Element) nodeList.item(0));
+        }
+        return Optional.of(addElement(parentElement, elementName));
     }
 
     private static class XmlUtilHolder {

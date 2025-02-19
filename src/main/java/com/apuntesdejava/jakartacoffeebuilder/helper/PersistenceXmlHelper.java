@@ -20,7 +20,10 @@ import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
+
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.HIBERNATE_PROVIDER;
 
 /**
  * Helper class for managing `persistence.xml` files.
@@ -74,7 +77,7 @@ public class PersistenceXmlHelper {
         XmlUtil.getInstance().saveDocument(document, log, getPersistencePath(currentPath));
     }
 
-   protected Path getPersistencePath(Path currentPath) {
+    protected Path getPersistencePath(Path currentPath) {
         return currentPath.resolve("src")
                           .resolve("main")
                           .resolve("resources")
@@ -103,6 +106,33 @@ public class PersistenceXmlHelper {
                            savePersistenceXml(currentPath, log, document);
                        });
             });
+    }
+
+    public void addProviderToPersistenceXml(Path currentPath, Log log) {
+        var persistencePath = getPersistencePath(currentPath);
+        var xmlUtil = XmlUtil.getInstance();
+        xmlUtil.getDocument(log, persistencePath).ifPresent(persistenceXml -> {
+            xmlUtil.findElementsStream(persistenceXml, log, "//persistence-unit")
+                   .findFirst()
+                   .ifPresent(elem -> {
+                       if (xmlUtil.findElementsStream(persistenceXml, log,
+                                      "//persistence-unit/provider[text()='%s']".formatted(HIBERNATE_PROVIDER))
+                                  .findFirst().isEmpty())
+                           xmlUtil.addElementAtStart(elem, log, "provider",HIBERNATE_PROVIDER);
+                       xmlUtil.getElement(elem, "properties").ifPresent(properties->{
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.enhancer.enableDirtyTracking","value","false"));
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.enhancer.enableLazyInitialization","value","false"));
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.dialect","value","org.hibernate.dialect.H2Dialect"));
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.transaction.jta.platform","value","org.hibernate.service.jta.platform.internal.SunOneJtaPlatform"));
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.show_sql","value","true"));
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.format_sql","value","true"));
+                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.hbm2ddl.auto","value","create"));
+                       });
+
+                   });
+            xmlUtil.saveDocument(persistenceXml, log, persistencePath);
+        });
+
     }
 
     private static class PersistenceXmlUtilHolder {
