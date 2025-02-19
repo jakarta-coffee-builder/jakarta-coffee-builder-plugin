@@ -58,6 +58,7 @@ public class Constants {
     public static final String PROVIDED_SCOPE = "provided";
 
     public static final String NAME = "name";
+    public static final String TABLE_NAME = "table";
     public static final String IS_ID = "isId";
     public static final String PACKAGE_NAME = "packageName";
     public static final String CLASS_NAME = "className";

@@ -22,6 +22,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -30,6 +31,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * A helper class for managing Jakarta Persistence entities within a Maven project.
@@ -137,6 +139,7 @@ public class JakartaPersistenceHelper {
     private void addEntityClass(MavenProject mavenProject, Log log, JsonObject entity) {
         try {
             var entityName = entity.getString(NAME);
+            var tableName = entity.getString(TABLE_NAME, EMPTY);
             log.debug("Adding entity: " + entityName);
             var packageDefinition = MavenProjectHelper.getInstance().getEntityPackage(mavenProject);
             var entityPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, entityName);
@@ -145,10 +148,15 @@ public class JakartaPersistenceHelper {
             var fields = createFieldsDefinitions(fieldsJson);
             Collection<String> importsList = createImportsCollection(fieldsJson);
 
+            Map<String, Object> fieldsMap = new LinkedHashMap<>(
+                Map.of(PACKAGE_NAME, packageDefinition, CLASS_NAME, entityName, IMPORTS_LIST,
+                    importsList, FIELDS, fields));
+            if (StringUtils.isNotBlank(tableName)) {
+                fieldsMap.put("tableName", tableName);
+            }
+
             TemplateUtil.getInstance()
-                        .createEntityFile(log,
-                            Map.of(PACKAGE_NAME, packageDefinition, CLASS_NAME, entityName, IMPORTS_LIST,
-                                importsList, FIELDS, fields), entityPath);
+                        .createEntityFile(log, fieldsMap, entityPath);
         } catch (IOException ex) {
             log.error("Error adding entity: " + entity.getString(NAME), ex);
         }
