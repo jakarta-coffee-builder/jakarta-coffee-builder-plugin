@@ -1,9 +1,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import jakarta.json.Json;
-import jakarta.json.JsonNumber;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,5 +23,19 @@ public class JsonUtil {
             case FALSE -> false;
             default -> null;
         };
+    }
+
+    public static Xpp3Dom jsonToXpp3Dom(String newKey, JsonObject jsonObject) {
+        Xpp3Dom config = new Xpp3Dom(newKey);
+        jsonObject.forEach((key, value) -> {
+            if (value.getValueType() == JsonValue.ValueType.OBJECT) {
+                config.addChild(jsonToXpp3Dom(key, value.asJsonObject()));
+            } else {
+                Xpp3Dom child = new Xpp3Dom(key);
+                child.setValue(((JsonString)value).getString());
+                config.addChild(child);
+            }
+        });
+        return config;
     }
 }

@@ -64,6 +64,8 @@ public class Constants {
     public static final String FIELDS = "fields";
     public static final String IMPORTS_LIST = "importsList";
 
+    public static final String HIBERNATE_PROVIDER = "org.hibernate.jpa.HibernatePersistenceProvider";
+
     public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
         of(
             JAKARTAEE_VERSION_10, Map.of(
@@ -75,7 +77,7 @@ public class Constants {
                 JAKARTA_FACES_API, "4.1.2",
                 JAKARTA_PERSISTENCE_API, "3.2.0",
                 JAKARTA_ENTERPRISE_CDI_API, "4.1.0",
-                JAKARTA_DATA_API, "1.0.0",
+                JAKARTA_DATA_API, "1.0.1",
                 JAKARTA_MVC_API, "3.0.0"
             )
         );

@@ -18,6 +18,7 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreatorFactory;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
+import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -194,10 +195,9 @@ public class JakartaEeHelper {
      *
      * @param currentPath         the path to the Maven project
      * @param log                 the logger to use for logging messages
-     * @param jakartaEeVersion    the version of Jakarta EE to use for the `persistence.xml`
      * @param persistenceUnitName the name of the persistence unit to be created
      */
-    public void createPersistenceXml(Path currentPath, Log log, String jakartaEeVersion, String persistenceUnitName) {
+    public void createPersistenceXml(Path currentPath, Log log, String persistenceUnitName) {
         var persistenceXmlUtil = PersistenceXmlHelper.getInstance();
         persistenceXmlUtil.createPersistenceXml(currentPath, log, persistenceUnitName)
                           .ifPresent(document -> persistenceXmlUtil.savePersistenceXml(currentPath, log, document));
@@ -256,13 +256,72 @@ public class JakartaEeHelper {
                                          String jakartaEeVersion) throws MojoExecutionException {
         var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_DATA_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API,
-            jakartaPersistenceVersion, PROVIDED_SCOPE);
+            jakartaPersistenceVersion);
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
     public boolean isValidAddJakartaDataDependency(MavenProject mavenProject, Log log) {
         return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
             SPECS_VERSIONS.get(JAKARTAEE_VERSION_11).get(JAKARTA_PERSISTENCE_API));
+    }
+
+    /**
+     * Checks and adds the necessary Jakarta EE dependencies to the Maven project.
+     *
+     * @param mavenProject the Maven project to which the dependencies will be added
+     * @param log          the logger used to log messages
+     */
+    public void checkDataDependencies(MavenProject mavenProject, Log log) {
+        PomUtil.getDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API).ifPresent(
+            artifact -> {
+                var version = artifact.getVersion();
+                log.debug("Jakarta CDI dependency found: %s".formatted(version));
+                var jakartaSpec = SPECS_VERSIONS.entrySet().stream()
+                                                .filter(spec -> spec.getValue().entrySet().stream()
+                                                                    .anyMatch(
+                                                                        entry -> StringUtils.equals(entry.getKey(),
+                                                                            JAKARTA_ENTERPRISE_CDI_API)
+                                                                            && StringUtils.equals(entry.getValue(),
+                                                                            version))).findFirst();
+                jakartaSpec.ifPresent(spec -> {
+                    var jakartaEEVersion = spec.getKey();
+                    log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
+                    try {
+                        if (StringUtils.equals(spec.getKey(), JAKARTAEE_VERSION_11)) {
+                            addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
+                            addHibernateDependency(mavenProject, log);
+                            addHibernateProvider(mavenProject, log);
+                        }
+                    } catch (MojoExecutionException e) {
+                        log.error("Error adding Jakarta dependency", e);
+                    }
+
+                });
+
+            });
+    }
+
+    private void addHibernateProvider(MavenProject mavenProject, Log log) {
+        PersistenceXmlHelper.getInstance().addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log);
+    }
+
+    private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
+        PomUtil.setProperty(mavenProject, log, "hibernate.version", "6.6.8.Final");
+        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
+        PomUtil.addPlugin(mavenProject, log, "maven-compiler-plugin", "3.13.0",
+            Json.createObjectBuilder()
+                .add("annotationProcessorPaths",
+                    Json.createObjectBuilder()
+                        .add("path",
+                            Json.createObjectBuilder()
+                                .add("groupId",
+                                    "org.hibernate.orm")
+                                .add("artifactId",
+                                    "hibernate-jpamodelgen")
+                                .add("version",
+                                    "${hibernate.version}"))).build()
+                                );
+        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     private static class JakartaEeUtilHolder {
