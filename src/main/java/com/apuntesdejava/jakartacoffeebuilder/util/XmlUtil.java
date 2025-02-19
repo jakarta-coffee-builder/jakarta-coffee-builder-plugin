@@ -18,10 +18,7 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import com.apuntesdejava.jakartacoffeebuilder.model.NamespaceContextMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -114,9 +112,33 @@ public class XmlUtil {
         parent.appendChild(element);
     }
 
-    public void addElement(Element parent, String tagName, Map<String,String> properties) {
+    private static boolean existsChildElement(Element parent, String tagName, Map<String, String> attributes) {
+        var childNodes = parent.getChildNodes();
+        if (childNodes.getLength() == 0) return false;
+        Map<String, String> attrMap = new LinkedHashMap<>();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            var node = childNodes.item(i);
+            if (node instanceof Element element) {
+                if (element.getTagName().equals(tagName)) {
+                    var elementAttributes = element.getAttributes();
+                    for (int j = 0; j < elementAttributes.getLength(); j++) {
+                        var elementAttr = (Attr) elementAttributes.item(j);
+                        attrMap.put(elementAttr.getName(), elementAttr.getValue());
+                    }
+                    if (CollectionsUtil.areEqual(attrMap, attributes)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public void addElement(Element parent, String tagName, Map<String, String> attributes) {
+        if (existsChildElement(parent, tagName, attributes)) return;
+
         var element = parent.getOwnerDocument().createElement(tagName);
-        properties.forEach(element::setAttribute);
+        attributes.forEach(element::setAttribute);
         parent.appendChild(element);
     }
 
@@ -138,10 +160,9 @@ public class XmlUtil {
      *
      * @param parent  the parent element to which the new element will be added
      * @param tagName the tag name of the new element
-     * @return the newly created element
      */
-    public Element addElementAtStart(Element parent, Log log, String tagName, String textContent) {
-        if (findElementsStream(parent.getOwnerDocument(), log, tagName).findFirst().isPresent()) return null;
+    public void addElementAtStart(Element parent, Log log, String tagName, String textContent) {
+        if (findElementsStream(parent.getOwnerDocument(), log, tagName).findFirst().isPresent()) return;
         var element = parent.getOwnerDocument().createElement(tagName);
         element.setTextContent(textContent);
         if (parent.getFirstChild() != null) {
@@ -149,7 +170,6 @@ public class XmlUtil {
         } else {
             parent.appendChild(element);
         }
-        return element;
     }
 
     /**
