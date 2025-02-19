@@ -151,21 +151,23 @@ public class WebXmlUtil {
      */
     public void addDataSource(Document document, Log log, Map<String, Object> properties) {
         var xmlUtil = XmlUtil.getInstance();
-        var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
-        properties.forEach((key, value) -> {
-            if (value instanceof Collection<?> collection) {
-                collection.forEach(item -> {
-                    var propertyElem = xmlUtil.addElement(datasourceElem, "property");
-                    var values = StringUtils.split(item.toString(), "=");
-                    xmlUtil.addElement(propertyElem, "name", values[0]);
-                    xmlUtil.addElement(propertyElem, "value", values[1]);
-                });
-            } else {
-                var newKey = StringsUtil.camelCaseToParamCase(key);
-                xmlUtil.addElement(datasourceElem, newKey, value.toString());
-            }
-        });
-
+        if (xmlUtil.findElementsStream(document, log,
+            "//data-source/name[text()='%s']".formatted(properties.get("name"))).findFirst().isEmpty()) {
+            var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
+            properties.forEach((key, value) -> {
+                if (value instanceof Collection<?> collection) {
+                    collection.forEach(item -> {
+                        var propertyElem = xmlUtil.addElement(datasourceElem, "property");
+                        var values = StringUtils.split(item.toString(), "=");
+                        xmlUtil.addElement(propertyElem, "name", values[0]);
+                        xmlUtil.addElement(propertyElem, "value", values[1]);
+                    });
+                } else {
+                    var newKey = StringsUtil.camelCaseToParamCase(key);
+                    xmlUtil.addElement(datasourceElem, newKey, value.toString());
+                }
+            });
+        }
     }
 
     private static class WebUtilHolder {
