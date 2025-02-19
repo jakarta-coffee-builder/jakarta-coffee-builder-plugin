@@ -25,6 +25,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -222,13 +223,29 @@ public class PomUtil {
         }
     }
 
-
+    /**
+     * Sets a property in the given Maven project.
+     *
+     * @param mavenProject  the Maven project in which the property will be set
+     * @param log           the logger to use for logging messages
+     * @param propertyName  the name of the property to set
+     * @param propertyValue the value of the property to set
+     */
     public static void setProperty(MavenProject mavenProject, Log log, String propertyName, String propertyValue) {
         var model = mavenProject.getOriginalModel();
         model.getProperties().setProperty(propertyName, propertyValue);
         log.debug("setting property %s=%s".formatted(propertyName, propertyValue));
     }
 
+    /**
+     * Adds a plugin to the given Maven project.
+     *
+     * @param mavenProject  the Maven project to which the plugin will be added
+     * @param log           the logger to use for logging messages
+     * @param artifactId    the artifact ID of the plugin
+     * @param version       the version of the plugin
+     * @param configuration the configuration of the plugin as a JsonObject
+     */
     public static void addPlugin(MavenProject mavenProject,
                                  Log log,
                                  String artifactId,
@@ -236,15 +253,24 @@ public class PomUtil {
                                  JsonObject configuration) {
         var model = mavenProject.getOriginalModel();
         var build = model.getBuild();
+        var plugin = build
+            .getPlugins()
+            .stream().filter(plg -> StringUtils.equals(plg.getArtifactId(), artifactId))
+            .findFirst().orElseGet(() -> {
+                var plg = new Plugin();
+                plg.setArtifactId(artifactId);
+                plg.setVersion(version);
+                build.addPlugin(plg);
+                return plg;
+            });
 
-        var plugin = new Plugin();
-        plugin.setArtifactId(artifactId);
-        plugin.setVersion(version);
         if (configuration != null) {
-            var config = JsonUtil.jsonToXpp3Dom("configuration", configuration);
+            var configDom = Optional
+                .ofNullable((Xpp3Dom) plugin.getConfiguration())
+                .orElseGet(() -> new Xpp3Dom("configuration"));
+            var config = JsonUtil.jsonToXpp3Dom(configDom, configuration);
             plugin.setConfiguration(config);
         }
-        build.addPlugin(plugin);
         log.debug("adding plugin %s".formatted(plugin));
     }
 }
