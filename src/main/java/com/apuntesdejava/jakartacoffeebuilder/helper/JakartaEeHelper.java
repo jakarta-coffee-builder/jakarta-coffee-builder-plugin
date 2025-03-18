@@ -16,9 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreatorFactory;
-import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.*;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -28,8 +26,11 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static java.util.Collections.emptyMap;
 
 /**
  * Utility class for handling Jakarta EE dependencies in Maven projects.
@@ -324,6 +325,34 @@ public class JakartaEeHelper {
                                                      "${hibernate.version}"))).build()));
 
         PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public void addPersistenceClassProvider(MavenProject mavenProject, Log log) throws IOException {
+        var packageDefinition = MavenProjectHelper.getInstance().getProviderPackage(mavenProject);
+        var className = "PersistenceProvider";
+        var persistenceProviderClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
+        var annotationClasses = Map.of(
+            "jakarta.enterprise.context.ApplicationScoped", emptyMap()
+        );
+        var fields = List.of(Map.of(
+            "name", "entityManager",
+            "type", "jakarta.persistence.EntityManager",
+            "annotations", Map.of(
+                "jakarta.persistence.PersistenceContext", Map.of(
+                    "unitName", "example-pu"
+                )
+            )
+        ));
+        TemplateUtil.getInstance().createJavaBeanFile(log,
+            Map.of(PACKAGE_NAME, packageDefinition,
+                CLASS_NAME, className,
+                "annotations", annotationClasses,
+                "setters",false,
+                "getters",false,
+                FIELDS,fields
+            ),
+            persistenceProviderClassPath
+        );
     }
 
     private static class JakartaEeUtilHolder {
