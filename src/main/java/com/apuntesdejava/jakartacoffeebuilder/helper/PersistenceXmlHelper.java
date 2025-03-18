@@ -15,10 +15,14 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
+import jakarta.json.JsonValue;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.w3c.dom.Document;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -108,7 +112,14 @@ public class PersistenceXmlHelper {
             });
     }
 
-    public void addProviderToPersistenceXml(Path currentPath, Log log) {
+    /**
+     * Adds a provider to the `persistence.xml` file.
+     *
+     * @param currentPath  the current path where the `persistence.xml` is located
+     * @param log          the logger to use for logging messages
+     * @param dialectClass the class name of the dialect to be added
+     */
+    public void addProviderToPersistenceXml(Path currentPath, Log log, String dialectClass) {
         var persistencePath = getPersistencePath(currentPath);
         var xmlUtil = XmlUtil.getInstance();
         xmlUtil.getDocument(log, persistencePath).ifPresent(persistenceXml -> {
@@ -118,15 +129,27 @@ public class PersistenceXmlHelper {
                        if (xmlUtil.findElementsStream(persistenceXml, log,
                                       "//persistence-unit/provider[text()='%s']".formatted(HIBERNATE_PROVIDER))
                                   .findFirst().isEmpty())
-                           xmlUtil.addElementAtStart(elem, log, "provider",HIBERNATE_PROVIDER);
-                       xmlUtil.getElement(elem, "properties").ifPresent(properties->{
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.enhancer.enableDirtyTracking","value","false"));
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.enhancer.enableLazyInitialization","value","false"));
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.dialect","value","org.hibernate.dialect.H2Dialect"));
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.transaction.jta.platform","value","org.hibernate.service.jta.platform.internal.SunOneJtaPlatform"));
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.show_sql","value","true"));
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.format_sql","value","true"));
-                           xmlUtil.addElement(properties, "property", Map.of("name","hibernate.hbm2ddl.auto","value","create"));
+                           xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
+                       xmlUtil.getElement(elem, "properties").ifPresent(properties -> {
+                           if (StringUtils.isNotBlank(dialectClass))
+                               xmlUtil.addElement(properties, "property",
+                                   Map.of("name", "hibernate.dialect", "value", dialectClass));
+                           try {
+                               CoffeeBuilderUtil.getPropertiesConfiguration("hibernate")
+                                                .ifPresent(propertiesConfig -> propertiesConfig
+                                                    .stream()
+                                                    .map(JsonValue::asJsonObject)
+                                                    .forEach(property -> {
+                                                        var name = property.getString("name");
+                                                        var value = property.getString("value");
+                                                        xmlUtil.addElement(
+                                                            properties, "property",
+                                                            Map.of("name", name, "value", value)
+                                                        );
+                                                    }));
+                           } catch (IOException e) {
+                               log.error(e.getMessage(), e);
+                           }
                        });
 
                    });

@@ -62,4 +62,17 @@ public class JsonUtil {
         });
         return config;
     }
+
+    /**
+     * Saves a JsonObject to the specified file path.
+     *
+     * @param jsonFile the path to the JSON file
+     * @param json the JsonObject to save
+     * @throws IOException if an I/O error occurs
+     */
+    public static void saveJsonValue(Path jsonFile, JsonValue json) throws IOException {
+        try (var writer = Files.newBufferedWriter(jsonFile)) {
+            Json.createWriter(writer).write(json);
+        }
+    }
 }

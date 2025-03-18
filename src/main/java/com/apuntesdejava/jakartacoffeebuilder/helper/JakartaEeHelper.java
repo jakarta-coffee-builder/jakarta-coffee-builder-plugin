@@ -16,6 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreatorFactory;
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
 import jakarta.json.Json;
@@ -209,19 +210,15 @@ public class JakartaEeHelper {
     /**
      * Adds a data source to the given Maven project.
      *
-     * @param mavenProject          the Maven project to which the data source will be added
-     * @param log                   the logger to use for logging messages
-     * @param declare               the declaration string for the data source
-     * @param coordinatesJdbcDriver the coordinates of the JDBC driver
-     * @param persistenceUnit       the name of the persistence unit
-     * @param json                  the JSON object containing data source parameters
+     * @param mavenProject the Maven project to which the data source will be added
+     * @param log          the logger to use for logging messages
+     * @param declare      the declaration string for the data source
+     * @param json         the JSON object containing data source parameters
      */
     public void addDataSource(MavenProject mavenProject,
                               Log log,
                               String declare,
-                              String coordinatesJdbcDriver,
-                              String persistenceUnit,
-                              JsonObject json) throws MojoExecutionException {
+                              JsonObject json) {
         log.debug("Datasource:%s".formatted(json));
         DataSourceCreatorFactory
             .getDataSourceCreator(mavenProject, log, declare)
@@ -236,17 +233,6 @@ public class JakartaEeHelper {
                         throw new RuntimeException(e);
                     }
                 });
-        if (StringUtils.isNotBlank(persistenceUnit)) {
-            var currentPath = mavenProject.getFile().toPath().getParent();
-            PersistenceXmlHelper
-                .getInstance()
-                .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
-                    json.getString("name"));
-        }
-        if (StringUtils.isNotBlank(coordinatesJdbcDriver)) {
-            PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
-            PomUtil.saveMavenProject(mavenProject, log);
-        }
     }
 
     /**
@@ -276,8 +262,9 @@ public class JakartaEeHelper {
      *
      * @param mavenProject the Maven project to which the dependencies will be added
      * @param log          the logger used to log messages
+     * @param dialectClass the class name of the dialect to be added
      */
-    public void checkDataDependencies(MavenProject mavenProject, Log log) {
+    public void checkDataDependencies(MavenProject mavenProject, Log log, String dialectClass) {
         PomUtil.getDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API).ifPresent(
             artifact -> {
                 var version = artifact.getVersion();
@@ -301,36 +288,41 @@ public class JakartaEeHelper {
                         if (StringUtils.equals(spec.getKey(), JAKARTAEE_VERSION_11)) {
                             addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
                             addHibernateDependency(mavenProject, log);
-                            addHibernateProvider(mavenProject, log);
+                            addHibernateProvider(mavenProject, log, dialectClass);
                         }
-                    } catch (MojoExecutionException e) {
+                    } catch (MojoExecutionException | IOException e) {
                         log.error("Error adding Jakarta dependency", e);
                     }
                 });
             });
     }
 
-    private void addHibernateProvider(MavenProject mavenProject, Log log) {
+    private void addHibernateProvider(MavenProject mavenProject, Log log, String dialectClass) {
         PersistenceXmlHelper.getInstance()
-                            .addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log);
+                            .addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log,
+                                dialectClass);
     }
 
-    private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
-        PomUtil.setProperty(mavenProject, log, "hibernate.version", "6.6.8.Final");
+    private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
+        CoffeeBuilderUtil.getDependencyConfiguration("hibernate")
+                         .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
+                             hibernate.getString("version")));
         PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
-        PomUtil.addPlugin(mavenProject, log, "maven-compiler-plugin", "3.13.0",
-            Json.createObjectBuilder()
-                .add("annotationProcessorPaths",
-                    Json.createObjectBuilder()
-                        .add("path",
-                            Json.createObjectBuilder()
-                                .add("groupId",
-                                    "org.hibernate.orm")
-                                .add("artifactId",
-                                    "hibernate-jpamodelgen")
-                                .add("version",
-                                    "${hibernate.version}"))).build()
-        );
+        CoffeeBuilderUtil.getDependencyConfiguration("maven-compiler-plugin")
+                         .ifPresent(mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log, "maven-compiler-plugin",
+                             mavenCompilerPlugin.getString("version"),
+                             Json.createObjectBuilder()
+                                 .add("annotationProcessorPaths",
+                                     Json.createObjectBuilder()
+                                         .add("path",
+                                             Json.createObjectBuilder()
+                                                 .add("groupId",
+                                                     "org.hibernate.orm")
+                                                 .add("artifactId",
+                                                     "hibernate-jpamodelgen")
+                                                 .add("version",
+                                                     "${hibernate.version}"))).build()));
+
         PomUtil.saveMavenProject(mavenProject, log);
     }
 

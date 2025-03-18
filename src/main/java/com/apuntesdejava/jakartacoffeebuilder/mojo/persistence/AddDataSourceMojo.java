@@ -16,6 +16,9 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
+import com.apuntesdejava.jakartacoffeebuilder.helper.PersistenceXmlHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -26,10 +29,12 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
+
 /**
  * Mojo to add a datasource to the Maven project.
  */
@@ -94,7 +99,6 @@ public class AddDataSourceMojo extends AbstractMojo {
     )
     private String properties;
 
-
     @Parameter(
         property = "persistence-unit"
     )
@@ -105,12 +109,40 @@ public class AddDataSourceMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        try {
+            var log = getLog();
+            log.debug("Project name:%s".formatted(mavenProject.getName()));
+            log.info("Adding datasource %s".formatted(datasourceName));
+            var json = createDataSourceParameters();
+            var jakartaEeHelper = JakartaEeHelper.getInstance();
+
+            jakartaEeHelper.addDataSource(mavenProject, log, declare, json);
+            createPersistenceUnit(json);
+            addJdbcDriver();
+
+            CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);
+        } catch (IOException e) {
+            throw new MojoExecutionException(e);
+        }
+    }
+
+    private void addJdbcDriver() throws MojoExecutionException {
         var log = getLog();
-        log.debug("Project name:%s".formatted(mavenProject.getName()));
-        log.info("Adding datasource %s".formatted(datasourceName));
-        var json = createDataSourceParameters();
-        JakartaEeHelper.getInstance()
-                       .addDataSource(mavenProject, log, declare, coordinatesJdbcDriver, persistenceUnit, json);
+        if (StringUtils.isNotBlank(coordinatesJdbcDriver)) {
+            PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
+            PomUtil.saveMavenProject(mavenProject, log);
+        }
+    }
+
+    private void createPersistenceUnit(JsonObject json) {
+        var log = getLog();
+        if (StringUtils.isNotBlank(persistenceUnit)) {
+            var currentPath = mavenProject.getFile().toPath().getParent();
+            PersistenceXmlHelper
+                .getInstance()
+                .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
+                    json.getString("name"));
+        }
     }
 
     private JsonObject createDataSourceParameters() {

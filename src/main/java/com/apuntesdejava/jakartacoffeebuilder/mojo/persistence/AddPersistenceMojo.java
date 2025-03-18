@@ -17,6 +17,7 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -28,6 +29,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+
+import java.io.IOException;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
@@ -78,16 +81,20 @@ public class AddPersistenceMojo extends AbstractMojo {
         try {
             var fullProject = MavenProjectHelper.getInstance()
                                                 .getFullProject(mavenSession, projectBuilder, mavenProject);
-            var jakartaEeUtil = JakartaEeHelper.getInstance();
-            if (jakartaEeUtil.hasNotJakartaCdiDependency(fullProject, log))
-                jakartaEeUtil.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
-            if (jakartaEeUtil.hasNotJakartaPersistenceDependency(fullProject, log))
-                jakartaEeUtil.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
-            if (jakartaEeUtil.hasNotJakartaDataDependency(fullProject, log)
-                && jakartaEeUtil.isValidAddJakartaDataDependency(fullProject, log))
-                jakartaEeUtil.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
+            var jakartaEeHelper = JakartaEeHelper.getInstance();
+            if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log))
+                jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
+            if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log))
+                jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
+            if (jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
+                && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
+                jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
-        } catch (ProjectBuildingException ex) {
+            CoffeeBuilderUtil.getDialectFromConfiguration(mavenProject.getFile().toPath().getParent())
+                                 .ifPresent(dialectClass ->
+                                     jakartaEeHelper.checkDataDependencies(fullProject, log, dialectClass));
+
+        } catch (ProjectBuildingException | IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error resolving dependencies", ex);
 
