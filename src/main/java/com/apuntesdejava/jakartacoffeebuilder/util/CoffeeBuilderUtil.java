@@ -45,16 +45,37 @@ public class CoffeeBuilderUtil {
         return Optional.ofNullable(response.getJsonObject(name));
     }
 
+    /**
+     * Retrieves the properties configuration for a given name.
+     *
+     * @param name the name of the properties configuration
+     * @return an Optional containing the JsonArray of the properties configuration if present
+     * @throws IOException if an error occurs while obtaining the content
+     */
     public static Optional<JsonArray> getPropertiesConfiguration(String name) throws IOException {
         var response = HttpUtil.getContent(Constants.PROPERTIES_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonArray(name));
     }
 
+    /**
+     * Retrieves the dialect configuration from a remote source.
+     *
+     * @return an Optional containing the JsonObject of the dialect configuration if present
+     * @throws IOException if an error occurs while obtaining the content
+     */
     public static Optional<JsonObject> getDialectConfiguration() throws IOException {
         var response = HttpUtil.getContent(Constants.DIALECT_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response);
     }
 
+    /**
+     * Updates the project configuration with the given configuration name and JSON object.
+     *
+     * @param currentDirectoryPath the path to the current directory
+     * @param configurationName    the name of the configuration to update
+     * @param configuration        the JSON object containing the configuration data
+     * @throws IOException if an error occurs while updating the configuration
+     */
     public static void updateProjectConfiguration(Path currentDirectoryPath,
                                                   String configurationName,
                                                   JsonObject configuration) throws IOException {
@@ -69,6 +90,13 @@ public class CoffeeBuilderUtil {
 
     }
 
+    /**
+     * Retrieves the dialect from the project configuration.
+     *
+     * @param currentDirectoryPath the path to the current directory
+     * @return an Optional containing the dialect string if present
+     * @throws IOException if an error occurs while reading the configuration
+     */
     public static Optional<String> getDialectFromConfiguration(Path currentDirectoryPath) throws IOException {
         var configurationJson = currentDirectoryPath.resolve("project.json");
         var configurationObject = JsonUtil.readJsonValue(configurationJson).asJsonObject();

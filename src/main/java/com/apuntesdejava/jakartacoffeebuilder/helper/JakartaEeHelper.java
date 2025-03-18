@@ -253,6 +253,13 @@ public class JakartaEeHelper {
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
+    /**
+     * Checks if the Jakarta Data dependency can be added to the given Maven project.
+     *
+     * @param mavenProject the Maven project to check
+     * @param log          the logger to use for logging messages
+     * @return true if the Jakarta Data dependency can be added, false otherwise
+     */
     public boolean isValidAddJakartaDataDependency(MavenProject mavenProject, Log log) {
         return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
             SPECS_VERSIONS.get(JAKARTAEE_VERSION_11).get(JAKARTA_PERSISTENCE_API));
@@ -327,6 +334,13 @@ public class JakartaEeHelper {
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
+    /**
+     * Adds a persistence class provider to the given Maven project.
+     *
+     * @param mavenProject the Maven project to which the provider will be added
+     * @param log          the logger to use for logging messages
+     * @throws IOException if an error occurs while adding the provider
+     */
     public void addPersistenceClassProvider(MavenProject mavenProject, Log log) throws IOException {
         var packageDefinition = MavenProjectHelper.getInstance().getProviderPackage(mavenProject);
         var className = "PersistenceProvider";
@@ -340,7 +354,8 @@ public class JakartaEeHelper {
             "annotations", Map.of(
                 "jakarta.persistence.PersistenceContext", Map.of(
                     "unitName", "example-pu"
-                )
+                ),
+                "jakarta.enterprise.inject.Produces", Map.of()
             )
         ));
         TemplateUtil.getInstance().createJavaBeanFile(log,
