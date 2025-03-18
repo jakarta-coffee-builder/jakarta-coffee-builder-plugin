@@ -90,6 +90,7 @@ public class AddPersistenceMojo extends AbstractMojo {
                 && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
+            jakartaEeHelper.addPersistenceClassProvider(mavenProject,log);
             CoffeeBuilderUtil.getDialectFromConfiguration(mavenProject.getFile().toPath().getParent())
                                  .ifPresent(dialectClass ->
                                      jakartaEeHelper.checkDataDependencies(fullProject, log, dialectClass));
