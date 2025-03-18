@@ -1,10 +1,13 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -40,6 +43,17 @@ public class HttpUtil {
             });
         }
     }
+
+    /**
+     * A converter function that converts a JSON response string to a JsonObject.
+     */
+    public static final Function<String, JsonObject> STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER = (response) -> {
+
+        try (var reader = Json.createReader(new StringReader(response))) {
+            return reader.readObject();
+        }
+
+    };
 
     public record Parameter(String name, String value) {
 

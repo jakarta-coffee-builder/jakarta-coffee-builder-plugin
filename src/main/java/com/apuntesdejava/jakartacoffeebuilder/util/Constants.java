@@ -65,6 +65,10 @@ public class Constants {
     public static final String FIELDS = "fields";
     public static final String IMPORTS_LIST = "importsList";
 
+    public static final String DEPENDENCIES_URL = "https://jakarta-coffee-builder.github.io/configuration/dependencies.json";
+    public static final String DIALECT_URL = "https://jakarta-coffee-builder.github.io/configuration/hibernate-dialect.json";
+    public static final String PROPERTIES_URL = "https://jakarta-coffee-builder.github.io/configuration/properties.json";
+
     public static final String HIBERNATE_PROVIDER = "org.hibernate.jpa.HibernatePersistenceProvider";
 
     public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.

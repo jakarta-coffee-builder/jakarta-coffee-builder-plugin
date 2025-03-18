@@ -15,7 +15,6 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
@@ -29,8 +28,9 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Optional;
+
+import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
 
 /**
  * Utility class for handling Maven POM file operations.
@@ -133,11 +133,8 @@ public class PomUtil {
 
     private static String getLastVersion(String groupId, String artifactId) throws IOException {
         var params = "p:jar AND a:%s AND g:%s".formatted(artifactId, groupId);
-        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select", responseString -> {
-            try (var reader = Json.createReader(new StringReader(responseString))) {
-                return reader.readObject();
-            }
-        }, new HttpUtil.Parameter("q", params));
+        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select",
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER, new HttpUtil.Parameter("q", params));
         return response.getJsonObject("response")
                        .getJsonArray("docs")
                        .getJsonObject(0)
