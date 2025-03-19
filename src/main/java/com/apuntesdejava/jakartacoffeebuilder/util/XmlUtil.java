@@ -412,6 +412,19 @@ public class XmlUtil {
         return Optional.of(addElement(parentElement, elementName));
     }
 
+    /**
+     * Removes the first child element with the specified tag name from the given parent element.
+     *
+     * @param element        the parent element from which the child element will be removed
+     * @param tagNameToRemove the tag name of the child element to be removed
+     */
+    public void removeElement(Element element, String tagNameToRemove) {
+        var nodeList = element.getElementsByTagName(tagNameToRemove);
+        if (nodeList.getLength() > 0) {
+            element.removeChild(nodeList.item(0));
+        }
+    }
+
     private static class XmlUtilHolder {
 
         private static final XmlUtil INSTANCE = new XmlUtil();
