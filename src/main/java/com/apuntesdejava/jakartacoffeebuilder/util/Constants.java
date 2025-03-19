@@ -104,4 +104,5 @@ public class Constants {
 
     public static final String DATASOURCE_DECLARE_WEB = "web.xml";
     public static final String DATASOURCE_DECLARE_CLASS = "class";
+    public static final String DATASOURCE_PAYARA = "payara";
 }

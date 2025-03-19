@@ -22,6 +22,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -32,8 +33,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.IOException;
 import java.util.Arrays;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 
 /**
  * Mojo to add a datasource to the Maven project.
@@ -111,6 +111,7 @@ public class AddDataSourceMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
+            validateDataSourceName();
             log.debug("Project name:%s".formatted(mavenProject.getName()));
             log.info("Adding datasource %s".formatted(datasourceName));
             var json = createDataSourceParameters();
@@ -124,6 +125,23 @@ public class AddDataSourceMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException(e);
         }
+    }
+
+    private String getPrefix() {
+        return switch (declare) {
+            case DATASOURCE_DECLARE_WEB -> "java:global/";
+            case DATASOURCE_DECLARE_CLASS -> "java:app/";
+            default -> StringUtils.EMPTY;
+        } + "jdbc/";
+    }
+
+    private void validateDataSourceName() {
+        RegexValidator validator = new RegexValidator("^[a-zA-Z][a-zA-Z0-9]*$");
+        if (!validator.isValid(datasourceName)) {
+            throw new IllegalArgumentException("Invalid datasource name");
+        }
+
+        datasourceName = getPrefix() + datasourceName;
     }
 
     private void addJdbcDriver() throws MojoExecutionException {

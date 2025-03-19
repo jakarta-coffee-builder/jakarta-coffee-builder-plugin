@@ -106,6 +106,7 @@ public class PersistenceXmlHelper {
                                .formatted(persistenceUnit, name))
                        .findFirst()
                        .ifPresent(element -> {
+                           xmlUtil.removeElement(element,"jta-data-source");
                            xmlUtil.addElement(element, "jta-data-source").setTextContent(name);
                            savePersistenceXml(currentPath, log, document);
                        });
