@@ -133,8 +133,7 @@ public class AddFacesMojo extends AbstractMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Faces dependency");
         try {
-            var fullProject = MavenProjectHelper.getInstance()
-                                                .getFullProject(mavenSession, projectBuilder, mavenProject);
+            var fullProject = MavenProjectHelper.getFullProject(mavenSession, projectBuilder, mavenProject);
 
             var jakartaEeUtil = JakartaEeHelper.getInstance();
             if (!jakartaEeUtil.hasJakartaFacesDependency(fullProject, log)) {

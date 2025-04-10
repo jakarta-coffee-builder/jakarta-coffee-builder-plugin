@@ -79,8 +79,7 @@ public class AddPersistenceMojo extends AbstractMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Persistence dependency");
         try {
-            var fullProject = MavenProjectHelper.getInstance()
-                                                .getFullProject(mavenSession, projectBuilder, mavenProject);
+            var fullProject = MavenProjectHelper.getFullProject(mavenSession, projectBuilder, mavenProject);
             var jakartaEeHelper = JakartaEeHelper.getInstance();
             if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log))
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);

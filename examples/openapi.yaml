@@ -1,0 +1,238 @@
+openapi: 3.0.3
+info:
+  title: Product Management API
+  description: API for managing product operations with full CRUD functionality
+  version: 1.0.0
+  contact:
+    name: API Support Team
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+
+components:
+  schemas:
+    Product:
+      type: object
+      required:
+        - name
+        - price
+      properties:
+        id:
+          type: string
+          readOnly: true
+          description: Unique identifier for the product
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Name of the product
+        description:
+          type: string
+          maxLength: 500
+          description: Detailed description of the product
+        price:
+          type: number
+          format: float
+          minimum: 0
+          description: Price of the product
+        category:
+          type: string
+          description: Product category
+        stock:
+          type: integer
+          minimum: 0
+          description: Current stock quantity
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Product creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last update timestamp
+
+  parameters:
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier of the product
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid input
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
+
+    NotFound:
+      description: Product not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
+
+paths:
+  /products:
+    get:
+      summary: List all products
+      description: Retrieve a list of all products with optional filtering and pagination
+      operationId: listProducts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Number of products per page
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter products by category
+      responses:
+        '200':
+          description: Successful product list retrieval
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  total:
+                    type: integer
+                    description: Total number of products
+
+    post:
+      summary: Create a new product
+      description: Add a new product to the catalog
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Product successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /products/{productId}:
+    get:
+      summary: Get product details
+      description: Retrieve details of a specific product by ID
+      operationId: getProductById
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: Successful product retrieval
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update a product
+      description: Update all details of an existing product
+      operationId: updateProduct
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Product successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      summary: Partially update a product
+      description: Update specific fields of an existing product
+      operationId: partialUpdateProduct
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                  format: float
+                category:
+                  type: string
+                stock:
+                  type: integer
+      responses:
+        '200':
+          description: Product partially updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete a product
+      description: Remove a product from the catalog
+      operationId: deleteProduct
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '204':
+          description: Product successfully deleted
+        '404':
+          $ref: '#/components/responses/NotFound'

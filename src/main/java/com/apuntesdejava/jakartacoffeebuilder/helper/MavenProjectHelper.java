@@ -33,15 +33,6 @@ public class MavenProjectHelper {
     private MavenProjectHelper() {
     }
 
-    public static MavenProjectHelper getInstance() {
-        return MavenProjectUtilHolder.INSTANCE;
-    }
-
-    private static class MavenProjectUtilHolder {
-
-        private static final MavenProjectHelper INSTANCE = new MavenProjectHelper();
-    }
-
     /**
      * Retrieves the full Maven project with resolved dependencies.
      *
@@ -51,7 +42,7 @@ public class MavenProjectHelper {
      * @return the fully built Maven project with resolved dependencies
      * @throws ProjectBuildingException if an error occurs during project building
      */
-    public MavenProject getFullProject(MavenSession mavenSession,
+    public static MavenProject getFullProject(MavenSession mavenSession,
                                        ProjectBuilder projectBuilder,
                                        MavenProject mavenProject) throws ProjectBuildingException {
         var buildingRequest = mavenSession.getProjectBuildingRequest();
@@ -67,24 +58,28 @@ public class MavenProjectHelper {
      * @param mavenProject the Maven project containing the group ID and artifact ID
      * @return the generated package name as a string
      */
-    public String getProjectPackage(MavenProject mavenProject) {
+    public static String getProjectPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(RegExUtils.replaceAll(mavenProject.getGroupId(), "[^a-zA-Z0-9]", "."),
             RegExUtils.replaceAll(mavenProject.getArtifactId(), "[^a-zA-Z0-9]", "."));
     }
 
-    public String getEntityPackage(MavenProject mavenProject) {
+    public static String getEntityPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
     }
 
-    public String getRepositoryPackage(MavenProject mavenProject) {
+    public static String getRepositoryPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "repository");
     }
 
-    public String getProviderPackage(MavenProject mavenProject) {
+    public static String getProviderPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
     }
 
-    public String getFacesPackage(MavenProject mavenProject) {
+    public static String getFacesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "faces");
+    }
+
+    public static String getApiResourcesPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
     }
 }
