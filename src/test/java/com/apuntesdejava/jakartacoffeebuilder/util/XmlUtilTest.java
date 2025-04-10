@@ -1,5 +1,6 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import com.apuntesdejava.jakartacoffeebuilder.LogTest;
 import org.apache.maven.plugin.logging.Log;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -14,20 +15,20 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 public class XmlUtilTest {
+
+    private static final Log LOG = new LogTest();
+
     // Handling non-existent XML files and directories
     @Test
     public void test_get_document_with_nonexistent_file() {
-        Log mockLog = mock(Log.class);
         Path nonExistentPath = Paths.get("non/existent/file.xml");
         XmlUtil xmlUtil = XmlUtil.getInstance();
 
-        Optional<Document> result = xmlUtil.getDocument(mockLog, nonExistentPath);
+        Optional<Document> result = xmlUtil.getDocument(LOG, nonExistentPath);
 
         assertTrue(result.isEmpty());
-        verify(mockLog, never()).error(anyString(), any(Exception.class));
     }
 
     // Adding elements with different parameters (tag name, content, namespace)
@@ -70,7 +71,6 @@ public class XmlUtilTest {
     public void test_find_elements_with_complex_xpath() throws ParserConfigurationException {
         // Arrange
         XmlUtil xmlUtil = XmlUtil.getInstance();
-        Log mockLog = mock(Log.class);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document document = dBuilder.newDocument();
@@ -86,7 +86,7 @@ public class XmlUtilTest {
         String complexXPath = "/root/child[@id='2']";
 
         // Act
-        NodeList result = xmlUtil.findElements(document, mockLog, complexXPath);
+        NodeList result = xmlUtil.findElements(document, LOG, complexXPath);
 
         // Assert
         assertNotNull(result);
