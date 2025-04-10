@@ -37,7 +37,7 @@ public class DataSourceClassCreator extends DataSourceCreator {
 
     @Override
     public void build() throws IOException {
-        var packageDefinition = MavenProjectHelper.getInstance().getProviderPackage(mavenProject);
+        var packageDefinition = MavenProjectHelper.getProviderPackage(mavenProject);
         var className = "DataSourceProvider";
         var dataSourceClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var properties = getDataSourceParameters();

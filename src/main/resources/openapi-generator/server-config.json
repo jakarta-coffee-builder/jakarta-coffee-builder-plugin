@@ -1,0 +1,16 @@
+{
+  "generatorName": "java-helidon-server",
+  "generateModelTests": "false",
+  "generateModelDocumentation": "false",
+  "generateApiDocumentation": "false",
+  "generateApiTests": "false",
+  "configOptions": {
+    "fullProject": "false",
+    "library": "mp",
+    "sourceFolder": "src/java/main",
+    "useJakartaEe": "true",
+    "serializationLibrary": "jsonb",
+    "modelPackage": "${packageResource}.model",
+    "apiPackage": "${packageResource}.api"
+  }
+}

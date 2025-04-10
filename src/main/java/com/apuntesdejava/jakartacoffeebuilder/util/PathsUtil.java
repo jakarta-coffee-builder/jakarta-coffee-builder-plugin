@@ -15,12 +15,16 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for working with file paths within a Maven project. Provides methods for obtaining paths to common
@@ -66,7 +70,7 @@ public class PathsUtil {
      * Returns the path to a package directory within the specified base directory. Creates the directory if it doesn't
      * exist. The package name is converted to a path using '/' as a separator.
      *
-     * @param javaDir     The base directory.
+     * @param javaDir The base directory.
      * @param packageName The package name (e.g., "com.example.mypackage").
      * @return The Path object representing the package directory.
      * @throws IOException If an I/O error occurs during directory creation.
@@ -83,8 +87,8 @@ public class PathsUtil {
      * Returns the path to a Java source file within a specified package directory within the Maven project. Creates
      * necessary directories if they don't exist.
      *
-     * @param mavenProject   The Maven project object.
-     * @param javaClassName  The name of the Java class (without the .java extension).
+     * @param mavenProject The Maven project object.
+     * @param javaClassName The name of the Java class (without the .java extension).
      * @return The Path object representing the Java source file.
      * @throws IOException If an I/O error occurs during directory creation.
      */
@@ -94,5 +98,11 @@ public class PathsUtil {
         var javaDir = PathsUtil.getJavaPath(mavenProject);
         var packageDir = PathsUtil.packageToPath(javaDir, packageDefinition);
         return packageDir.resolve(javaClassName + ".java");
+    }
+
+    public static Stream<String> getContentFromResource(String resourcePath) throws IOException {
+        try (var is = PathsUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
+           return IOUtils.toString(Objects.requireNonNull(is), Charset.defaultCharset()).lines();
+        }
     }
 }

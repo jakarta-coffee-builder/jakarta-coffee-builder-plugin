@@ -36,8 +36,8 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
         var entityName = getEntityName(entity);
         try {
             log.info("Building Jakarta 11 Repository for entity: " + entityName);
-            var packageDefinition = MavenProjectHelper.getInstance().getRepositoryPackage(mavenProject);
-            var packageEntity = MavenProjectHelper.getInstance().getEntityPackage(mavenProject);
+            var packageDefinition = MavenProjectHelper.getRepositoryPackage(mavenProject);
+            var packageEntity = MavenProjectHelper.getEntityPackage(mavenProject);
             var className = entityName + "Repository";
             var fieldId = getFieldId(entity);
             var repositoryPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);

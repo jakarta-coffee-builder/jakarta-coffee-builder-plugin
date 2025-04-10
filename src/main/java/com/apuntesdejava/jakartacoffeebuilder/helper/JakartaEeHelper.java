@@ -342,7 +342,7 @@ public class JakartaEeHelper {
      * @throws IOException if an error occurs while adding the provider
      */
     public void addPersistenceClassProvider(MavenProject mavenProject, Log log) throws IOException {
-        var packageDefinition = MavenProjectHelper.getInstance().getProviderPackage(mavenProject);
+        var packageDefinition = MavenProjectHelper.getProviderPackage(mavenProject);
         var className = "PersistenceProvider";
         var persistenceProviderClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var annotationClasses = Map.of(
