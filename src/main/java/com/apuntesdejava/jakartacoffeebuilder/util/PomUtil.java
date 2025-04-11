@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
  *     PomUtil pomUtil = PomUtil.getInstance();
  *     pomUtil.addDependency(mavenProject, log, groupId, artifactId, version, scope);
  * </pre>
- * </p>
  * <p>
  * Note: This class is thread-safe.
  * </p>
@@ -56,6 +55,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
  * </p>
  */
 public class PomUtil {
+
+    private PomUtil(){}
 
 
     /**

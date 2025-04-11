@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,49 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Add a new template to the faces project.
+ * Mojo for adding a new template to a Jakarta Faces project.
+ * <p>
+ * This Mojo allows the creation of a new face template in the project. It uses the
+ * {@link JakartaFacesHelper} to handle the template creation and supports optional
+ * inserts for customization.
+ * </p>
+ * <p>
+ * Usage:
+ * <ul>
+ *   <li>Configure the Mojo in the Maven POM file.</li>
+ *   <li>Specify the template name and optional inserts as parameters.</li>
+ * </ul>
+ * <p>
+ * Example configuration in the POM file:
+ * <pre>
+ * {@code
+ * <plugin>
+ *   <groupId>com.apuntesdejava</groupId>
+ *   <artifactId>jakarta-coffee-builder-plugin</artifactId>
+ *   <version>1.0.0</version>
+ *   <executions>
+ *     <execution>
+ *       <goals>
+ *         <goal>add-face-template</goal>
+ *       </goals>
+ *       <configuration>
+ *         <name>myTemplate</name>
+ *         <inserts>
+ *           <insert>header</insert>
+ *           <insert>footer</insert>
+ *         </inserts>
+ *       </configuration>
+ *     </execution>
+ *   </executions>
+ * </plugin>
+ * }
+ * </pre>
+ * <p>
+ * This Mojo is part of the Jakarta Coffee Builder Plugin and simplifies the creation
+ * of face templates in Jakarta Faces projects.
+ * </p>
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 @Mojo(
     name = "add-face-template"
@@ -50,6 +90,25 @@ public class AddFaceTemplateMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
+    /**
+     * Default constructor.
+     * <p>
+     * This constructor is used by Maven to create an instance of this Mojo.
+     * </p>
+     */
+    public AddFaceTemplateMojo() {
+    }
+
+    /**
+     * Executes the Mojo to add a new face template to the project.
+     * <p>
+     * This method uses the {@link JakartaFacesHelper} to create the template and handles
+     * any exceptions that may occur during the process.
+     * </p>
+     *
+     * @throws MojoExecutionException if an error occurs during execution.
+     * @throws MojoFailureException   if the template cannot be created.
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  *
  * <p>Note: This class is not intended to be instantiated directly. Use {@link #getInstance()} to obtain the singleton instance.</p>
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * @author Diego Silva diego.silva at apuntesdejava.com
  * @see JsonUtil
  * @see StringsUtil
  * @see TemplateUtil
@@ -61,6 +61,12 @@ public class JakartaPersistenceHelper {
     private JakartaPersistenceHelper() {
     }
 
+    /**
+     * Retrieves the singleton instance of the `JakartaPersistenceHelper` class.
+     * This method ensures that only one instance of the class is created and reused.
+     *
+     * @return the singleton instance of `JakartaPersistenceHelper`
+     */
     public static JakartaPersistenceHelper getInstance() {
         return JakartaPersistenceUtilHolder.INSTANCE;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,13 @@ import org.apache.commons.io.IOUtils;
  * Utility class for working with file paths within a Maven project. Provides methods for obtaining paths to common
  * directories like 'src/main/java' and 'src/main/webapp', and for creating package directories.
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class PathsUtil {
+
+    private PathsUtil(){
+
+    }
 
     /**
      * Returns the path to the 'src/main/java' directory within the Maven project. Creates the directory if it doesn't
@@ -84,10 +88,11 @@ public class PathsUtil {
     }
 
     /**
-     * Returns the path to a Java source file within a specified package directory within the Maven project. Creates
-     * necessary directories if they don't exist.
+     * Returns the path to a Java source file within a specified package directory in the Maven project.
+     * Creates necessary directories if they don't exist.
      *
      * @param mavenProject The Maven project object.
+     * @param packageDefinition The package name (e.g., "com.example.mypackage").
      * @param javaClassName The name of the Java class (without the .java extension).
      * @return The Path object representing the Java source file.
      * @throws IOException If an I/O error occurs during directory creation.
@@ -100,6 +105,14 @@ public class PathsUtil {
         return packageDir.resolve(javaClassName + ".java");
     }
 
+    /**
+     * Reads the content of a resource file and returns it as a stream of lines.
+     *
+     * @param resourcePath The path to the resource file within the classpath.
+     * @return A Stream of strings, where each string represents a line from the resource file.
+     * @throws IOException If an I/O error occurs while reading the resource.
+     * @throws NullPointerException If the resource cannot be found.
+     */
     public static Stream<String> getContentFromResource(String resourcePath) throws IOException {
         try (var is = PathsUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {
            return IOUtils.toString(Objects.requireNonNull(is), Charset.defaultCharset()).lines();

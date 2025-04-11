@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,18 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
- * Utility class for building coffee configurations.
+ * Utility class for handling CoffeeBuilder operations.
+ * <p>
+ * This class provides methods to retrieve dependency configurations, properties configurations,
+ * and dialect configurations from remote sources. It also allows updating the project configuration
+ * and retrieving the dialect from the project configuration.
+ * </p>
  */
 public class CoffeeBuilderUtil {
+
+    private CoffeeBuilderUtil(){
+
+    }
 
     /**
      * Retrieves the dependency configuration for a given name.

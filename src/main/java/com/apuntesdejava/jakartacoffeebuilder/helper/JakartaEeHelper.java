@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,26 +37,28 @@ import static java.util.Collections.emptyMap;
  * <p>
  * This class provides methods to add Jakarta Faces dependencies to a Maven project
  * and to check if a Maven project already has a Jakarta Faces dependency.
- * </p>
  * <p>
  * This class follows the Singleton design pattern to ensure only one instance is created.
- * </p>
  * <p>
  * Usage example:
  * <pre>
  *     JakartaEeUtil jakartaEeUtil = JakartaEeUtil.getInstance();
  *     jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
  * </pre>
- * </p>
  * <p>
  * Note: This class is thread-safe.
- * </p>
- * <p>
- * Author: Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
- * </p>
+ * @author   Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
  */
 public class JakartaEeHelper {
 
+    /**
+     * Retrieves the singleton instance of the `JakartaEeHelper` class.
+     * <p>
+     * This method ensures that only one instance of the class is created
+     * (Singleton design pattern).
+     *
+     * @return the singleton instance of `JakartaEeHelper`
+     */
     public static JakartaEeHelper getInstance() {
         return JakartaEeUtilHolder.INSTANCE;
     }

@@ -12,6 +12,8 @@ import java.nio.file.Path;
  */
 public class JsonUtil {
 
+    private JsonUtil(){}
+
     /**
      * Reads a JSON value from the specified file path.
      *

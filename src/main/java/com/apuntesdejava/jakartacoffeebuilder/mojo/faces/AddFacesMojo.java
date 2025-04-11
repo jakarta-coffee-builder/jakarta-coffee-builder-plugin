@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,19 +44,20 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
  * <li> Updates the web application's welcome file configuration with the specified value.</li>
  * </ul>
  * Goal: add-faces
- * Configuration Parameters:<ul><li>
+ * Configuration Parameters:<ul>
  * <li> <code>url-pattern</code>: Specifies the URL pattern to be used for Faces requests (default: "*.faces").</li>
  * <li> <code>welcome-file</code>: Specifies the welcome file name (default: "index.faces").</li>
  * <li> <code>jakarta-ee-version</code>: Defines the Jakarta EE version to use (default: Jakarta EE 10).</li>
  * <li> <code>mavenProject</code>: Represents the Maven project being processed.</li>
  * <li> <code>mavenSession</code>: Provides the Maven execution session information.</li>
  * <li> <code>projectBuilder</code>: Helper to build Maven project instances.</li>
- * </li></ul>
+ *  </ul>
  * Execution:<ul><li>
  * Executes the above tasks in sequence, logging relevant information or errors as
  * applicable.</li>
  * <li> Throws MojoExecutionException or MojoFailureException if issues occur during execution.</li>
- * </li></ul>
+ *  </ul>
+ * @author Diego Silva
  */
 @Mojo(
     name = "add-faces"
@@ -93,6 +94,13 @@ public class AddFacesMojo extends AbstractMojo {
         required = true
     )
     private MavenSession mavenSession;
+
+    /**
+     * Default constructor.<br/>
+     * This constructor is used by Maven to create an instance of this Mojo.
+     */
+    public AddFacesMojo() {
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

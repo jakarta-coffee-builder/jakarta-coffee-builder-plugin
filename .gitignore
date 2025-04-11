@@ -25,3 +25,4 @@ replay_pid*
 /nb-configuration.xml
 .idea
 target
+/nbactions.xml

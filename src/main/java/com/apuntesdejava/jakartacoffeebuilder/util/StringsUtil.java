@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  * converting to PascalCase, camelCase, and kebab-case, and checking for string matches.
  */
 public class StringsUtil {
+
+    private StringsUtil(){}
 
 
     /**

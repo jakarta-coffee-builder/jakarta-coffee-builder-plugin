@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.XML_XSLT;
  *     xmlUtil.addElement(document, log, parentNode, nodeName, postCreate);
  *     xmlUtil.saveDocument(document, log, xmlPath);
  * </pre>
- * </p>
  * <p>
  * Note: This class is thread-safe.
  * </p>
@@ -73,7 +72,15 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.XML_XSLT;
  */
 public class XmlUtil {
 
-
+    /**
+     * Retrieves the singleton instance of the `XmlUtil` class.
+     * <p>
+     * This method ensures that only one instance of the `XmlUtil` class
+     * is created and provides a global point of access to it.
+     * </p>
+     *
+     * @return the singleton instance of `XmlUtil`
+     */
     public static XmlUtil getInstance() {
         return XmlUtilHolder.INSTANCE;
     }
@@ -134,6 +141,16 @@ public class XmlUtil {
         return false;
     }
 
+    /**
+     * Adds a new element with the specified tag name and attributes to the given parent element.
+     * <p>
+     * If a child element with the same tag name and attributes already exists, this method does nothing.
+     * </p>
+     *
+     * @param parent    the parent element to which the new element will be added
+     * @param tagName   the tag name of the new element
+     * @param attributes a map of attributes to set on the new element
+     */
     public void addElement(Element parent, String tagName, Map<String, String> attributes) {
         if (existsChildElement(parent, tagName, attributes)) return;
 
@@ -156,10 +173,15 @@ public class XmlUtil {
     }
 
     /**
-     * Adds a new element with the specified tag name to the given parent element.
+     * Adds a new element with the specified tag name and text content at the start of the given parent element.
+     * <p>
+     * If an element with the same tag name already exists in the document, this method does nothing.
+     * </p>
      *
-     * @param parent  the parent element to which the new element will be added
-     * @param tagName the tag name of the new element
+     * @param parent      the parent element to which the new element will be added
+     * @param log         the logger to use for logging messages
+     * @param tagName     the tag name of the new element
+     * @param textContent the text content of the new element
      */
     public void addElementAtStart(Element parent, Log log, String tagName, String textContent) {
         if (findElementsStream(parent.getOwnerDocument(), log, tagName).findFirst().isPresent()) return;
@@ -194,6 +216,7 @@ public class XmlUtil {
      * @param parentNode the XPath expression to locate the parent node
      * @param nodeName   the name of the new element to be added
      * @param postCreate a consumer to perform additional operations on the new element after creation
+     * @return  the newly created element
      */
     public Element addElement(Document parent, Log log, String parentNode,
                               String nodeName, Consumer<Element> postCreate) {
@@ -351,6 +374,7 @@ public class XmlUtil {
      * @param doc        the XML document to search
      * @param log        the logger to use for logging messages
      * @param expression the XPath expression used to evaluate and find matching elements
+     * @param namespaces a map of namespace prefixes to namespace URIs for resolving namespaces in the XPath expression
      * @return a {@code Stream} containing the matching {@code Element} objects
      */
     public Stream<Element> findElementsStream(Node doc,

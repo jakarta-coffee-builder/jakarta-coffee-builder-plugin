@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,20 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.HIBERNATE_PR
  * Helper class for managing `persistence.xml` files.
  * Provides methods to create and save `persistence.xml` documents.
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class PersistenceXmlHelper {
 
     private PersistenceXmlHelper() {
     }
 
+    /**
+     * Returns the singleton instance of the `PersistenceXmlHelper` class.
+     * This method ensures that only one instance of the class is created
+     * (Singleton pattern).
+     *
+     * @return the singleton instance of `PersistenceXmlHelper`
+     */
     public static PersistenceXmlHelper getInstance() {
         return PersistenceXmlUtilHolder.INSTANCE;
     }
@@ -81,6 +88,14 @@ public class PersistenceXmlHelper {
         XmlUtil.getInstance().saveDocument(document, log, getPersistencePath(currentPath));
     }
 
+    /**
+     * Resolves the path to the `persistence.xml` file.
+     * This method constructs the path by appending the standard directory structure
+     * (`src/main/resources/META-INF`) to the provided base path.
+     *
+     * @param currentPath the base path from which the `persistence.xml` path will be resolved
+     * @return the resolved `Path` to the `persistence.xml` file
+     */
     protected Path getPersistencePath(Path currentPath) {
         return currentPath.resolve("src")
                           .resolve("main")

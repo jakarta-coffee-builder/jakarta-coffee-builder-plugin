@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,13 @@ public class JakartaFacesHelper {
     private JakartaFacesHelper() {
     }
 
+    /**
+     * Retrieves the singleton instance of the JakartaFacesHelper class.
+     * This method ensures that only one instance of the helper is created
+     * and provides a global point of access to it.
+     *
+     * @return the singleton instance of JakartaFacesHelper
+     */
     public static JakartaFacesHelper getInstance() {
         return JakartaFacesUtilHolder.INSTANCE;
     }
@@ -183,13 +190,13 @@ public class JakartaFacesHelper {
     /**
      * Adds a new Facelet template to the specified Maven project's web application directory.
      * This method generates an XHTML file based on the provided templateName,
-     * and optionally includes <ui:insert> elements with the names specified in the inserts list.
+     * and optionally includes &lt;ui:insert&gt; elements with the names specified in the inserts list.
      *
      * @param mavenProject the Maven project for which the template will be created
      * @param log          the logger for outputting warnings and informational messages
      * @param templateName the name of the Facelet template, which determines the base structure
      *                     of the generated XHTML page
-     * @param inserts      a list of insert names to be added as <ui:insert> elements in the
+     * @param inserts      a list of insert names to be added as  &lt;ui:insert&gt; elements in the
      *                     generated XHTML file; may be null or empty
      * @throws IOException if an input/output error occurs during file creation or modification
      */

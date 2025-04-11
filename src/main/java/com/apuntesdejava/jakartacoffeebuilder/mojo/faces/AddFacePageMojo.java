@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.io.IOException;
  * The plugin creates a new JSF page in the specified location.
  * You can specify a template to use for the new page.
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 @Mojo(
     name = "add-face-page"
@@ -59,6 +59,13 @@ public class AddFacePageMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
+
+    /**
+     * Default constructor.
+     * This constructor is used by Maven to create an instance of this Mojo.
+     */
+    public AddFacePageMojo() {
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

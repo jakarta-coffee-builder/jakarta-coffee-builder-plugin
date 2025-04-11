@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.apache.maven.project.ProjectBuildingException;
  * Provides methods to retrieve full Maven projects with resolved dependencies
  * and to construct package names based on Maven project details.
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class MavenProjectHelper {
 
@@ -63,22 +63,50 @@ public class MavenProjectHelper {
             RegExUtils.replaceAll(mavenProject.getArtifactId(), "[^a-zA-Z0-9]", "."));
     }
 
-    public static String getEntityPackage(MavenProject mavenProject) {
+    /**
+     * Constructs a package name for the "entity" layer based on the Maven project details.
+     *
+     * @param mavenProject the Maven project containing the group ID and artifact ID
+     * @return the generated package name for the "entity" layer
+     */    public static String getEntityPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
     }
 
+    /**
+     * Constructs a package name for the "repository" layer based on the Maven project details.
+     *
+     * @param mavenProject the Maven project containing the group ID and artifact ID
+     * @return the generated package name for the "repository" layer
+     */
     public static String getRepositoryPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "repository");
     }
 
+    /**
+     * Constructs a package name for the "provider" layer based on the Maven project details.
+     *
+     * @param mavenProject the Maven project containing the group ID and artifact ID
+     * @return the generated package name for the "provider" layer
+     */
     public static String getProviderPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
     }
-
+    /**
+     * Constructs a package name for the "faces" layer based on the Maven project details.
+     *
+     * @param mavenProject the Maven project containing the group ID and artifact ID
+     * @return the generated package name for the "faces" layer
+     */
     public static String getFacesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "faces");
     }
 
+    /**
+     * Constructs a package name for the "resources" API layer based on the Maven project details.
+     *
+     * @param mavenProject the Maven project containing the group ID and artifact ID
+     * @return the generated package name for the "resources" API layer
+     */
     public static String getApiResourcesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
     }

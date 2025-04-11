@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACE
  *     webXmlUtil.addServletDeclaration(document, urlPattern, log, servletName, description);
  *     webXmlUtil.saveDocument(document, log, currentPath);
  * </pre>
- * </p>
  * <p>
  * Note: This class is thread-safe.
  * </p>
@@ -56,6 +55,15 @@ public class WebXmlUtil {
     private WebXmlUtil() {
     }
 
+    /**
+     * Returns the singleton instance of the `WebXmlUtil` class.
+     * <p>
+     * This method ensures that only one instance of the class is created
+     * and provides a global point of access to it.
+     * </p>
+     *
+     * @return the singleton instance of `WebXmlUtil`
+     */
     public static WebXmlUtil getInstance() {
         return WebUtilHolder.INSTANCE;
     }

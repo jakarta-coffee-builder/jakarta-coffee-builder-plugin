@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,11 @@ public class TemplateUtil {
         configuration.setDefaultEncoding("UTF-8");
     }
 
+    /**
+     * Provides access to the singleton instance of the `TemplateUtil` class.
+     *
+     * @return the singleton instance of `TemplateUtil`
+     */
     public static TemplateUtil getInstance() {
         return TemplateUtilHolder.INSTANCE;
     }
@@ -70,6 +75,14 @@ public class TemplateUtil {
         createJavaFile(log, data, javaPath, "Entity.ftl");
     }
 
+    /**
+     * Generates a Repository file using a template and writes it to the specified file path.
+     *
+     * @param log      the logger used to log messages and errors
+     * @param data     the data model map containing values to populate the Repository template
+     * @param javaPath the file path where the generated Repository file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
     public void createRepositoryFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
         createJavaFile(log, data, javaPath, "Repository.ftl");
 

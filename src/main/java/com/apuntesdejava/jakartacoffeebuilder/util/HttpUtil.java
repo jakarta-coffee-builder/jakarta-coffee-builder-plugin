@@ -15,7 +15,16 @@ import java.util.function.Function;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+/**
+ * Utility class for performing HTTP requests.
+ * <p>
+ * Provides methods to execute HTTP GET requests and convert the responses
+ * into different formats using conversion functions.
+ * </p>
+ */
 public class HttpUtil {
+    private HttpUtil(){}
+
     /**
      * Executes an HTTP GET request to the specified URL with optional query parameters
      * and converts the response content using the provided converter function.
@@ -55,6 +64,12 @@ public class HttpUtil {
 
     };
 
+    /**
+     * Record class representing a query parameter for HTTP requests.
+     *
+     * @param name  the name of the parameter
+     * @param value the value of the parameter
+     */
     public record Parameter(String name, String value) {
 
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2025 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,38 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 /**
+ * Jakarta 10 Repository Builder implementation.
+ * This class provides the logic to build a repository based on an entity
+ * defined in a JSON object.
  *
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * <p>Implements the {@link RepositoryBuilder} interface.</p>
+ *
+ * <p>Usage example:</p>
+ * <pre>
+ * {@code
+ * Jakarta10RepositoryBuilderImpl builder = new Jakarta10RepositoryBuilderImpl();
+ * builder.buildRepository(mavenProject, log, entityJson);
+ * }
+ * </pre>
+ *
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class Jakarta10RepositoryBuilderImpl implements RepositoryBuilder {
 
+    /**
+     * Default constructor for Jakarta10RepositoryBuilderImpl.<br>
+     * Initializes a new instance of the Jakarta10RepositoryBuilderImpl class.
+     */
+    public Jakarta10RepositoryBuilderImpl() {
+    }
+
+    /**
+     * Builds a repository for a specific entity using Jakarta 10.
+     *
+     * @param mavenProject The Maven project being worked on.
+     * @param log          The logger object to log messages during the build process.
+     * @param entity       The JSON object representing the entity for which the repository will be built.
+     */
     @Override
     public void buildRepository(MavenProject mavenProject, Log log, JsonObject entity) {
         var entityName = getEntityName(entity);

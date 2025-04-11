@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,45 @@ import java.io.IOException;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Mojo for adding persistence configuration to a Jakarta EE project.
+ * <p>
+ * This Mojo ensures that the required Jakarta EE dependencies are present in the project
+ * and creates a `persistence.xml` file with the specified persistence unit name.
+ * </p>
+ * <p>
+ * Usage:
+ * <ul>
+ *   <li>Configure the Mojo in the Maven POM file.</li>
+ *   <li>Specify the Jakarta EE version and persistence unit name as parameters.</li>
+ * </ul>
+ * <p>
+ * Example configuration in the POM file:
+ * <pre>
+ * {@code
+ * <plugin>
+ *   <groupId>com.apuntesdejava</groupId>
+ *   <artifactId>jakarta-coffee-builder-plugin</artifactId>
+ *   <version>1.0.0</version>
+ *   <executions>
+ *     <execution>
+ *       <goals>
+ *         <goal>add-persistence</goal>
+ *       </goals>
+ *       <configuration>
+ *         <jakarta-ee-version>11</jakarta-ee-version>
+ *         <persistence-unit-name>myPU</persistence-unit-name>
+ *       </configuration>
+ *     </execution>
+ *   </executions>
+ * </plugin>
+ * }
+ * </pre>
+ * <p>
+ * This Mojo is part of the Jakarta Coffee Builder Plugin and simplifies the configuration
+ * of Jakarta EE persistence in Maven projects.
+ * </p>
+ *
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
 @Mojo(
     name = "add-persistence"
@@ -67,6 +105,24 @@ public class AddPersistenceMojo extends AbstractMojo {
     )
     private String persistenceUnitName;
 
+    /**
+     * Default constructor.<br/>
+     * This constructor is used by Maven to create an instance of this Mojo.
+     */
+    public AddPersistenceMojo() {
+    }
+
+    /**
+     * Executes the Mojo to add persistence configuration to the project.
+     * <p>
+     * This method checks for required Jakarta EE dependencies and creates a `persistence.xml` file
+     * with the specified persistence unit name.
+     * </p>
+     *
+     * @throws MojoExecutionException if an error occurs during execution.
+     * @throws MojoFailureException   if a required dependency is missing or cannot be resolved.
+     */
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
@@ -76,6 +132,16 @@ public class AddPersistenceMojo extends AbstractMojo {
 
     }
 
+    /**
+     * Checks and adds required Jakarta EE dependencies to the project.
+     * <p>
+     * This method ensures that the project has the necessary Jakarta EE dependencies for
+     * CDI, Persistence, and Data. If any dependency is missing, it is added to the project.
+     * </p>
+     *
+     * @param log the Maven logger instance.
+     * @throws MojoExecutionException if an error occurs while resolving dependencies.
+     */
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Persistence dependency");
         try {
@@ -89,10 +155,10 @@ public class AddPersistenceMojo extends AbstractMojo {
                 && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
-            jakartaEeHelper.addPersistenceClassProvider(mavenProject,log);
+            jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
             CoffeeBuilderUtil.getDialectFromConfiguration(mavenProject.getFile().toPath().getParent())
-                                 .ifPresent(dialectClass ->
-                                     jakartaEeHelper.checkDataDependencies(fullProject, log, dialectClass));
+                             .ifPresent(dialectClass ->
+                                 jakartaEeHelper.checkDataDependencies(fullProject, log, dialectClass));
 
         } catch (ProjectBuildingException | IOException ex) {
             log.error(ex);

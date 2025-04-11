@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,26 @@ import java.util.Optional;
 
 /**
  * Abstract class for creating a data source.
+ * <p>
+ * This class provides a base implementation for creating data sources in a Jakarta EE project.
+ * It includes methods for setting and retrieving data source parameters and an abstract method
+ * for building the data source, which must be implemented by subclasses.
+ * </p>
  */
 public abstract class DataSourceCreator {
+    /**
+     * The Maven project instance.
+     */
     protected final MavenProject mavenProject;
+
+    /**
+     * The logger for logging messages.
+     */
     protected final Log log;
+
+    /**
+     * The data source parameters as a JSON object.
+     */
     protected JsonObject dataSourceParameters;
 
     /**
@@ -58,6 +74,10 @@ public abstract class DataSourceCreator {
 
     /**
      * Retrieves the data source parameters as a map.
+     * <p>
+     * This method converts the JSON object containing the data source parameters into a map.
+     * It supports string, number, and array types, and ignores null values.
+     * </p>
      *
      * @return a map containing the data source parameters
      */
@@ -85,6 +105,9 @@ public abstract class DataSourceCreator {
 
     /**
      * Abstract method to build the data source.
+     * <p>
+     * Subclasses must implement this method to define the logic for creating the data source.
+     * </p>
      *
      * @throws IOException if an I/O error occurs
      */

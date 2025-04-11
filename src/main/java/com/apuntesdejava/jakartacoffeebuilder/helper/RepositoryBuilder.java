@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2025 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,41 @@ import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 
+/**
+ * Interface for building repository classes.
+ * <p>
+ * This interface defines methods for creating repository classes based on entity definitions.
+ * It includes default methods for retrieving entity names and identifying fields, as well as
+ * an abstract method for building the repository.
+ * </p>
+ */
 public interface RepositoryBuilder {
 
+    /**
+     * Obtains an instance of the default implementation of the RepositoryBuilder.
+     *
+     * @return an instance of {@link Jakarta11RepositoryBuilderImpl}
+     */
     static RepositoryBuilder getInstance() {
         return new Jakarta11RepositoryBuilderImpl();
     }
+
+    /**
+     * Retrieves the name of the entity from the provided JSON object.
+     *
+     * @param entity the JSON object representing the entity
+     * @return the name of the entity
+     */
     default String getEntityName(JsonObject entity) {
         return entity.getString(NAME);
     }
 
+    /**
+     * Retrieves the field marked as the identifier (ID) from the entity definition.
+     *
+     * @param entity the JSON object representing the entity
+     * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
+     */
     default Optional< JsonObject> getFieldId(JsonObject entity) {
         return entity.getJsonArray("fields").stream()
                 .map(JsonObject.class::cast)
@@ -40,5 +66,12 @@ public interface RepositoryBuilder {
                 .findFirst();
     }
 
+    /**
+     * Builds the repository class for the specified entity.
+     *
+     * @param mavenProject the Maven project instance
+     * @param log          the logger for logging messages
+     * @param entity       the JSON object representing the entity
+     */
     void buildRepository(MavenProject mavenProject, Log log, JsonObject entity);
 }

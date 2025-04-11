@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,15 +40,33 @@ public class NamespaceContextMap implements NamespaceContext {
 
     private final Map<String, String> prefMap;
 
+    /**
+     * Constructor that initializes the map with a single prefix-URI pair.
+     *
+     * @param prefix the prefix to be associated with the namespace URI
+     * @param uri the namespace URI associated with the prefix
+     */
     public NamespaceContextMap(String prefix, String uri) {
         this.prefMap = Collections.singletonMap(prefix, uri);
     }
 
+    /**
+     * Retrieves the namespace URI associated with a given prefix.
+     *
+     * @param prefix the prefix whose namespace URI is to be retrieved
+     * @return the namespace URI associated with the prefix, or an empty string if not found
+     */
     @Override
     public String getNamespaceURI(String prefix) {
         return prefMap.getOrDefault(prefix, EMPTY);
     }
 
+    /**
+     * Retrieves the prefix associated with a given namespace URI.
+     *
+     * @param namespaceURI the namespace URI whose prefix is to be retrieved
+     * @return the prefix associated with the namespace URI, or null if not found
+     */
     @Override
     public String getPrefix(String namespaceURI) {
         return prefMap.entrySet()
@@ -59,6 +77,12 @@ public class NamespaceContextMap implements NamespaceContext {
                        .orElse(null);
     }
 
+    /**
+     * Retrieves an iterator over all known prefixes.
+     *
+     * @param namespaceURI the namespace URI (not used in this implementation)
+     * @return an iterator over the known prefixes
+     */
     @Override
     public Iterator<String> getPrefixes(String namespaceURI) {
         return prefMap.keySet().iterator();

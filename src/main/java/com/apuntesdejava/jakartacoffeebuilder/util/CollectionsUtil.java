@@ -3,9 +3,16 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import java.util.Map;
 
 /**
- * Utility class for collections operations.
+ * Utility class for handling collections operations.
+ * <p>
+ * This class provides methods to compare two maps for equality.
+ * </p>
  */
 public class CollectionsUtil {
+
+    private CollectionsUtil(){
+
+    }
 
     /**
      * Compares two maps for equality.
