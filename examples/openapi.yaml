@@ -1,0 +1,591 @@
+openapi: 3.0.3
+info:
+  title: Proyecto y Tareas API
+  description: API para la gestión de proyectos, tareas y usuarios
+  version: 1.0.0
+
+servers:
+  - url: http://api.example.com/v1
+    description: Servidor principal
+
+tags:
+  - name: Projects
+    description: Operaciones relacionadas con proyectos
+  - name: Tasks
+    description: Operaciones relacionadas con tareas
+  - name: Users
+    description: Operaciones relacionadas con usuarios
+
+components:
+  schemas:
+    TaskStatus:
+      type: string
+      enum:
+        - PENDING
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+
+    Task:
+      type: object
+      required:
+        - id
+        - name
+        - status
+        - userId
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único de la tarea
+        name:
+          type: string
+          description: Nombre de la tarea
+        description:
+          type: string
+          description: Descripción detallada de la tarea
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+          description: Estado actual de la tarea
+        userId:
+          type: integer
+          format: int64
+          description: ID del usuario responsable de la tarea
+
+    Project:
+      type: object
+      required:
+        - id
+        - name
+        - startDate
+        - userId
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único del proyecto
+        name:
+          type: string
+          description: Nombre del proyecto
+        startDate:
+          type: string
+          format: date
+          description: Fecha de inicio del proyecto
+        endDate:
+          type: string
+          format: date
+          description: Fecha de finalización del proyecto
+        tasks:
+          type: array
+          description: Lista de tareas asociadas al proyecto
+          items:
+            $ref: '#/components/schemas/Task'
+        userId:
+          type: integer
+          format: int64
+          description: ID del usuario responsable del proyecto
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identificador único del usuario
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario
+        firstName:
+          type: string
+          description: Nombre del usuario
+        lastName:
+          type: string
+          description: Apellido del usuario
+        area:
+          type: string
+          description: Área a la que pertenece el usuario
+        jobTitle:
+          type: string
+          description: Cargo o puesto del usuario
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+
+  responses:
+    NotFound:
+      description: El recurso especificado no fue encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+  /projects:
+    get:
+      tags:
+        - Projects
+      summary: Obtiene todos los proyectos
+      operationId: getAllProjects
+      responses:
+        '200':
+          description: Lista de proyectos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '500':
+          description: Error interno del servidor
+
+    post:
+      tags:
+        - Projects
+      summary: Crea un nuevo proyecto
+      operationId: createProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '201':
+          description: Proyecto creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          description: Error interno del servidor
+
+  /projects/{projectId}:
+    get:
+      tags:
+        - Projects
+      summary: Obtiene un proyecto por su ID
+      operationId: getProjectById
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Proyecto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    put:
+      tags:
+        - Projects
+      summary: Actualiza un proyecto existente
+      operationId: updateProject
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: Proyecto actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      tags:
+        - Projects
+      summary: Elimina un proyecto
+      operationId: deleteProject
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Proyecto eliminado exitosamente
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+  /projects/{projectId}/tasks:
+    get:
+      tags:
+        - Projects
+        - Tasks
+      summary: Obtiene todas las tareas de un proyecto
+      operationId: getProjectTasks
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de tareas del proyecto
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    post:
+      tags:
+        - Projects
+        - Tasks
+      summary: Crea una nueva tarea en un proyecto
+      operationId: createTaskInProject
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '201':
+          description: Tarea creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+  /tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Obtiene todas las tareas
+      operationId: getAllTasks
+      responses:
+        '200':
+          description: Lista de tareas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '500':
+          description: Error interno del servidor
+
+  /tasks/{taskId}:
+    get:
+      tags:
+        - Tasks
+      summary: Obtiene una tarea por su ID
+      operationId: getTaskById
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Tarea encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    put:
+      tags:
+        - Tasks
+      summary: Actualiza una tarea existente
+      operationId: updateTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Tarea actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      tags:
+        - Tasks
+      summary: Elimina una tarea
+      operationId: deleteTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Tarea eliminada exitosamente
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Obtiene todos los usuarios
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: Error interno del servidor
+
+    post:
+      tags:
+        - Users
+      summary: Crea un nuevo usuario
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          description: Error interno del servidor
+
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Obtiene un usuario por su ID
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    put:
+      tags:
+        - Users
+      summary: Actualiza un usuario existente
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Usuario actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      tags:
+        - Users
+      summary: Elimina un usuario
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Usuario eliminado exitosamente
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+  /users/{userId}/projects:
+    get:
+      tags:
+        - Users
+        - Projects
+      summary: Obtiene todos los proyectos asignados a un usuario
+      operationId: getUserProjects
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de proyectos del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor
+
+  /users/{userId}/tasks:
+    get:
+      tags:
+        - Users
+        - Tasks
+      summary: Obtiene todas las tareas asignadas a un usuario
+      operationId: getUserTasks
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de tareas del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Error interno del servidor

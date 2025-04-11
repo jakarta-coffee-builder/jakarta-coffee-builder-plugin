@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Coffee",
+    "repository": "crud",
+    "fields": [
+      {
+        "name": "id",
+        "type": "Long",
+        "isId": true
+      },
+      {
+        "name": "name",
+        "type": "String",
+        "column": {
+          "name": "coffee_name",
+          "length": 100,
+          "unique": true,
+          "nullable": false
+        }
+      },
+      {
+        "name": "price",
+        "type": "Double"
+      }
+    ]
+  },
+  {
+    "name": "Order",
+    "table": "order_",
+    "repository": "data",
+    "fields": [
+      {
+        "name": "id",
+        "type": "Long",
+        "isId": true
+      },
+      {
+        "name": "coffee",
+        "type": "Coffee",
+        "manyToOne": true,
+        "joinColumn": {
+          "name": "coffee_id",
+          "nullable": false
+        }
+      },
+      {
+        "name": "quantity",
+        "type": "Integer"
+      }
+    ]
+  }
+]
