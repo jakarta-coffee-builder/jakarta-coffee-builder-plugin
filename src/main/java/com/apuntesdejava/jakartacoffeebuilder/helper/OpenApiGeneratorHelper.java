@@ -38,7 +38,7 @@ public class OpenApiGeneratorHelper {
     private OpenApiGeneratorHelper() {
     }
 
-    private Path getConfigPath(MavenProject mavenProject) throws URISyntaxException, IOException {
+    private Path getConfigPath(MavenProject mavenProject) throws IOException {
         var apiResourcesPackage = MavenProjectHelper.getApiResourcesPackage(mavenProject);
         var jsonFileContents = PathsUtil.getContentFromResource("openapi-generator/server-config.json")
                                         .map(line -> line.replace("${packageResource}", apiResourcesPackage))
@@ -59,7 +59,7 @@ public class OpenApiGeneratorHelper {
     public void processServer(Log log,
                               MavenProject mavenProject,
                               File openApiFile) throws URISyntaxException, IOException {
-        var configTemp = getConfigPath(mavenProject);
+        var apiResourcesPackage = MavenProjectHelper.getApiResourcesPackage(mavenProject);
         OpenAPIGenerator.main(
             new String[]{
                 "generate",
@@ -67,7 +67,11 @@ public class OpenApiGeneratorHelper {
                 "--generator-name", "java-helidon-server",
                 "--output",
                 mavenProject.getBasedir().getAbsolutePath() + "/target/generated-sources/openapi",
-                "--config", configTemp.toAbsolutePath().toString()
+                "--model-package", apiResourcesPackage + ".model",
+                "--api-package", apiResourcesPackage + ".api",
+                "--global-property","modelTests=false,apiTests=false,apiDocs=false,modelDocs=false",
+                "--additional-properties",
+                "fullProject=false,library=mp,useJakartaEe=true,serializationLibrary=jsonb"
             }
         );
 
