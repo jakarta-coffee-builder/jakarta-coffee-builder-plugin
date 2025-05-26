@@ -16,7 +16,11 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreatorFactory;
-import com.apuntesdejava.jakartacoffeebuilder.util.*;
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -47,7 +51,8 @@ import static java.util.Collections.emptyMap;
  * </pre>
  * <p>
  * Note: This class is thread-safe.
- * @author   Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
+ *
+ * @author Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
  */
 public class JakartaEeHelper {
 
@@ -364,12 +369,23 @@ public class JakartaEeHelper {
             Map.of(PACKAGE_NAME, packageDefinition,
                 CLASS_NAME, className,
                 "annotations", annotationClasses,
-                "setters",false,
-                "getters",false,
-                FIELDS,fields
+                "setters", false,
+                "getters", false,
+                FIELDS, fields
             ),
             persistenceProviderClassPath
         );
+    }
+
+    public void addJacksonDependency(MavenProject mavenProject, Log log) throws IOException, MojoExecutionException {
+        CoffeeBuilderUtil.getDependencyConfiguration("jackson-core")
+                         .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "jackson-core.version",
+                             hibernate.getString("version")));
+        PomUtil.addDependency(mavenProject, log, "com.fasterxml.jackson.core", "jackson-core",
+            "${jackson-core.version}");
+        PomUtil.addDependency(mavenProject, log, "com.fasterxml.jackson.core", "jackson-annotations",
+            "${jackson-core.version}");
+        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     private static class JakartaEeUtilHolder {

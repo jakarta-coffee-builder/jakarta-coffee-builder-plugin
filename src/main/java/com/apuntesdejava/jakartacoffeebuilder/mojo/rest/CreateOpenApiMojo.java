@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.rest;
 
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.OpenApiGeneratorHelper;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -103,14 +104,21 @@ public class CreateOpenApiMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
-        Optional.ofNullable(openApiFileServer).ifPresent(openApiFile -> {
-            log.info("Creating open api server side with %s".formatted(openApiFile));
-            try {
-                OpenApiGeneratorHelper.getInstance().processServer(mavenProject, openApiFile);
-            } catch (URISyntaxException | IOException e) {
-                throw new RuntimeException(new MojoFailureException(e));
-            }
+        var jakartaEeHelper = JakartaEeHelper.getInstance();
+        try {
+            jakartaEeHelper.addJacksonDependency(mavenProject, log);
 
-        });
+            Optional.ofNullable(openApiFileServer).ifPresent(openApiFile -> {
+                log.info("Creating open api server side with %s".formatted(openApiFile));
+                try {
+                    OpenApiGeneratorHelper.getInstance().processServer(mavenProject, openApiFile);
+                } catch (URISyntaxException | IOException e) {
+                    throw new RuntimeException(new MojoFailureException(e));
+                }
+
+            });
+        } catch (IOException e) {
+            log.error("Error while adding Jackson dependency: %s".formatted(e.getMessage()));
+        }
     }
 }

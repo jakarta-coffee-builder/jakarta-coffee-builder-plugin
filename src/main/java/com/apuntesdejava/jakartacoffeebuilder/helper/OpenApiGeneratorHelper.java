@@ -74,14 +74,14 @@ public class OpenApiGeneratorHelper {
             new String[]{
                 "generate",
                 "--input-spec", openApiFile.getAbsolutePath(),
-                "--generator-name", "java-helidon-server",
+                "--generator-name", "jaxrs-spec",
                 "--output",
                 mavenProject.getBasedir().getAbsolutePath() + "/target/generated-sources/openapi",
                 "--model-package", apiResourcesPackage + ".model",
                 "--api-package", apiResourcesPackage + ".api",
                 "--global-property", "modelTests=false,apiTests=false,apiDocs=false,modelDocs=false",
                 "--additional-properties",
-                "fullProject=false,library=mp,useJakartaEe=true,serializationLibrary=jsonb"
+                "returnResponse=true,useJakartaEe=true,generateBuilders=true,interfaceOnly=true,useSwaggerAnnotations=false,dateLibrary=java8",
             }
         );
 
