@@ -61,6 +61,9 @@ public class OpenApiGeneratorHelper {
      * This method uses the OpenAPI Generator to create server-side code for a Maven project.
      * The generated code includes models and APIs, and it is configured to use the Helidon server framework.
      * </p>
+     * 
+     * @see <a href="https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/jaxrs-spec.md" >
+     * Documentation for the jaxrs-spec Generator</a>
      *
      * @param mavenProject the Maven project containing the POM file.
      * @param openApiFile  the OpenAPI specification file to be processed.
@@ -74,14 +77,16 @@ public class OpenApiGeneratorHelper {
             new String[]{
                 "generate",
                 "--input-spec", openApiFile.getAbsolutePath(),
-                "--generator-name", "java-helidon-server",
-                "--output",
-                mavenProject.getBasedir().getAbsolutePath() + "/target/generated-sources/openapi",
+                "--generator-name", "jaxrs-spec",
+                "--output", mavenProject.getBuild().getDirectory()+ "/generated-sources/openapi",
                 "--model-package", apiResourcesPackage + ".model",
-                "--api-package", apiResourcesPackage + ".api",
+                "--invoker-package", apiResourcesPackage + ".invoker",
+                "--api-package", apiResourcesPackage ,
                 "--global-property", "modelTests=false,apiTests=false,apiDocs=false,modelDocs=false",
                 "--additional-properties",
-                "fullProject=false,library=mp,useJakartaEe=true,serializationLibrary=jsonb"
+                "returnResponse=true,useJakartaEe=true,generateBuilders=true,interfaceOnly=true,"
+                    + "useSwaggerAnnotations=false,dateLibrary=java8,sourceFolder=,generatePom=false,"
+                    + "useMicroProfileOpenAPIAnnotations=true",
             }
         );
 
