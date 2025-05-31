@@ -21,7 +21,6 @@ import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -39,8 +38,8 @@ import static java.util.Collections.emptyMap;
 /**
  * Utility class for handling Jakarta EE dependencies in Maven projects.
  * <p>
- * This class provides methods to add Jakarta Faces dependencies to a Maven project
- * and to check if a Maven project already has a Jakarta Faces dependency.
+ * This class provides methods to add Jakarta Faces dependencies to a Maven project and to check if a Maven project
+ * already has a Jakarta Faces dependency.
  * <p>
  * This class follows the Singleton design pattern to ensure only one instance is created.
  * <p>
@@ -59,8 +58,7 @@ public class JakartaEeHelper {
     /**
      * Retrieves the singleton instance of the `JakartaEeHelper` class.
      * <p>
-     * This method ensures that only one instance of the class is created
-     * (Singleton design pattern).
+     * This method ensures that only one instance of the class is created (Singleton design pattern).
      *
      * @return the singleton instance of `JakartaEeHelper`
      */
@@ -319,26 +317,7 @@ public class JakartaEeHelper {
     }
 
     private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
-        CoffeeBuilderUtil.getDependencyConfiguration("hibernate")
-                         .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
-                             hibernate.getString("version")));
-        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
-        CoffeeBuilderUtil.getDependencyConfiguration("maven-compiler-plugin")
-                         .ifPresent(mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log, "maven-compiler-plugin",
-                             mavenCompilerPlugin.getString("version"),
-                             Json.createObjectBuilder()
-                                 .add("annotationProcessorPaths",
-                                     Json.createObjectBuilder()
-                                         .add("path",
-                                             Json.createObjectBuilder()
-                                                 .add("groupId",
-                                                     "org.hibernate.orm")
-                                                 .add("artifactId",
-                                                     "hibernate-jpamodelgen")
-                                                 .add("version",
-                                                     "${hibernate.version}"))).build()));
 
-        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     /**
@@ -377,14 +356,67 @@ public class JakartaEeHelper {
         );
     }
 
+    /**
+     * Adds the Jackson Core and Jackson Annotations dependencies to the Maven project. This method also sets the
+     * "jackson-core.version" property in the pom.xml based on the configuration found using
+     * {@link CoffeeBuilderUtil#getDependencyConfiguration(String)}.
+     *
+     * @param mavenProject The Maven project to modify.
+     * @param log          The logger for logging messages.
+     * @throws IOException            If an I/O error occurs.
+     * @throws MojoExecutionException If a Maven execution error occurs.
+     */
     public void addJacksonDependency(MavenProject mavenProject, Log log) throws IOException, MojoExecutionException {
         CoffeeBuilderUtil.getDependencyConfiguration("jackson-core")
-                         .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "jackson-core.version",
-                             hibernate.getString("version")));
+                         .ifPresent(hibernate -> PomUtil
+                             .setProperty(mavenProject, log, "jackson-core.version",
+                                 hibernate.getString("version")));
         PomUtil.addDependency(mavenProject, log, "com.fasterxml.jackson.core", "jackson-core",
             "${jackson-core.version}");
         PomUtil.addDependency(mavenProject, log, "com.fasterxml.jackson.core", "jackson-annotations",
             "${jackson-core.version}");
+        PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    /**
+     * Adds the MicroProfile OpenAPI API dependency to the Maven project. This method retrieves the version from the
+     * configuration and sets the "microprofile-openapi-api.version" property in the pom.xml.
+     *
+     * @param mavenProject The Maven project to modify.
+     * @param log          The logger for logging messages.
+     * @throws IOException            If an I/O error occurs.
+     * @throws MojoExecutionException If a Maven execution error occurs.
+     */
+    public void addMicroprofileOpenApiApiDependency(MavenProject mavenProject,
+                                                    Log log) throws IOException, MojoExecutionException {
+        CoffeeBuilderUtil.getDependencyConfiguration("microprofile-openapi-api")
+                         .ifPresent(
+                             openApi -> PomUtil
+                                 .setProperty(mavenProject, log, "microprofile-openapi-api.version",
+                                     openApi.getString("version")));
+        PomUtil.addDependency(mavenProject, log, "org.eclipse.microprofile.openapi", "microprofile-openapi-api",
+            "${microprofile-openapi-api.version}", "provided");
+        PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    /**
+     * Adds the Jakarta Validation API dependency to the Maven project. This method retrieves the version from the
+     * configuration and sets the "jakarta.validation-api.version" property in the pom.xml.
+     *
+     * @param mavenProject The Maven project to modify.
+     * @param log          The logger for logging messages.
+     * @throws IOException            If an I/O error occurs.
+     * @throws MojoExecutionException If a Maven execution error occurs.
+     */
+    public void addJakartaValidationApiDependency(MavenProject mavenProject,
+                                                  Log log) throws IOException, MojoExecutionException {
+        CoffeeBuilderUtil.getDependencyConfiguration("jakarta.validation-api-11.0.0")
+                         .ifPresent(
+                             openApi -> PomUtil
+                                 .setProperty(mavenProject, log, "jakarta.validation-api.version",
+                                     openApi.getString("version")));
+        PomUtil.addDependency(mavenProject, log, "jakarta.validation", "jakarta.validation-api",
+            "${jakarta.validation-api.version}", "provided");
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
