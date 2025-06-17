@@ -33,7 +33,7 @@
         <maven.version>3.9.9</maven.version>
         <maven.compiler.release>21</maven.compiler.release>
         <mockito.version>5.18.0</mockito.version>
-        <org.slf4j-version>1.7.36</org.slf4j-version>
+        <org.slf4j-version>2.0.17</org.slf4j-version>
     </properties>
     <scm>
         <connection>scm:git:git://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin.git</connection>
@@ -182,7 +182,7 @@
             <plugins>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
