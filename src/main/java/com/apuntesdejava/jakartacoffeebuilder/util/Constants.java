@@ -141,6 +141,13 @@ public class Constants {
      */
     public static final String DEPENDENCIES_URL = "https://jakarta-coffee-builder.github.io/configuration/dependencies.json";
 
+    /**
+     * URL to retrieve development dependencies.
+     * <p>
+     * This URL points to the development branch of the configuration repository, which may contain
+     * dependencies that are not yet released or are in active development.
+     * </p>
+     */
     public static final String DEPENDENCIES_DEV_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop/dependencies.json";
     /**
      * URL to retrieve Hibernate dialect configurations.
