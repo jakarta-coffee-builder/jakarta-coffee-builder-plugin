@@ -17,9 +17,13 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+
+import java.util.Optional;
 
 /**
  * Helper class for Maven project operations.
@@ -43,8 +47,8 @@ public class MavenProjectHelper {
      * @throws ProjectBuildingException if an error occurs during project building
      */
     public static MavenProject getFullProject(MavenSession mavenSession,
-                                       ProjectBuilder projectBuilder,
-                                       MavenProject mavenProject) throws ProjectBuildingException {
+                                              ProjectBuilder projectBuilder,
+                                              MavenProject mavenProject) throws ProjectBuildingException {
         var buildingRequest = mavenSession.getProjectBuildingRequest();
         buildingRequest.setResolveDependencies(true);
         var result = projectBuilder.build(mavenProject.getFile(), buildingRequest);
@@ -68,7 +72,8 @@ public class MavenProjectHelper {
      *
      * @param mavenProject the Maven project containing the group ID and artifact ID
      * @return the generated package name for the "entity" layer
-     */    public static String getEntityPackage(MavenProject mavenProject) {
+     */
+    public static String getEntityPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
     }
 
@@ -91,6 +96,7 @@ public class MavenProjectHelper {
     public static String getProviderPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
     }
+
     /**
      * Constructs a package name for the "faces" layer based on the Maven project details.
      *
@@ -109,5 +115,32 @@ public class MavenProjectHelper {
      */
     public static String getApiResourcesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
+    }
+
+    /**
+     * Retrieves an active profile from the Maven project by its ID.
+     * If the profile does not exist, a new one is created, added to the active profiles, and returned.
+     *
+     * @param mavenProject The Maven project.
+     * @param profileId    The ID of the profile to retrieve or create.
+     * @return The found or newly created {@link Profile}.
+     */
+    public static Profile getProfile(MavenProject mavenProject, String profileId) {
+        var model = getOriginalModel(mavenProject);
+        return model.getProfiles()
+                    .stream()
+                    .filter(profile -> profile.getId().equals(profileId))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        var profile = new Profile();
+                        profile.setId(profileId);
+                        model.addProfile(profile);
+                        return profile;
+                    });
+
+    }
+
+    private static Model getOriginalModel(MavenProject mavenProject) {
+        return Optional.ofNullable(mavenProject.getOriginalModel()).orElse(mavenProject.getModel());
     }
 }
