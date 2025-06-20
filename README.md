@@ -100,3 +100,19 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
 | `properties`       | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.   |                               |
 | `persistence-unit` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration.  |                               | 
 
+### Add Glassfish Embedded Plugin
+
+Add Glassfish Embedded Plugin
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-glassfish-embedded
+```
+
+
+**Parameters**
+
+| Parameter     | Definition                                                      | Default value                |
+|---------------|-----------------------------------------------------------------|------------------------------|
+| `profileId`   | This parameter defines the ID of the Maven profile to be added. | `glassfish`                  |
+| `port`        | This parameter defines the GlassFish port                       | `8080`                       |
+| `contextRoot` | Application Web Context Root                                    | `${project.build.finalName}` |

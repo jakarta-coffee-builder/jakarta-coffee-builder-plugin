@@ -18,6 +18,8 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -56,7 +58,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
  */
 public class PomUtil {
 
-    private PomUtil(){}
+    private PomUtil() {
+    }
 
 
     /**
@@ -240,22 +243,45 @@ public class PomUtil {
      *
      * @param mavenProject  the Maven project to which the plugin will be added
      * @param log           the logger to use for logging messages
+     * @param groupId       the group ID of the plugin
      * @param artifactId    the artifact ID of the plugin
      * @param version       the version of the plugin
      * @param configuration the configuration of the plugin as a JsonObject
+     * @return  the Plugin object that was added
      */
-    public static void addPlugin(MavenProject mavenProject,
-                                 Log log,
-                                 String artifactId,
-                                 String version,
-                                 JsonObject configuration) {
+    public static Plugin addPlugin(MavenProject mavenProject,
+                                   Log log,
+                                   String groupId, String artifactId,
+                                   String version,
+                                   JsonObject configuration) {
         var model = mavenProject.getOriginalModel();
-        var build = model.getBuild();
+        Build build = model.getBuild();
+       return addPlugin(build, log, groupId, artifactId, version, configuration);
+    }
+
+
+    /**
+     * Adds a plugin to the given Maven build base.
+     *
+     * @param build the Maven build base to which the plugin will be added (e.g., {@code Build} or {@code PluginManagement})
+     * @param log the logger to use for logging messages
+     * @param groupId the group ID of the plugin
+     * @param artifactId the artifact ID of the plugin
+     * @param version the version of the plugin
+     * @param configuration the configuration of the plugin as a JsonObject
+     * @return the Plugin object that was added or updated
+     */
+    public static Plugin addPlugin(BuildBase build,
+                                   Log log,
+                                   String groupId, String artifactId,
+                                   String version,
+                                   JsonObject configuration) {
         var plugin = build
             .getPlugins()
             .stream().filter(plg -> StringUtils.equals(plg.getArtifactId(), artifactId))
             .findFirst().orElseGet(() -> {
                 var plg = new Plugin();
+                plg.setGroupId(groupId);
                 plg.setArtifactId(artifactId);
                 plg.setVersion(version);
                 build.addPlugin(plg);
@@ -270,5 +296,6 @@ public class PomUtil {
             plugin.setConfiguration(config);
         }
         log.debug("adding plugin %s".formatted(plugin));
+        return plugin;
     }
 }
