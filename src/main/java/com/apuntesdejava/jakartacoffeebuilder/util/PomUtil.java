@@ -259,7 +259,6 @@ public class PomUtil {
        return addPlugin(build, log, groupId, artifactId, version, configuration);
     }
 
-
     /**
      * Adds a plugin to the given Maven build base.
      *

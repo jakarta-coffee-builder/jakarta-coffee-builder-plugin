@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.HIBERNATE_PROVIDER;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
 
 /**
  * Helper class for managing `persistence.xml` files.
@@ -72,7 +74,7 @@ public class PersistenceXmlHelper {
             persistenceElem.setAttribute("version", "3.0");
 
             var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
-            persistenceUnitElem.setAttribute("name", persistenceUnitName);
+            persistenceUnitElem.setAttribute(NAME, persistenceUnitName);
             document.appendChild(persistenceElem);
         });
     }
@@ -149,18 +151,18 @@ public class PersistenceXmlHelper {
                        xmlUtil.getElement(elem, "properties").ifPresent(properties -> {
                            if (StringUtils.isNotBlank(dialectClass))
                                xmlUtil.addElement(properties, "property",
-                                   Map.of("name", "hibernate.dialect", "value", dialectClass));
+                                   Map.of(NAME, "hibernate.dialect", VALUE, dialectClass));
                            try {
-                               CoffeeBuilderUtil.getPropertiesConfiguration("hibernate")
+                               CoffeeBuilderUtil.getPropertiesConfiguration("jpa-hibernate")
                                                 .ifPresent(propertiesConfig -> propertiesConfig
                                                     .stream()
                                                     .map(JsonValue::asJsonObject)
                                                     .forEach(property -> {
-                                                        var name = property.getString("name");
-                                                        var value = property.getString("value");
+                                                        var name = property.getString(NAME);
+                                                        var value = property.getString(VALUE);
                                                         xmlUtil.addElement(
                                                             properties, "property",
-                                                            Map.of("name", name, "value", value)
+                                                            Map.of(NAME, name, VALUE, value)
                                                         );
                                                     }));
                            } catch (IOException e) {

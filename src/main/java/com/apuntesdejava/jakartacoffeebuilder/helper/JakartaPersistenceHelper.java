@@ -16,6 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.JsonUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
@@ -147,7 +148,7 @@ public class JakartaPersistenceHelper {
             var entityName = entity.getString(NAME);
             var tableName = entity.getString(TABLE_NAME, EMPTY);
             log.debug("Adding entity: " + entityName);
-            var packageDefinition = MavenProjectHelper.getEntityPackage(mavenProject);
+            var packageDefinition = MavenProjectUtil.getEntityPackage(mavenProject);
             var entityPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, entityName);
 
             var fieldsJson = entity.getJsonArray(FIELDS);

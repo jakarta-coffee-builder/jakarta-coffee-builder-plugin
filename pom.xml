@@ -34,10 +34,12 @@
         <maven.compiler.release>21</maven.compiler.release>
         <mockito.version>5.18.0</mockito.version>
         <org.slf4j-version>2.0.17</org.slf4j-version>
+        <junit-jupiter.version>5.13.1</junit-jupiter.version>
     </properties>
     <scm>
         <connection>scm:git:git://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin.git</connection>
-        <developerConnection>scm:git:ssh://github.com:jakarta-coffee-builder/jakarta-coffee-builder-plugin.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com:jakarta-coffee-builder/jakarta-coffee-builder-plugin.git
+        </developerConnection>
         <url>https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/tree/master</url>
     </scm>
     <distributionManagement>
@@ -222,6 +224,7 @@
                     <artifactId>maven-invoker-plugin</artifactId>
                     <version>3.9.0</version>
                 </plugin>
+
             </plugins>
         </pluginManagement>
         <plugins>
@@ -266,6 +269,8 @@
                     </execution>
                 </executions>
             </plugin>
+
+
         </plugins>
     </build>
 
@@ -318,12 +323,12 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.7.0</version>
+                        <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <!--<publishingServerId>central-portal-snapshots</publishingServerId>-->
                             <publishingServerId>central</publishingServerId>
-                            
+
                         </configuration>
                     </plugin>
                 </plugins>

@@ -15,25 +15,30 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
+import com.apuntesdejava.jakartacoffeebuilder.builder.DataSourceParameterBuilder;
+import com.apuntesdejava.jakartacoffeebuilder.config.DataSourceConfigProvider;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.PersistenceXmlHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
-import jakarta.json.Json;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.RegexValidator;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
-import java.util.Arrays;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.DataSourceUtil.validateDataSourceName;
 
 /**
  * Mojo implementation for adding a data source to a Jakarta EE project.
@@ -86,9 +91,9 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 @Mojo(
     name = "add-datasource"
 )
-public class AddDataSourceMojo extends AbstractMojo {
+public class AddDataSourceMojo extends AbstractMojo implements DataSourceConfigProvider {
     @Parameter(
-        property = "name",
+        property = NAME,
         required = true
     )
     private String datasourceName;
@@ -99,13 +104,6 @@ public class AddDataSourceMojo extends AbstractMojo {
         defaultValue = DATASOURCE_DECLARE_WEB
     )
     private String declare;
-
-    @Parameter(
-        property = "coordinates-jdbc",
-        required = true,
-        defaultValue = "com.h2database:h2"
-    )
-    private String coordinatesJdbcDriver;
 
     @Parameter(
         property = "class-name",
@@ -151,7 +149,15 @@ public class AddDataSourceMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
+    @Parameter(
+        defaultValue = "${session}",
+        readonly = true,
+        required = true
+    )
+    private MavenSession mavenSession;
 
+    @Component
+    private ProjectBuilder projectBuilder;
     /**
      * Default constructor for the AddDataSourceMojo class.
      * <p>
@@ -175,44 +181,22 @@ public class AddDataSourceMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
-            validateDataSourceName();
+            datasourceName = validateDataSourceName(declare, datasourceName);
             log.debug("Project name:%s".formatted(mavenProject.getName()));
             log.info("Adding datasource %s".formatted(datasourceName));
-            var json = createDataSourceParameters();
+            var json = new DataSourceParameterBuilder(this).build();
+            createPersistenceUnit(json);
             var jakartaEeHelper = JakartaEeHelper.getInstance();
+            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
             jakartaEeHelper.addDataSource(mavenProject, log, declare, json);
-            createPersistenceUnit(json);
-            addJdbcDriver();
+            CoffeeBuilderUtil.getJdbcConfiguration(MavenProjectUtil.getParent(mavenProject))
+                             .ifPresent(definition ->
+                                 jakartaEeHelper.checkDataDependencies(fullProject, log, definition));
 
             CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);
-        } catch (IOException e) {
+        } catch (IOException | ProjectBuildingException e) {
             throw new MojoExecutionException(e);
-        }
-    }
-
-    private String getPrefix() {
-        return switch (declare) {
-            case DATASOURCE_DECLARE_WEB -> "java:global/";
-            case DATASOURCE_DECLARE_CLASS -> "java:app/";
-            default -> StringUtils.EMPTY;
-        } + "jdbc/";
-    }
-
-    private void validateDataSourceName() {
-        RegexValidator validator = new RegexValidator("^[a-zA-Z][a-zA-Z0-9]*$");
-        if (!validator.isValid(datasourceName)) {
-            throw new IllegalArgumentException("Invalid datasource name");
-        }
-
-        datasourceName = getPrefix() + datasourceName;
-    }
-
-    private void addJdbcDriver() throws MojoExecutionException {
-        var log = getLog();
-        if (StringUtils.isNotBlank(coordinatesJdbcDriver)) {
-            PomUtil.addDependency(mavenProject, log, coordinatesJdbcDriver);
-            PomUtil.saveMavenProject(mavenProject, log);
         }
     }
 
@@ -223,24 +207,42 @@ public class AddDataSourceMojo extends AbstractMojo {
             PersistenceXmlHelper
                 .getInstance()
                 .addDataSourceToPersistenceXml(currentPath, log, persistenceUnit,
-                    json.getString("name"));
+                    json.getString(NAME));
         }
     }
 
-    private JsonObject createDataSourceParameters() {
-        var jsonBuilder = Json.createObjectBuilder()
-                              .add("name", datasourceName)
-                              .add(CLASS_NAME, className);
-        if (StringUtils.isNotBlank(serverName)) jsonBuilder.add("serverName", serverName);
-        if (portNumber != null) jsonBuilder.add("portNumber", portNumber);
-        if (StringUtils.isNotBlank(url)) jsonBuilder.add("url", url);
-        if (StringUtils.isNotBlank(user)) jsonBuilder.add("user", user);
-        if (StringUtils.isNotBlank(password)) jsonBuilder.add("password", password);
-        if (StringUtils.isNotBlank(properties)) {
-            var propertiesBuilder = Json.createArrayBuilder();
-            Arrays.stream(properties.split(",")).forEach(propertiesBuilder::add);
-            jsonBuilder.add("properties", propertiesBuilder);
-        }
-        return jsonBuilder.build();
+    @Override
+    public String getDatasourceName() {
+        return datasourceName;
+    }
+
+    @Override
+    public String getServerName() {
+        return serverName;
+    }
+
+    @Override
+    public Integer getPortNumber() {
+        return portNumber;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getUser() {
+        return user;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getProperties() {
+        return properties;
     }
 }

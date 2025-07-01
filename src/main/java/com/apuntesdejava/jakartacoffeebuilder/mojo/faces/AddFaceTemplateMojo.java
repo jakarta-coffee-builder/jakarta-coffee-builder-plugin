@@ -26,6 +26,8 @@ import org.apache.maven.project.MavenProject;
 import java.io.IOException;
 import java.util.List;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+
 /**
  * Mojo for adding a new template to a Jakarta Faces project.
  * <p>
@@ -78,7 +80,7 @@ public class AddFaceTemplateMojo extends AbstractMojo {
 
     @Parameter(
         required = true,
-        property = "name"
+        property = NAME
     )
     private String templateName;
 

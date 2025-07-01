@@ -77,7 +77,10 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonObject> getDialectConfiguration() throws IOException {
-        var response = HttpUtil.getContent(Constants.DIALECT_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var url = BooleanUtils.toBoolean(System.getProperty("devel", "false"))
+            ? Constants.DIALECT_DEV_URL
+            : Constants.DIALECT_URL;
+        var response = HttpUtil.getContent(url, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response);
     }
 
@@ -110,7 +113,7 @@ public class CoffeeBuilderUtil {
      * @return an Optional containing the dialect string if present
      * @throws IOException if an error occurs while reading the configuration
      */
-    public static Optional<String> getDialectFromConfiguration(Path currentDirectoryPath) throws IOException {
+    public static Optional<JsonObject> getJdbcConfiguration(Path currentDirectoryPath) throws IOException {
         var configurationJson = currentDirectoryPath.resolve("project.json");
         var configurationObject = JsonUtil.readJsonValue(configurationJson).asJsonObject();
         var jdbcConfiguration = configurationObject.getJsonObject("jdbc");
@@ -119,8 +122,9 @@ public class CoffeeBuilderUtil {
             var url = jdbcConfiguration.getString("url");
             dialect = StringUtils.substringBetween(url, "jdbc:", ":");
         }
-        final String dialectKey = "jdbc:" + dialect;
-        return getDialectConfiguration().map(dialectConfiguration -> dialectConfiguration.getString(dialectKey));
+        final String dialectKey = dialect;
+        return getDialectConfiguration().map(
+            dialectConfiguration -> dialectConfiguration.getJsonObject(dialectKey));
 
     }
 }
