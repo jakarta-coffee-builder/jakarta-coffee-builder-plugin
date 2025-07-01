@@ -15,7 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper.datasource;
 
-import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import org.apache.maven.plugin.logging.Log;
@@ -60,7 +60,7 @@ public class DataSourceClassCreator extends DataSourceCreator {
      */
     @Override
     public void build() throws IOException {
-        var packageDefinition = MavenProjectHelper.getProviderPackage(mavenProject);
+        var packageDefinition = MavenProjectUtil.getProviderPackage(mavenProject);
         var className = "DataSourceProvider";
         var dataSourceClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var properties = getDataSourceParameters();

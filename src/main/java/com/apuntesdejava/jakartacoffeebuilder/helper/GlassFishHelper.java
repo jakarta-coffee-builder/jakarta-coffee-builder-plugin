@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import jakarta.json.Json;
 import org.apache.maven.model.Build;
@@ -70,7 +71,7 @@ public class GlassFishHelper {
                                 .add("contextRoot", contextRoot)
                                 .add("autoDelete", "true")
                                 .build();
-        var profile = MavenProjectHelper.getProfile(mavenProject, profileId);
+        var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
         var build = Optional.ofNullable(profile.getBuild())
                             .orElseGet(() -> {
                                 Build bld = new Build();

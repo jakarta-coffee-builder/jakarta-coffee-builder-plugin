@@ -149,6 +149,8 @@ public class Constants {
      * </p>
      */
     public static final String DEPENDENCIES_DEV_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop/dependencies.json";
+
+    public static final String DIALECT_DEV_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop/hibernate-dialect.json";
     /**
      * URL to retrieve Hibernate dialect configurations.
      */
@@ -242,6 +244,8 @@ public class Constants {
      * Datasource declaration for Payara.
      */
     public static final String DATASOURCE_PAYARA = "payara";
+
+    public static final String VALUE = "value";
 
     private Constants() {
     }

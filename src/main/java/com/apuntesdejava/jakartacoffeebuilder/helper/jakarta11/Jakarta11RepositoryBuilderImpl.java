@@ -15,7 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper.jakarta11;
 
-import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.helper.RepositoryBuilder;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
@@ -55,8 +55,8 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
         var entityName = getEntityName(entity);
         try {
             log.info("Building Jakarta 11 Repository for entity: " + entityName);
-            var packageDefinition = MavenProjectHelper.getRepositoryPackage(mavenProject);
-            var packageEntity = MavenProjectHelper.getEntityPackage(mavenProject);
+            var packageDefinition = MavenProjectUtil.getRepositoryPackage(mavenProject);
+            var packageEntity = MavenProjectUtil.getEntityPackage(mavenProject);
             var className = entityName + "Repository";
             var fieldId = getFieldId(entity);
             var repositoryPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);

@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import org.apache.maven.project.MavenProject;
 import org.openapitools.codegen.OpenAPIGenerator;
 
@@ -72,7 +73,7 @@ public class OpenApiGeneratorHelper {
      */
     public void processServer(MavenProject mavenProject,
                               File openApiFile) throws URISyntaxException, IOException {
-        var apiResourcesPackage = MavenProjectHelper.getApiResourcesPackage(mavenProject);
+        var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
         OpenAPIGenerator.main(
             new String[]{
                 "generate",

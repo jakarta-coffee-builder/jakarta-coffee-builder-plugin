@@ -16,7 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
-import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -141,7 +141,7 @@ public class AddFacesMojo extends AbstractMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Faces dependency");
         try {
-            var fullProject = MavenProjectHelper.getFullProject(mavenSession, projectBuilder, mavenProject);
+            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
             var jakartaEeUtil = JakartaEeHelper.getInstance();
             if (!jakartaEeUtil.hasJakartaFacesDependency(fullProject, log)) {

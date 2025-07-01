@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_WEBAPP_FACES_SERVLET;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
 
 /**
  * Utility class for handling operations related to the `web.xml` file in a Jakarta EE Maven project.
@@ -160,15 +162,15 @@ public class WebXmlUtil {
     public void addDataSource(Document document, Log log, Map<String, Object> properties) {
         var xmlUtil = XmlUtil.getInstance();
         if (xmlUtil.findElementsStream(document, log,
-            "//data-source/name[text()='%s']".formatted(properties.get("name"))).findFirst().isEmpty()) {
+            "//data-source/name[text()='%s']".formatted(properties.get(NAME))).findFirst().isEmpty()) {
             var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
             properties.forEach((key, value) -> {
                 if (value instanceof Collection<?> collection) {
                     collection.forEach(item -> {
                         var propertyElem = xmlUtil.addElement(datasourceElem, "property");
                         var values = StringUtils.split(item.toString(), "=");
-                        xmlUtil.addElement(propertyElem, "name", values[0]);
-                        xmlUtil.addElement(propertyElem, "value", values[1]);
+                        xmlUtil.addElement(propertyElem, NAME, values[0]);
+                        xmlUtil.addElement(propertyElem, VALUE, values[1]);
                     });
                 } else {
                     var newKey = StringsUtil.camelCaseToParamCase(key);

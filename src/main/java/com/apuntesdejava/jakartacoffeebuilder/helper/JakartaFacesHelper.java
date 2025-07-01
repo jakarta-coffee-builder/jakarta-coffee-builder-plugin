@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
@@ -95,7 +96,7 @@ public class JakartaFacesHelper {
                 var bodyElem = xmlUtil.addElementNS(viewElem, FACES_NS_HTML, "h:body");
                 if (createManagedBean) {
                     var labelElem = xmlUtil.addElementNS(bodyElem, FACES_NS_HTML, "h:outputText");
-                    labelElem.setAttribute("value", "#{%s.name}".formatted(StringUtils.uncapitalize(beanClassName)));
+                    labelElem.setAttribute(VALUE, "#{%s.name}".formatted(StringUtils.uncapitalize(beanClassName)));
                 }
             }).orElseThrow();
             xmlUtil.saveDocument(facePage, log, xhtml, XHTML_XSLT);
@@ -114,7 +115,7 @@ public class JakartaFacesHelper {
      */
     public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
         log.debug("Creating managed bean for " + pageName);
-        var packageDefinition = MavenProjectHelper.getFacesPackage(mavenProject) ;
+        var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject) ;
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
         var managedBean = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var annotationsClasses = Map.of(
@@ -126,7 +127,7 @@ public class JakartaFacesHelper {
                 CLASS_NAME, className,
                 FIELDS, List.of(
                     Map.of("type", "String",
-                        "name", "name")
+                        NAME, NAME)
                 ),
                 "annotations", annotationsClasses), managedBean);
     }
@@ -175,11 +176,11 @@ public class JakartaFacesHelper {
                 xmlUtil.findElementsStream(template, log, "//ui:insert",
                            Map.of("ui", FACES_NS_UI))
                        .forEach(insertElem -> {
-                           var name = insertElem.getAttribute("name");
+                           var name = insertElem.getAttribute(NAME);
                            var defineTag = xmlUtil.addElementNS(htmlElem, FACES_NS_UI, "ui:define");
-                           defineTag.setAttribute("name", name);
+                           defineTag.setAttribute(NAME, name);
                            var labelElem = xmlUtil.addElementNS(defineTag, FACES_NS_HTML, "h:outputText");
-                           labelElem.setAttribute("value", createManagedBean ? "#{%s.name}".formatted(
+                           labelElem.setAttribute(VALUE, createManagedBean ? "#{%s.name}".formatted(
                                StringUtils.uncapitalize(beanClassName)) : name);
                        });
             }).orElseThrow();
@@ -222,7 +223,7 @@ public class JakartaFacesHelper {
                 var bodyElem = xmlUtil.addElementNS(htmlElem, FACES_NS_HTML, "h:body");
                 Optional.ofNullable(inserts).ifPresent(insertList -> insertList.forEach(insert -> {
                     var insertElem = xmlUtil.addElementNS(bodyElem, FACES_NS_UI, "ui:insert");
-                    insertElem.setAttribute("name", insert);
+                    insertElem.setAttribute(NAME, insert);
                     insertElem.setTextContent(insert);
                 }));
 

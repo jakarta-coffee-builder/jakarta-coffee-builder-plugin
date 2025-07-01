@@ -17,10 +17,12 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.datasource.DataSourceCreatorFactory;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
+import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -275,9 +277,9 @@ public class JakartaEeHelper {
      *
      * @param mavenProject the Maven project to which the dependencies will be added
      * @param log          the logger used to log messages
-     * @param dialectClass the class name of the dialect to be added
+     * @param definition   the JSON object containing the dialect information
      */
-    public void checkDataDependencies(MavenProject mavenProject, Log log, String dialectClass) {
+    public void checkDataDependencies(MavenProject mavenProject, Log log, JsonObject definition) {
         PomUtil.getDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API).ifPresent(
             artifact -> {
                 var version = artifact.getVersion();
@@ -289,8 +291,7 @@ public class JakartaEeHelper {
                         .getValue()
                         .entrySet()
                         .stream()
-                        .anyMatch(
-                            entry -> StringUtils.equals(entry.getKey(),
+                        .anyMatch(entry -> StringUtils.equals(entry.getKey(),
                                 JAKARTA_ENTERPRISE_CDI_API)
                                 && StringUtils.equals(entry.getValue(),
                                 version))).findFirst();
@@ -301,8 +302,10 @@ public class JakartaEeHelper {
                         if (StringUtils.equals(spec.getKey(), JAKARTAEE_VERSION_11)) {
                             addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
                             addHibernateDependency(mavenProject, log);
-                            addHibernateProvider(mavenProject, log, dialectClass);
+                            addHibernateProvider(mavenProject, log, definition.getString("dialect"));
                         }
+                        PomUtil.addDependency(mavenProject, log, definition.getString("coordinates"));
+                        PomUtil.saveMavenProject(mavenProject, log);
                     } catch (MojoExecutionException | IOException e) {
                         log.error("Error adding Jakarta dependency", e);
                     }
@@ -317,7 +320,27 @@ public class JakartaEeHelper {
     }
 
     private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
+        CoffeeBuilderUtil.getDependencyConfiguration("hibernate")
+                         .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
+                             hibernate.getString("version")));
+        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
+        CoffeeBuilderUtil.getDependencyConfiguration("maven-compiler-plugin")
+                         .ifPresent(
+                             mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
+                                 "org.apache.maven.plugins",
+                                 "maven-compiler-plugin",
+                                 mavenCompilerPlugin.getString("version"),
+                                 Json.createObjectBuilder()
+                                     .add("annotationProcessorPaths",
+                                         Json.createObjectBuilder()
+                                             .add("path",
+                                                 Json.createObjectBuilder()
+                                                     .add("groupId","org.hibernate.orm")
+                                                     .add("artifactId","hibernate-jpamodelgen")
+                                                     .add("version","${hibernate.version}")))
+                                     .build()));
 
+        PomUtil.saveMavenProject(mavenProject, log);
     }
 
     /**
@@ -328,14 +351,14 @@ public class JakartaEeHelper {
      * @throws IOException if an error occurs while adding the provider
      */
     public void addPersistenceClassProvider(MavenProject mavenProject, Log log) throws IOException {
-        var packageDefinition = MavenProjectHelper.getProviderPackage(mavenProject);
+        var packageDefinition = MavenProjectUtil.getProviderPackage(mavenProject);
         var className = "PersistenceProvider";
         var persistenceProviderClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var annotationClasses = Map.of(
             "jakarta.enterprise.context.ApplicationScoped", emptyMap()
         );
         var fields = List.of(Map.of(
-            "name", "entityManager",
+            NAME, "entityManager",
             "type", "jakarta.persistence.EntityManager",
             "annotations", Map.of(
                 "jakarta.persistence.PersistenceContext", Map.of(

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.helper;
+package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.maven.execution.MavenSession;
@@ -23,6 +23,7 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -32,9 +33,9 @@ import java.util.Optional;
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
-public class MavenProjectHelper {
+public class MavenProjectUtil {
 
-    private MavenProjectHelper() {
+    private MavenProjectUtil() {
     }
 
     /**
@@ -142,5 +143,15 @@ public class MavenProjectHelper {
 
     private static Model getOriginalModel(MavenProject mavenProject) {
         return Optional.ofNullable(mavenProject.getOriginalModel()).orElse(mavenProject.getModel());
+    }
+
+    /**
+     * Retrieves the parent directory of the Maven project's POM file.
+     *
+     * @param mavenProject The Maven project.
+     * @return The {@link Path} to the parent directory of the POM file.
+     */
+    public static Path getParent(MavenProject mavenProject) {
+        return mavenProject.getFile().toPath().getParent();
     }
 }

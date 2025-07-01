@@ -15,8 +15,10 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
+import com.apuntesdejava.jakartacoffeebuilder.builder.DataSourceParameterBuilder;
+import com.apuntesdejava.jakartacoffeebuilder.config.DataSourceConfigProvider;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
-import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -32,7 +34,9 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 
 /**
  * Mojo for adding persistence configuration to a Jakarta EE project.
@@ -47,27 +51,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
  *   <li>Specify the Jakarta EE version and persistence unit name as parameters.</li>
  * </ul>
  * <p>
- * Example configuration in the POM file:
- * <pre>
- * {@code
- * <plugin>
- *   <groupId>com.apuntesdejava</groupId>
- *   <artifactId>jakarta-coffee-builder-plugin</artifactId>
- *   <version>1.0.0</version>
- *   <executions>
- *     <execution>
- *       <goals>
- *         <goal>add-persistence</goal>
- *       </goals>
- *       <configuration>
- *         <jakarta-ee-version>11</jakarta-ee-version>
- *         <persistence-unit-name>myPU</persistence-unit-name>
- *       </configuration>
- *     </execution>
- *   </executions>
- * </plugin>
- * }
- * </pre>
  * <p>
  * This Mojo is part of the Jakarta Coffee Builder Plugin and simplifies the configuration
  * of Jakarta EE persistence in Maven projects.
@@ -78,10 +61,57 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
 @Mojo(
     name = "add-persistence"
 )
-public class AddPersistenceMojo extends AbstractMojo {
+public class AddPersistenceMojo extends AbstractMojo implements DataSourceConfigProvider {
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
+
+    @Parameter(
+        property = NAME,
+        required = true,
+        defaultValue = "defaultDatasource"
+    )
+    private String datasourceName;
+
+    @Parameter(
+        property = "declare",
+        required = true,
+        defaultValue = DATASOURCE_DECLARE_WEB
+    )
+    private String declare;
+
+
+    @Parameter(
+        property = "url",
+        defaultValue = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+    )
+    private String url;
+
+    @Parameter(
+        property = "password"
+    )
+    private String password;
+
+    @Parameter(
+        property = "user"
+    )
+    private String user;
+
+    @Parameter(
+        property = "server-name"
+    )
+    private String serverName;
+
+    @Parameter(
+        property = "port-number"
+    )
+    private Integer portNumber;
+
+    @Parameter(
+        property = "properties"
+    )
+    private String properties;
+
 
     @Parameter(
         property = "jakarta-ee-version",
@@ -129,6 +159,7 @@ public class AddPersistenceMojo extends AbstractMojo {
         log.debug("Project name:%s".formatted(mavenProject.getName()));
         checkDependency(log);
         createPersistenceXml(log);
+        var json = new DataSourceParameterBuilder(this).build();
 
     }
 
@@ -145,7 +176,7 @@ public class AddPersistenceMojo extends AbstractMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Persistence dependency");
         try {
-            var fullProject = MavenProjectHelper.getFullProject(mavenSession, projectBuilder, mavenProject);
+            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             var jakartaEeHelper = JakartaEeHelper.getInstance();
             if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log))
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
@@ -156,9 +187,9 @@ public class AddPersistenceMojo extends AbstractMojo {
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
             jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
-            CoffeeBuilderUtil.getDialectFromConfiguration(mavenProject.getFile().toPath().getParent())
-                             .ifPresent(dialectClass ->
-                                 jakartaEeHelper.checkDataDependencies(fullProject, log, dialectClass));
+            CoffeeBuilderUtil.getJdbcConfiguration(MavenProjectUtil.getParent(mavenProject))
+                             .ifPresent(definition ->
+                                 jakartaEeHelper.checkDataDependencies(fullProject, log, definition));
 
         } catch (ProjectBuildingException | IOException ex) {
             log.error(ex);
@@ -173,4 +204,39 @@ public class AddPersistenceMojo extends AbstractMojo {
 
     }
 
+
+    @Override
+    public String getDatasourceName() {
+        return datasourceName;
+    }
+
+    @Override
+    public String getServerName() {
+        return serverName;
+    }
+
+    @Override
+    public Integer getPortNumber() {
+        return portNumber;
+    }
+
+    @Override
+    public String getUrl() {
+        return url;
+    }
+
+    @Override
+    public String getUser() {
+        return user;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getProperties() {
+        return properties;
+    }
 }
