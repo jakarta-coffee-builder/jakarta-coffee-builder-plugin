@@ -346,7 +346,7 @@
                         <configuration>
                             <postBuildHookScript>verify</postBuildHookScript>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                            <settingsFile>${base.pa} src/it/settings.xml</settingsFile>
+                            <settingsFile>${project.basedir}/src/it/settings.xml</settingsFile>
                             <goals>
                                 <goal>clean</goal>
                                 <goal>test-compile</goal>
