@@ -2,6 +2,7 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -13,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Function;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DEV_BASE_URL;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PRD_BASE_URL;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
@@ -23,7 +26,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  * </p>
  */
 public class HttpUtil {
-    private HttpUtil(){}
+    private HttpUtil() {
+    }
 
     /**
      * Executes an HTTP GET request to the specified URL with optional query parameters
@@ -72,6 +76,11 @@ public class HttpUtil {
      */
     public record Parameter(String name, String value) {
 
+    }
+
+    public static String getUrl(String serviceUrl) {
+        return (BooleanUtils.toBoolean(System.getProperty("devel", "false"))
+            ? DEV_BASE_URL : PRD_BASE_URL) + serviceUrl;
     }
 
     //make function  get content from url

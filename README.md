@@ -113,6 +113,19 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-glassfish-embedded
 
 | Parameter     | Definition                                                      | Default value                |
 |---------------|-----------------------------------------------------------------|------------------------------|
-| `profileId`   | This parameter defines the ID of the Maven profile to be added. | `glassfish`                  |
+| `profile`     | This parameter defines the ID of the Maven profile to be added. | `glassfish`                  |
 | `port`        | This parameter defines the GlassFish port                       | `8080`                       |
 | `contextRoot` | Application Web Context Root                                    | `${project.build.finalName}` |
+
+### Add PayaraMicro Plugin
+
+Add PayaraMicro Plugin
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
+```
+
+| Parameter           | Definition                                                                       | Default value |
+|---------------------|----------------------------------------------------------------------------------|---------------|
+| `profile`           | This parameter defines the ID of the Maven profile to be added.                  | `payaramicro` |
+| `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10`, `11` | `11`          |

@@ -30,7 +30,7 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.version>3.9.9</maven.version>
+        <maven.version>3.9.0</maven.version>
         <maven.compiler.release>21</maven.compiler.release>
         <mockito.version>5.18.0</mockito.version>
         <org.slf4j-version>2.0.17</org.slf4j-version>
@@ -346,7 +346,7 @@
                         <configuration>
                             <postBuildHookScript>verify</postBuildHookScript>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                            <settingsFile>${base.pa} src/it/settings.xml</settingsFile>
+                            <settingsFile>${project.basedir}/src/it/settings.xml</settingsFile>
                             <goals>
                                 <goal>clean</goal>
                                 <goal>test-compile</goal>

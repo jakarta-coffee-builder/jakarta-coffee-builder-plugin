@@ -18,13 +18,9 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import jakarta.json.Json;
-import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-
-import java.util.ArrayList;
-import java.util.Optional;
 
 /**
  * Helper class for managing GlassFish-related operations, specifically for adding the embedded GlassFish Maven plugin to a project.
@@ -71,14 +67,7 @@ public class GlassFishHelper {
                                 .add("contextRoot", contextRoot)
                                 .add("autoDelete", "true")
                                 .build();
-        var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
-        var build = Optional.ofNullable(profile.getBuild())
-                            .orElseGet(() -> {
-                                Build bld = new Build();
-                                profile.setBuild(bld);
-                                bld.setPlugins(new ArrayList<>());
-                                return bld;
-                            });
+        var build = MavenProjectUtil.getBuild(mavenProject, profileId);
         var plugin = PomUtil.addPlugin(build, log, "org.glassfish.embedded",
             "embedded-glassfish-maven-plugin", "7.0",
             configuration);

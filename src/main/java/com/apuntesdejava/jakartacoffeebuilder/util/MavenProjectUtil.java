@@ -17,6 +17,8 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
@@ -24,6 +26,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Optional;
 
 /**
@@ -153,5 +156,18 @@ public class MavenProjectUtil {
      */
     public static Path getParent(MavenProject mavenProject) {
         return mavenProject.getFile().toPath().getParent();
+    }
+
+
+    public static BuildBase getBuild(MavenProject mavenProject,String profileId){
+        var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
+
+        return Optional.ofNullable(profile.getBuild())
+                       .orElseGet(() -> {
+                                Build bld = new Build();
+                                profile.setBuild(bld);
+                                bld.setPlugins(new ArrayList<>());
+                                return bld;
+                            });
     }
 }
