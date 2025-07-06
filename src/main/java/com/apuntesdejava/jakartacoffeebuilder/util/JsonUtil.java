@@ -1,6 +1,10 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import jakarta.json.*;
+import jakarta.json.Json;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.IOException;
@@ -12,7 +16,8 @@ import java.nio.file.Path;
  */
 public class JsonUtil {
 
-    private JsonUtil(){}
+    private JsonUtil() {
+    }
 
     /**
      * Reads a JSON value from the specified file path.
@@ -50,26 +55,39 @@ public class JsonUtil {
      * @param jsonObject the JsonObject to convert
      * @return the resulting Xpp3Dom object
      */
-    public static Xpp3Dom jsonToXpp3Dom(Xpp3Dom config, JsonObject jsonObject) {
+    public static Xpp3Dom jsonToXpp3Dom(Xpp3Dom config, JsonObject jsonObject, boolean allowRepeat) {
         jsonObject.forEach((key, value) -> {
-            if (config.getChild(key) == null) {
-                Xpp3Dom child = new Xpp3Dom(key);
-                if (value.getValueType() == JsonValue.ValueType.OBJECT) {
-                    config.addChild(jsonToXpp3Dom(child, value.asJsonObject()));
-                } else {
-                    child.setValue(((JsonString) value).getString());
-                    config.addChild(child);
+            if (allowRepeat || config.getChild(key) == null) {
+
+                switch (value.getValueType()) {
+                    case ARRAY -> {
+                        var values = value.asJsonArray();
+                        System.out.println("values:" + values);
+                        values.stream().map(JsonValue::asJsonObject).forEach(item -> {
+                            config.addChild(jsonToXpp3Dom(new Xpp3Dom(key), item, true));
+                        });
+                    }
+                    case OBJECT -> config.addChild(jsonToXpp3Dom(new Xpp3Dom(key), value.asJsonObject()));
+                    default -> {
+                        Xpp3Dom child = new Xpp3Dom(key);
+                        child.setValue(((JsonString) value).getString());
+                        config.addChild(child);
+                    }
                 }
             }
         });
         return config;
     }
 
+    public static Xpp3Dom jsonToXpp3Dom(Xpp3Dom config, JsonObject jsonObject) {
+        return jsonToXpp3Dom(config, jsonObject, false);
+    }
+
     /**
      * Saves a JsonObject to the specified file path.
      *
      * @param jsonFile the path to the JSON file
-     * @param json the JsonObject to save
+     * @param json     the JsonObject to save
      * @throws IOException if an I/O error occurs
      */
     public static void saveJsonValue(Path jsonFile, JsonValue json) throws IOException {

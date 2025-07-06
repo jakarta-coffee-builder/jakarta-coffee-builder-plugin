@@ -18,7 +18,6 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -51,10 +50,14 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonObject> getDependencyConfiguration(String name) throws IOException {
-        var url = BooleanUtils.toBoolean(System.getProperty("devel", "false"))
-            ? Constants.DEPENDENCIES_DEV_URL
-            : Constants.DEPENDENCIES_URL;
-        var response = HttpUtil.getContent(url, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DEPENDENCIES_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        return Optional.ofNullable(response.getJsonObject(name));
+    }
+
+    public static Optional<JsonObject> getServerDefinition(String name) throws IOException {
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SERVERS_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonObject(name));
     }
 
@@ -66,7 +69,8 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonArray> getPropertiesConfiguration(String name) throws IOException {
-        var response = HttpUtil.getContent(Constants.PROPERTIES_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.PROPERTIES_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonArray(name));
     }
 
@@ -77,10 +81,8 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonObject> getDialectConfiguration() throws IOException {
-        var url = BooleanUtils.toBoolean(System.getProperty("devel", "false"))
-            ? Constants.DIALECT_DEV_URL
-            : Constants.DIALECT_URL;
-        var response = HttpUtil.getContent(url, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DIALECT_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response);
     }
 

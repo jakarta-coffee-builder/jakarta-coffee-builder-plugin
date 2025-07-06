@@ -139,26 +139,21 @@ public class Constants {
     /**
      * URL to retrieve configured dependencies.
      */
-    public static final String DEPENDENCIES_URL = "https://jakarta-coffee-builder.github.io/configuration/dependencies.json";
+    public static final String DEV_BASE_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop";
+    public static final String PRD_BASE_URL = "https://jakarta-coffee-builder.github.io/configuration";
 
-    /**
-     * URL to retrieve development dependencies.
-     * <p>
-     * This URL points to the development branch of the configuration repository, which may contain
-     * dependencies that are not yet released or are in active development.
-     * </p>
-     */
-    public static final String DEPENDENCIES_DEV_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop/dependencies.json";
+    public static final String DEPENDENCIES_URL = "/dependencies.json";
 
-    public static final String DIALECT_DEV_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop/hibernate-dialect.json";
+    public static final String SERVERS_URL = "/servers.json";
+
     /**
      * URL to retrieve Hibernate dialect configurations.
      */
-    public static final String DIALECT_URL = "https://jakarta-coffee-builder.github.io/configuration/hibernate-dialect.json";
+    public static final String DIALECT_URL = "/hibernate-dialect.json";
     /**
      * URL to retrieve configured properties.
      */
-    public static final String PROPERTIES_URL = "https://jakarta-coffee-builder.github.io/configuration/properties.json";
+    public static final String PROPERTIES_URL = "/properties.json";
 
     /**
      * Hibernate persistence provider.
