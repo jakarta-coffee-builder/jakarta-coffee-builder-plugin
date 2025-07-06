@@ -62,7 +62,6 @@ public class JsonUtil {
                 switch (value.getValueType()) {
                     case ARRAY -> {
                         var values = value.asJsonArray();
-                        System.out.println("values:" + values);
                         values.stream().map(JsonValue::asJsonObject).forEach(item -> {
                             config.addChild(jsonToXpp3Dom(new Xpp3Dom(key), item, true));
                         });

@@ -57,6 +57,8 @@ import static java.util.Collections.emptyMap;
  */
 public class JakartaEeHelper {
 
+    private JsonObject specifications;
+
     /**
      * Retrieves the singleton instance of the `JakartaEeHelper` class.
      * <p>
@@ -69,6 +71,13 @@ public class JakartaEeHelper {
     }
 
     private JakartaEeHelper() {
+        try {
+            CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> {
+                this.specifications = specs;
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -82,7 +91,7 @@ public class JakartaEeHelper {
     public void addJakartaCdiDependency(MavenProject mavenProject,
                                         Log log,
                                         String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaCdiVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_ENTERPRISE_CDI_API);
+        var jakartaCdiVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_ENTERPRISE_CDI_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API, jakartaCdiVersion,
             PROVIDED_SCOPE);
         PomUtil.saveMavenProject(mavenProject, log);
@@ -99,7 +108,7 @@ public class JakartaEeHelper {
     public void addJakartaFacesDependency(MavenProject mavenProject,
                                           Log log,
                                           String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaFacesVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_FACES_API);
+        var jakartaFacesVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_FACES_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API, jakartaFacesVersion, PROVIDED_SCOPE);
         PomUtil.saveMavenProject(mavenProject, log);
     }
@@ -196,7 +205,8 @@ public class JakartaEeHelper {
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_PERSISTENCE_API);
+        var jakartaPersistenceVersion = specifications.getJsonObject(jakartaEeVersion)
+                                                      .getString(JAKARTA_PERSISTENCE_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
             jakartaPersistenceVersion, PROVIDED_SCOPE);
         PomUtil.saveMavenProject(mavenProject, log);
@@ -254,7 +264,7 @@ public class JakartaEeHelper {
     public void addJakartaDataDependency(MavenProject mavenProject,
                                          Log log,
                                          String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaPersistenceVersion = SPECS_VERSIONS.get(jakartaEeVersion).get(JAKARTA_DATA_API);
+        var jakartaPersistenceVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_DATA_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API,
             jakartaPersistenceVersion);
         PomUtil.saveMavenProject(mavenProject, log);
@@ -269,7 +279,7 @@ public class JakartaEeHelper {
      */
     public boolean isValidAddJakartaDataDependency(MavenProject mavenProject, Log log) {
         return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
-            SPECS_VERSIONS.get(JAKARTAEE_VERSION_11).get(JAKARTA_PERSISTENCE_API));
+            specifications.getJsonObject(JAKARTAEE_VERSION_11).getString(JAKARTA_PERSISTENCE_API));
     }
 
     /**
@@ -283,33 +293,29 @@ public class JakartaEeHelper {
         PomUtil.getDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API).ifPresent(
             artifact -> {
                 var version = artifact.getVersion();
-                log.debug("Jakarta CDI dependency found: %s".formatted(version));
-                var jakartaSpec = SPECS_VERSIONS
-                    .entrySet()
-                    .stream()
-                    .filter(spec -> spec
-                        .getValue()
-                        .entrySet()
-                        .stream()
-                        .anyMatch(entry -> StringUtils.equals(entry.getKey(),
-                                JAKARTA_ENTERPRISE_CDI_API)
-                                && StringUtils.equals(entry.getValue(),
-                                version))).findFirst();
-                jakartaSpec.ifPresent(spec -> {
-                    var jakartaEEVersion = spec.getKey();
-                    log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
-                    try {
-                        if (StringUtils.equals(spec.getKey(), JAKARTAEE_VERSION_11)) {
-                            addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
-                            addHibernateDependency(mavenProject, log);
-                            addHibernateProvider(mavenProject, log, definition.getString("dialect"));
-                        }
-                        PomUtil.addDependency(mavenProject, log, definition.getString("coordinates"));
-                        PomUtil.saveMavenProject(mavenProject, log);
-                    } catch (MojoExecutionException | IOException e) {
-                        log.error("Error adding Jakarta dependency", e);
-                    }
-                });
+                log.debug("Jakarta CDI dependency found: " + version);
+                specifications.entrySet().stream()
+                              .filter(entry -> {
+                                  JsonObject specObject = entry.getValue().asJsonObject();
+                                  return specObject.containsKey(JAKARTA_ENTERPRISE_CDI_API) &&
+                                      StringUtils.equals(specObject.getString(JAKARTA_ENTERPRISE_CDI_API), version);
+                              })
+                              .map(Map.Entry::getKey)
+                              .findFirst()
+                              .ifPresent(jakartaEEVersion -> {
+                                  log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
+                                  try {
+                                      if (StringUtils.equals(jakartaEEVersion, JAKARTAEE_VERSION_11)) {
+                                          addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
+                                          addHibernateDependency(mavenProject, log);
+                                          addHibernateProvider(mavenProject, log, definition.getString("dialect"));
+                                      }
+                                      PomUtil.addDependency(mavenProject, log, definition.getString("coordinates"));
+                                      PomUtil.saveMavenProject(mavenProject, log);
+                                  } catch (MojoExecutionException | IOException e) {
+                                      log.error("Error adding Jakarta dependency", e);
+                                  }
+                              });
             });
     }
 
@@ -335,9 +341,9 @@ public class JakartaEeHelper {
                                          Json.createObjectBuilder()
                                              .add("path",
                                                  Json.createObjectBuilder()
-                                                     .add("groupId","org.hibernate.orm")
-                                                     .add("artifactId","hibernate-jpamodelgen")
-                                                     .add("version","${hibernate.version}")))
+                                                     .add("groupId", "org.hibernate.orm")
+                                                     .add("artifactId", "hibernate-jpamodelgen")
+                                                     .add("version", "${hibernate.version}")))
                                      .build()));
 
         PomUtil.saveMavenProject(mavenProject, log);

@@ -47,7 +47,7 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
  * Configuration Parameters:<ul>
  * <li> <code>url-pattern</code>: Specifies the URL pattern to be used for Faces requests (default: "*.faces").</li>
  * <li> <code>welcome-file</code>: Specifies the welcome file name (default: "index.faces").</li>
- * <li> <code>jakarta-ee-version</code>: Defines the Jakarta EE version to use (default: Jakarta EE 10).</li>
+ * <li> <code>jakartaee-version</code>: Defines the Jakarta EE version to use (default: Jakarta EE 10).</li>
  * <li> <code>mavenProject</code>: Represents the Maven project being processed.</li>
  * <li> <code>mavenSession</code>: Provides the Maven execution session information.</li>
  * <li> <code>projectBuilder</code>: Helper to build Maven project instances.</li>
@@ -80,7 +80,7 @@ public class AddFacesMojo extends AbstractMojo {
     private MavenProject mavenProject;
 
     @Parameter(
-        property = "jakarta-ee-version",
+        property = "jakartaee-version",
         defaultValue = JAKARTAEE_VERSION_11
     )
     private String jakartaEeVersion;

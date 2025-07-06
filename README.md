@@ -125,7 +125,7 @@ Add PayaraMicro Plugin
 mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
 ```
 
-| Parameter           | Definition                                                                       | Default value |
-|---------------------|----------------------------------------------------------------------------------|---------------|
-| `profile`           | This parameter defines the ID of the Maven profile to be added.                  | `payaramicro` |
-| `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10`, `11` | `11`          |
+| Parameter           | Definition                                                                               | Default value |
+|---------------------|------------------------------------------------------------------------------------------|---------------|
+| `profile`           | This parameter defines the ID of the Maven profile to be added.                          | `payaramicro` |
+| `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10.0.0`, `11.0.0` | `11.0.0`      |
