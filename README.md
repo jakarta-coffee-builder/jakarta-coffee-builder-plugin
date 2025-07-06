@@ -72,9 +72,19 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
 
 **Parameters**
 
-| Parameter               | Definition                                                                                                             | Default value |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------|
-| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. | `defaultPU`   |
+| Parameter               | Definition                                                                                                             | Default value       |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------------|
+| `datasource-name`       | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.   | `defaultDatasource` |
+| `url`                   | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.         |                     |
+| `username`              | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `password`              | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `declare`               | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`               | `class`             |
+| `server-name`           | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `port-number`           | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `properties`            | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.  |                     |
+| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. |                     | 
+| `jakartaee-version`     | This parameter defines the Jakarta EE version to use. Values allowed: `10.0.0`, `11.0.0`                               | `11.0.0`            |
+
 
 ### Add DataSource configuration
 
@@ -86,19 +96,17 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
 
 **Parameters**
 
-| Parameter          | Definition                                                                                                              | Default value                 |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------|-------------------------------|
-| `name`             | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.    |                               |
-| `class-name`       | This parameter defines the driver class of the DataSource. This value will be included in the DataSource configuration. | `org.h2.jdbcx.JdbcDataSource` |
-| `url`              | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.          |                               |
-| `username`         | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.     |                               |
-| `password`         | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.     |                               |
-| `coordinates-jdbc` | This parameter defines the coordinates of the JDBC driver. This value will be included in the DataSource configuration. | `com.h2database:h2:1.4.200`   |
-| `declare`          | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`                | `class`                       |
-| `server-name`      | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration.  |                               |
-| `port-number`      | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration.  |                               |
-| `properties`       | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.   |                               |
-| `persistence-unit` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration.  |                               | 
+| Parameter               | Definition                                                                                                             | Default value       |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------------|
+| `datasource-name`       | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.   | `defaultDatasource` |
+| `url`                   | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.         |                     |
+| `username`              | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `password`              | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `declare`               | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`               | `class`             |
+| `server-name`           | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `port-number`           | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `properties`            | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.  |                     |
+| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. |                     | 
 
 ### Add Glassfish Embedded Plugin
 
@@ -125,7 +133,7 @@ Add PayaraMicro Plugin
 mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
 ```
 
-| Parameter           | Definition                                                                       | Default value |
-|---------------------|----------------------------------------------------------------------------------|---------------|
-| `profile`           | This parameter defines the ID of the Maven profile to be added.                  | `payaramicro` |
-| `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10`, `11` | `11`          |
+| Parameter           | Definition                                                                               | Default value |
+|---------------------|------------------------------------------------------------------------------------------|---------------|
+| `profile`           | This parameter defines the ID of the Maven profile to be added.                          | `payaramicro` |
+| `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10.0.0`, `11.0.0` | `11.0.0`      |

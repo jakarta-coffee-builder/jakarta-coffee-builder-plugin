@@ -15,8 +15,6 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import java.util.Map;
-
 /**
  * The Constants class serves as a centralized repository for constant values used throughout the application. These
  * constants include string identifiers, version numbers, servlet definitions, namespace identifiers, and other fixed
@@ -145,6 +143,7 @@ public class Constants {
     public static final String DEPENDENCIES_URL = "/dependencies.json";
 
     public static final String SERVERS_URL = "/servers.json";
+    public static final String SPECIFICATIONS_URL = "/specifications.json";
 
     /**
      * URL to retrieve Hibernate dialect configurations.
@@ -159,28 +158,6 @@ public class Constants {
      * Hibernate persistence provider.
      */
     public static final String HIBERNATE_PROVIDER = "org.hibernate.jpa.HibernatePersistenceProvider";
-
-    /**
-     * Map of supported Jakarta EE specification versions.
-     * <p>
-     * This map associates Jakarta EE versions with their corresponding API versions for various specifications.
-     * </p>
-     */
-    public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
-        of(
-            JAKARTAEE_VERSION_10, Map.of(
-                JAKARTA_FACES_API, "4.0.1",
-                JAKARTA_PERSISTENCE_API, "3.1.0",
-                JAKARTA_ENTERPRISE_CDI_API, "4.0.1"
-            ),
-            JAKARTAEE_VERSION_11, Map.of(
-                JAKARTA_FACES_API, "4.1.2",
-                JAKARTA_PERSISTENCE_API, "3.2.0",
-                JAKARTA_ENTERPRISE_CDI_API, "4.1.0",
-                JAKARTA_DATA_API, "1.0.1",
-                JAKARTA_MVC_API, "3.0.0"
-            )
-        );
 
     /**
      * Jakarta Faces servlet class.

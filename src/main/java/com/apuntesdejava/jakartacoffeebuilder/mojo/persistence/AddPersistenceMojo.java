@@ -15,28 +15,19 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
-import com.apuntesdejava.jakartacoffeebuilder.builder.DataSourceParameterBuilder;
-import com.apuntesdejava.jakartacoffeebuilder.config.DataSourceConfigProvider;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
-import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 
 /**
  * Mojo for adding persistence configuration to a Jakarta EE project.
@@ -61,79 +52,15 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 @Mojo(
     name = "add-persistence"
 )
-public class AddPersistenceMojo extends AbstractMojo implements DataSourceConfigProvider {
-
-    @Parameter(defaultValue = "${project}", readonly = true)
-    private MavenProject mavenProject;
-
-    @Parameter(
-        property = NAME,
-        required = true,
-        defaultValue = "defaultDatasource"
-    )
-    private String datasourceName;
-
-    @Parameter(
-        property = "declare",
-        required = true,
-        defaultValue = DATASOURCE_DECLARE_WEB
-    )
-    private String declare;
+public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
 
 
     @Parameter(
-        property = "url",
-        defaultValue = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
-    )
-    private String url;
-
-    @Parameter(
-        property = "password"
-    )
-    private String password;
-
-    @Parameter(
-        property = "user"
-    )
-    private String user;
-
-    @Parameter(
-        property = "server-name"
-    )
-    private String serverName;
-
-    @Parameter(
-        property = "port-number"
-    )
-    private Integer portNumber;
-
-    @Parameter(
-        property = "properties"
-    )
-    private String properties;
-
-
-    @Parameter(
-        property = "jakarta-ee-version",
+        property = "jakartaee-version",
         defaultValue = JAKARTAEE_VERSION_11
     )
     private String jakartaEeVersion;
 
-    @Component
-    private ProjectBuilder projectBuilder;
-
-    @Parameter(
-        defaultValue = "${session}",
-        readonly = true,
-        required = true
-    )
-    private MavenSession mavenSession;
-
-    @Parameter(
-        defaultValue = "defaultPU",
-        property = "persistence-unit-name"
-    )
-    private String persistenceUnitName;
 
     /**
      * Default constructor.<br/>
@@ -159,7 +86,8 @@ public class AddPersistenceMojo extends AbstractMojo implements DataSourceConfig
         log.debug("Project name:%s".formatted(mavenProject.getName()));
         checkDependency(log);
         createPersistenceXml(log);
-        var json = new DataSourceParameterBuilder(this).build();
+        var json = getDataSourceParameters();
+        createPersistenceUnit(json);
 
     }
 
@@ -204,39 +132,4 @@ public class AddPersistenceMojo extends AbstractMojo implements DataSourceConfig
 
     }
 
-
-    @Override
-    public String getDatasourceName() {
-        return datasourceName;
-    }
-
-    @Override
-    public String getServerName() {
-        return serverName;
-    }
-
-    @Override
-    public Integer getPortNumber() {
-        return portNumber;
-    }
-
-    @Override
-    public String getUrl() {
-        return url;
-    }
-
-    @Override
-    public String getUser() {
-        return user;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getProperties() {
-        return properties;
-    }
 }
