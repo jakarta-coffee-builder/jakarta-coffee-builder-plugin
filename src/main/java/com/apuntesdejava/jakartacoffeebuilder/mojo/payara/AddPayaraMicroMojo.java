@@ -25,6 +25,8 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
  */
@@ -49,7 +51,7 @@ public class AddPayaraMicroMojo extends AbstractMojo {
     @Parameter(
         property = "jakartaee-version",
         required = true,
-        defaultValue = "11"
+        defaultValue = JAKARTAEE_VERSION_11
 
     )
     private String jakartaEeVersion;

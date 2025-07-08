@@ -39,6 +39,16 @@ public class PayaraMicroHelper {
         return PayaraMicroHelperHolder.INSTANCE;
     }
 
+    /**
+     * Adds the Payara Micro Maven plugin to the project's POM file.
+     *
+     * @param mavenProject The Maven project.
+     * @param log The Maven logger.
+     * @param profileId The ID of the profile to which the plugin should be added.
+     * @param jakartaEeVersion The Jakarta EE version to be used with Payara Micro.
+     * @throws IOException If an I/O error occurs while reading or writing the POM.
+     * @throws MojoExecutionException If an error occurs during plugin execution.
+     */
     public void addPlugin(MavenProject mavenProject,
                           Log log,
                           String profileId, String jakartaEeVersion) throws IOException, MojoExecutionException {
