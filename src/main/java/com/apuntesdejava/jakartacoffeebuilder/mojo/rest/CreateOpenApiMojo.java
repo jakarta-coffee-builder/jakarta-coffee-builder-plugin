@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+
 /**
  * Mojo for generating server-side OpenAPI files.
  * <p>
@@ -78,6 +80,14 @@ public class CreateOpenApiMojo extends AbstractMojo {
     )
     private File openApiFileServer;
 
+    @Parameter(
+        property = "jakartaee-version",
+        required = true,
+        defaultValue = JAKARTAEE_VERSION_11
+
+    )
+    private String jakartaEeVersion;
+
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
@@ -108,7 +118,7 @@ public class CreateOpenApiMojo extends AbstractMojo {
         try {
             jakartaEeHelper.addJacksonDependency(mavenProject, log);
             jakartaEeHelper.addMicroprofileOpenApiApiDependency(mavenProject, log);
-            jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log);
+            jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log, jakartaEeVersion);
 
             Optional.ofNullable(openApiFileServer).ifPresent(openApiFile -> {
                 log.info("Creating open api server side with %s".formatted(openApiFile));

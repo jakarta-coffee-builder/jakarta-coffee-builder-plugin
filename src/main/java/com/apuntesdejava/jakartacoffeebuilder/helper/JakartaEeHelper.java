@@ -432,18 +432,19 @@ public class JakartaEeHelper {
      * Adds the Jakarta Validation API dependency to the Maven project. This method retrieves the version from the
      * configuration and sets the "jakarta.validation-api.version" property in the pom.xml.
      *
-     * @param mavenProject The Maven project to modify.
-     * @param log          The logger for logging messages.
+     * @param mavenProject     The Maven project to modify.
+     * @param log              The logger for logging messages.
+     * @param jakartaEeVersion The version of Jakarta EE to use for the dependency.
      * @throws IOException            If an I/O error occurs.
      * @throws MojoExecutionException If a Maven execution error occurs.
      */
     public void addJakartaValidationApiDependency(MavenProject mavenProject,
-                                                  Log log) throws IOException, MojoExecutionException {
-        CoffeeBuilderUtil.getDependencyConfiguration("jakarta.validation-api-11.0.0")
-                         .ifPresent(
-                             openApi -> PomUtil
-                                 .setProperty(mavenProject, log, "jakarta.validation-api.version",
-                                     openApi.getString("version")));
+                                                  Log log,
+                                                  String jakartaEeVersion) throws IOException, MojoExecutionException {
+        var openApi = CoffeeBuilderUtil.getDependencyConfiguration("jakarta.validation-api-" + jakartaEeVersion)
+                                       .orElseThrow(() -> new MojoExecutionException("Dependency not found"));
+        PomUtil.setProperty(mavenProject, log, "jakarta.validation-api.version",
+            openApi.getString("version"));
         PomUtil.addDependency(mavenProject, log, "jakarta.validation", "jakarta.validation-api",
             "${jakarta.validation-api.version}", "provided");
         PomUtil.saveMavenProject(mavenProject, log);
