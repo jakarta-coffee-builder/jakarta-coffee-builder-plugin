@@ -32,6 +32,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_JAKARTAEE_CORE_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PLATFORM;
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
 
 /**
@@ -182,6 +184,12 @@ public class PomUtil {
 
     }
 
+
+    public static Optional<String> getJakartaEeCurrentVersion(MavenProject mavenProject, Log log) {
+        return getDependency(mavenProject, log, JAKARTA_PLATFORM, JAKARTA_JAKARTAEE_CORE_API)
+            .map(Artifact::getVersion);
+    }
+
     /**
      * Checks if a dependency with the specified group ID, artifact ID, and version exists in the given Maven project.
      *
@@ -247,7 +255,7 @@ public class PomUtil {
      * @param artifactId    the artifact ID of the plugin
      * @param version       the version of the plugin
      * @param configuration the configuration of the plugin as a JsonObject
-     * @return  the Plugin object that was added
+     * @return the Plugin object that was added
      */
     public static Plugin addPlugin(MavenProject mavenProject,
                                    Log log,
@@ -256,17 +264,17 @@ public class PomUtil {
                                    JsonObject configuration) {
         var model = mavenProject.getOriginalModel();
         Build build = model.getBuild();
-       return addPlugin(build, log, groupId, artifactId, version, configuration);
+        return addPlugin(build, log, groupId, artifactId, version, configuration);
     }
 
     /**
      * Adds a plugin to the given Maven build base.
      *
-     * @param build the Maven build base to which the plugin will be added (e.g., {@code Build} or {@code PluginManagement})
-     * @param log the logger to use for logging messages
-     * @param groupId the group ID of the plugin
-     * @param artifactId the artifact ID of the plugin
-     * @param version the version of the plugin
+     * @param build         the Maven build base to which the plugin will be added (e.g., {@code Build} or {@code PluginManagement})
+     * @param log           the logger to use for logging messages
+     * @param groupId       the group ID of the plugin
+     * @param artifactId    the artifact ID of the plugin
+     * @param version       the version of the plugin
      * @param configuration the configuration of the plugin as a JsonObject
      * @return the Plugin object that was added or updated
      */

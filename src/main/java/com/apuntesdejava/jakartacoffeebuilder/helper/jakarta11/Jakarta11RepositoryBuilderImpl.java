@@ -29,6 +29,7 @@ import java.util.Map;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 
 /**
  * Implementation of the {@link RepositoryBuilder} interface for Jakarta 11.
@@ -69,7 +70,7 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
                             "entityName", entityName,
                             "classRepository", classRepository,
                             "packageEntity", packageEntity,
-                            "idType", fieldId.map(f -> f.getString("type")).orElse("Long")
+                            "idType", fieldId.map(f -> f.getString(TYPE)).orElse("Long")
                         ), repositoryPath);
         } catch (IOException e) {
             log.error("Error building Jakarta 11 Repository for entity: " + entityName, e);

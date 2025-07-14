@@ -21,6 +21,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -33,9 +34,11 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.DataSourceUtil.validateDataSourceName;
 
 
 /**
@@ -99,6 +102,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     protected String persistenceUnitName;
 
     protected JsonObject getDataSourceParameters() {
+        datasourceName = validateDataSourceName(declare, datasourceName);
         var jsonBuilder = Json.createObjectBuilder()
                               .add(NAME, datasourceName);
 
@@ -139,11 +143,50 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     protected void addDataSourceConfiguration(Log log, JsonObject json) throws ProjectBuildingException, IOException {
         var jakartaEeHelper = JakartaEeHelper.getInstance();
         var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
-        jakartaEeHelper.addDataSource(mavenProject, log, declare, json);
-        CoffeeBuilderUtil.getJdbcConfiguration(MavenProjectUtil.getParent(mavenProject))
-                         .ifPresent(definition ->
-                             jakartaEeHelper.checkDataDependencies(fullProject, log, definition));
+        CoffeeBuilderUtil.getJdbcConfiguration(url)
+                         .ifPresent(definition -> {
+                             jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
+                             jakartaEeHelper.addDataSource(fullProject, log, declare,
+                                 getDataSourceProperties(json, definition.getString("dataSourceClass"))
+                             );
+                         });
 
-        CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);
+//        CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);
     }
+
+    private JsonObject getDataSourceProperties(JsonObject json, String className) {
+        var newValues = Json.createObjectBuilder(json)
+                            .add("className", className).build();
+        var dataSourceProps = Json.createObjectBuilder();
+
+        List<String> properties = Arrays.asList(
+            "description",
+            "name",
+            "className",
+            "serverName",
+            "portNumber",
+            "databaseName",
+            "url",
+            "user",
+            "password",
+            "property",
+            "loginTimeout",
+            "transactional",
+            "isolationLevel",
+            "initialPoolSize",
+            "maxPoolSize",
+            "minPoolSize",
+            "maxIdleTime",
+            "maxStatements");
+        properties.stream().filter(newValues::containsKey).forEach(prop -> {
+            var value = newValues.get(prop);
+            var type = value.getValueType();
+            if (type == JsonValue.ValueType.OBJECT)
+                dataSourceProps.add(prop, value.asJsonObject());
+            else
+                dataSourceProps.add(prop, newValues.getString(prop));
+        });
+        return dataSourceProps.build();
+    }
+
 }

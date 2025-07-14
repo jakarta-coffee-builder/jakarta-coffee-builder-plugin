@@ -19,6 +19,8 @@ import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
+import java.io.IOException;
+
 /**
  * Clase responsable de crear el DataSource en un contexto web.
  * <p>
@@ -49,14 +51,15 @@ public class DataSourceWebCreator extends DataSourceCreator {
      * </p>
      */
     @Override
-    public void build() {
+    public void build() throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
-        var currentPath = mavenProject.getBasedir().toPath();
-        webXmlUtil.checkExistsFile(log, currentPath)
+
+        webXmlUtil.checkExistsFile(mavenProject, log)
                   .ifPresent(document -> {
                       var properties = getDataSourceParameters();
+                      var currentPath = mavenProject.getBasedir().toPath();
                       webXmlUtil.addDataSource(document, log, properties);
-                      webXmlUtil.saveDocument(document, log, currentPath);
+                      webXmlUtil.saveDocument(mavenProject, document, log);
                   });
     }
 }

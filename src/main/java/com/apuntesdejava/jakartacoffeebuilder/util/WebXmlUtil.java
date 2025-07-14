@@ -15,11 +15,13 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.w3c.dom.Document;
 
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -74,20 +76,30 @@ public class WebXmlUtil {
      * Checks if the `web.xml` file exists in the given Maven project path.
      * If the file does not exist, it creates a new `web.xml` file with a basic `web-app` element.
      *
-     * @param log         the logger to use for logging messages
-     * @param currentPath the path to the Maven project
+     * @param mavenProject
+     * @param log          the logger to use for logging messages
      * @return an Optional containing the XML Document if the file exists or was created successfully, otherwise an empty Optional
      */
-    public Optional<Document> checkExistsFile(Log log, Path currentPath) {
+    public Optional<Document> checkExistsFile(MavenProject mavenProject, Log log)  {
+
+        var currentPath = mavenProject.getBasedir().toPath();
         var webXmlPath = currentPath.resolve("src/main/webapp/WEB-INF/web.xml");
         return XmlUtil.getInstance().getDocument(log, webXmlPath, document -> {
-            var webAppElement = document.createElement("web-app");
-            webAppElement.setAttribute("version", "6.0");
-            webAppElement.setAttribute("xmlns", "https://jakarta.ee/xml/ns/jakartaee");
-            webAppElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            webAppElement.setAttribute("xsi:schemaLocation",
-                "https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd");
-            document.appendChild(webAppElement);
+            try {
+                var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log).orElseThrow();
+                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                    "web-app").orElseThrow();
+
+                var webAppElement = document.createElement("web-app");
+                webAppElement.setAttribute("version", schemaDescription.getString("version"));
+                webAppElement.setAttribute("xmlns", "https://jakarta.ee/xml/ns/jakartaee");
+                webAppElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                webAppElement.setAttribute("xsi:schemaLocation",
+                    "https://jakarta.ee/xml/ns/jakartaee " + schemaDescription.getString("url"));
+                document.appendChild(webAppElement);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
 
     }
@@ -127,11 +139,12 @@ public class WebXmlUtil {
     /**
      * Saves the given XML document to the `web.xml` file located in the specified Maven project's path.
      *
-     * @param document    the XML document to save
-     * @param log         the logger to use for logging messages
-     * @param currentPath the path to the Maven project
+     * @param mavenProject
+     * @param document     the XML document to save
+     * @param log          the logger to use for logging messages
      */
-    public void saveDocument(Document document, Log log, Path currentPath) {
+    public void saveDocument(MavenProject mavenProject, Document document, Log log) {
+        var currentPath = mavenProject.getBasedir().toPath();
         XmlUtil.getInstance().saveDocument(document, log, currentPath.resolve("src/main/webapp/WEB-INF/web.xml"));
     }
 

@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * Utility class for handling CoffeeBuilder operations.
@@ -93,6 +92,12 @@ public class CoffeeBuilderUtil {
         return Optional.ofNullable(response);
     }
 
+    public static Optional<JsonObject> getSchema(String jakartaEeVersion, String name) throws IOException {
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SCHEMAS_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        return Optional.ofNullable(response.getJsonObject(jakartaEeVersion).getJsonObject(name));
+    }
+
     /**
      * Updates the project configuration with the given configuration name and JSON object.
      *
@@ -118,20 +123,11 @@ public class CoffeeBuilderUtil {
     /**
      * Retrieves the dialect from the project configuration.
      *
-     * @param currentDirectoryPath the path to the current directory
-     * @return an Optional containing the dialect string if present
+     * @param url@return an Optional containing the dialect string if present
      * @throws IOException if an error occurs while reading the configuration
      */
-    public static Optional<JsonObject> getJdbcConfiguration(Path currentDirectoryPath) throws IOException {
-        var configurationJson = currentDirectoryPath.resolve("project.json");
-        var configurationObject = JsonUtil.readJsonValue(configurationJson).asJsonObject();
-        var jdbcConfiguration = configurationObject.getJsonObject("jdbc");
-        var dialect = jdbcConfiguration.getString("dialect", EMPTY);
-        if (StringUtils.isEmpty(dialect)) {
-            var url = jdbcConfiguration.getString("url");
-            dialect = StringUtils.substringBetween(url, "jdbc:", ":");
-        }
-        final String dialectKey = dialect;
+    public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
+        final String dialectKey = StringUtils.substringBetween(url, "jdbc:", ":");
         return getDialectConfiguration().map(
             dialectConfiguration -> dialectConfiguration.getJsonObject(dialectKey));
 
