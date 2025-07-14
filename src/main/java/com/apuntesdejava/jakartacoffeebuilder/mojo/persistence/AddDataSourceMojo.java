@@ -68,7 +68,7 @@ public class AddDataSourceMojo extends AddAbstractPersistenceMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
-            datasourceName = validateDataSourceName(declare, datasourceName);
+
             log.debug("Project name:%s".formatted(mavenProject.getName()));
             log.info("Adding datasource %s".formatted(datasourceName));
             var json = getDataSourceParameters();

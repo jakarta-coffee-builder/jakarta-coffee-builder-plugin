@@ -43,6 +43,22 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-faces
 
 ```
 
+### Add Jakarta Facelet Page (Template)
+
+Add a Facelet page
+
+```shell
+mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.2-SNAPSHOT:add-face-template" 
+```
+
+**Parameters**
+
+| Parameter | Definition                     | Example                        |
+|-----------|--------------------------------|--------------------------------|
+| `name`    | Name of the Template to create | `/WEB-INF/templates/template1` |
+| `inserts` | Names of inserts block names   | `section1,section2,section3`   |
+
+
 ### Add Jakarta Faces Page
 
 Add a Face page, associating it with a Managed Bean. It can also be done by using a specified Facelet template
@@ -53,12 +69,11 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
 
 **Parameters**
 
-| Parameter      | Definition                                                                                            | Default value |
-|----------------|-------------------------------------------------------------------------------------------------------|---------------|
-| `name`         | Name of the Face page to create                                                                       |               |
-| `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |
-| `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               |
-
+| Parameter      | Definition                                                                                            | Default value | Example                        |
+|----------------|-------------------------------------------------------------------------------------------------------|---------------|--------------------------------|
+| `name`         | Name of the Face page to create                                                                       |               |                                |
+| `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |                                |
+| `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               | `/WEB-INF/templates/template1` |
 
 ## Jakarta Persistence
 

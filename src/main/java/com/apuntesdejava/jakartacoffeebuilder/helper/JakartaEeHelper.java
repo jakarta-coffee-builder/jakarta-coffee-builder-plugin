@@ -138,37 +138,37 @@ public class JakartaEeHelper {
     /**
      * Adds a Jakarta Faces servlet declaration to the given Maven project.
      *
-     * @param currentPath the path to the Maven project
-     * @param urlPattern  the URL pattern to use for the servlet
-     * @param log         the logger to use for logging messages
+     * @param mavenProject
+     * @param log          the logger to use for logging messages
+     * @param urlPattern   the URL pattern to use for the servlet
      * @throws IOException if an error occurs while adding the servlet declaration
      */
-    public void addJakartaFacesServletDeclaration(Path currentPath,
-                                                  String urlPattern,
-                                                  Log log) throws IOException {
+    public void addJakartaFacesServletDeclaration(MavenProject mavenProject,
+                                                  Log log,
+                                                  String urlPattern) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
-        webXmlUtil.checkExistsFile(log, currentPath)
+        webXmlUtil.checkExistsFile(mavenProject, log)
                   .ifPresent(document -> {
                       webXmlUtil.addServletDeclaration(document, urlPattern, log, JAKARTA_FACES_SERVLET,
                           JAKARTA_FACES_SERVLET_DEFINITION);
-                      webXmlUtil.saveDocument(document, log, currentPath);
+                      webXmlUtil.saveDocument(mavenProject, document, log);
                   });
     }
 
     /**
      * Adds a welcome file to the web.xml of the given Maven project.
      *
-     * @param currentPath the path to the Maven project
-     * @param welcomeFile the welcome file to add
-     * @param log         the logger to use for logging messages
+     * @param mavenProject
+     * @param welcomeFile  the welcome file to add
+     * @param log          the logger to use for logging messages
      * @throws IOException if an error occurs while adding the welcome file
      */
-    public void addWelcomePages(Path currentPath, String welcomeFile, Log log) throws IOException {
+    public void addWelcomePages(MavenProject mavenProject, String welcomeFile, Log log) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
-        webXmlUtil.checkExistsFile(log, currentPath)
+        webXmlUtil.checkExistsFile(mavenProject, log)
                   .ifPresent(document -> {
                       webXmlUtil.addWelcomePages(document, welcomeFile, log);
-                      webXmlUtil.saveDocument(document, log, currentPath);
+                      webXmlUtil.saveDocument(mavenProject, document, log);
                   });
     }
 
@@ -365,7 +365,7 @@ public class JakartaEeHelper {
         );
         var fields = List.of(Map.of(
             NAME, "entityManager",
-            "type", "jakarta.persistence.EntityManager",
+            TYPE, "jakarta.persistence.EntityManager",
             "annotations", Map.of(
                 "jakarta.persistence.PersistenceContext", Map.of(
                     "unitName", "example-pu"

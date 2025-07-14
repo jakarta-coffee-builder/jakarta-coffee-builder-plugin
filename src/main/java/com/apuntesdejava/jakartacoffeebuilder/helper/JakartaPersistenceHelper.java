@@ -87,7 +87,7 @@ public class JakartaPersistenceHelper {
         return fieldsJson.stream().map(JsonValue::asJsonObject).map(field -> {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put(NAME, field.getString(NAME));
-            item.put("type", field.getString("type"));
+            item.put(TYPE, field.getString(TYPE));
             var keys = field.keySet();
             if (StringsUtil.containsAnyIgnoreCase(SEARCH_ANNOTATIONS, keys)) {
                 var annotationsList = StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS, keys);

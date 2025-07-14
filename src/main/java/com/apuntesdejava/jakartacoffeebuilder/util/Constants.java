@@ -45,6 +45,8 @@ public class Constants {
      */
     public static final String JAKARTA_JAKARTAEE_API = "jakarta.jakartaee-api";
 
+    public static final String JAKARTA_JAKARTAEE_CORE_API = "jakarta.jakartaee-core-api";
+
     /**
      * Identifier for Jakarta Faces.
      */
@@ -109,6 +111,7 @@ public class Constants {
      * Key for the name of an entity.
      */
     public static final String NAME = "name";
+    public static final String TYPE = "type";
     /**
      * Key for the table name of an entity.
      */
@@ -218,6 +221,7 @@ public class Constants {
     public static final String DATASOURCE_PAYARA = "payara";
 
     public static final String VALUE = "value";
+    public static final String SCHEMAS_URL = "/schemas.json";
 
     private Constants() {
     }

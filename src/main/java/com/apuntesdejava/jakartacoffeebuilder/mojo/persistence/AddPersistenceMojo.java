@@ -88,6 +88,11 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
         createPersistenceXml(log);
         var json = getDataSourceParameters();
         createPersistenceUnit(json);
+        try {
+            addDataSourceConfiguration(log, json);
+        } catch (ProjectBuildingException | IOException e) {
+            throw new MojoExecutionException(e);
+        }
 
     }
 
@@ -115,7 +120,7 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
             jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
-            CoffeeBuilderUtil.getJdbcConfiguration(MavenProjectUtil.getParent(mavenProject))
+            CoffeeBuilderUtil.getJdbcConfiguration(url)
                              .ifPresent(definition ->
                                  jakartaEeHelper.checkDataDependencies(fullProject, log, definition));
 

@@ -119,14 +119,14 @@ public class JakartaFacesHelper {
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
         var managedBean = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var annotationsClasses = Map.of(
-            "jakarta.enterprise.context.Dependent", Map.of(),
+            "jakarta.enterprise.context.RequestScoped", Map.of(),
             "jakarta.inject.Named", Map.of()
         );
         TemplateUtil.getInstance().createJavaBeanFile(log,
             Map.of(PACKAGE_NAME, packageDefinition,
                 CLASS_NAME, className,
                 FIELDS, List.of(
-                    Map.of("type", "String",
+                    Map.of(TYPE, "String",
                         NAME, NAME)
                 ),
                 "annotations", annotationsClasses), managedBean);

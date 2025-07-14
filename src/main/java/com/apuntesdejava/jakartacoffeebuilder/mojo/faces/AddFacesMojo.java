@@ -51,12 +51,13 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
  * <li> <code>mavenProject</code>: Represents the Maven project being processed.</li>
  * <li> <code>mavenSession</code>: Provides the Maven execution session information.</li>
  * <li> <code>projectBuilder</code>: Helper to build Maven project instances.</li>
- *  </ul>
+ * </ul>
  * Execution:<ul><li>
  * Executes the above tasks in sequence, logging relevant information or errors as
  * applicable.</li>
  * <li> Throws MojoExecutionException or MojoFailureException if issues occur during execution.</li>
- *  </ul>
+ * </ul>
+ *
  * @author Diego Silva
  */
 @Mojo(
@@ -116,10 +117,9 @@ public class AddFacesMojo extends AbstractMojo {
     private void checkWelcomePages(Log log) throws MojoExecutionException {
         try {
             log.debug("Checking Welcome Pages configuration");
-            var currentPath = mavenProject.getFile().toPath().getParent();
-
-            JakartaEeHelper.getInstance().addWelcomePages(currentPath, welcomeFile, log);
-        } catch (IOException ex) {
+            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+            JakartaEeHelper.getInstance().addWelcomePages(fullProject, welcomeFile, log);
+        } catch (ProjectBuildingException | IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Welcome Pages", ex);
         }
@@ -128,10 +128,10 @@ public class AddFacesMojo extends AbstractMojo {
     private void checkJakartaFacesServletDeclaration(Log log) throws MojoExecutionException {
         try {
             log.debug("Checking Jakarta Faces Declaration");
-            var currentPath = mavenProject.getFile().toPath().getParent();
+            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
-            JakartaEeHelper.getInstance().addJakartaFacesServletDeclaration(currentPath, urlPattern, log);
-        } catch (IOException ex) {
+            JakartaEeHelper.getInstance().addJakartaFacesServletDeclaration(fullProject, log, urlPattern);
+        } catch (ProjectBuildingException | IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Jakarta Faces Servlet Declaration", ex);
         }
