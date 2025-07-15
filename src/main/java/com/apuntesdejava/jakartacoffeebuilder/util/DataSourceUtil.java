@@ -33,7 +33,7 @@ public class DataSourceUtil {
      * @throws IllegalArgumentException If the data source name is invalid.
      */
     public static String validateDataSourceName(String declare, String datasourceName) {
-        RegexValidator validator = new RegexValidator("^[a-zA-Z][a-zA-Z0-9]*$");
+        RegexValidator validator = new RegexValidator("^[a-zA-Z][a-zA-Z0-9_]*$");
         if (!validator.isValid(datasourceName)) {
             throw new IllegalArgumentException("Invalid datasource name");
         }

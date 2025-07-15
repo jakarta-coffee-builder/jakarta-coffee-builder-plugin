@@ -17,6 +17,7 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -30,8 +31,6 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
-
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
 /**
  * Mojo implementation for adding necessary Jakarta Faces configurations to a Maven project.
@@ -80,12 +79,6 @@ public class AddFacesMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
-    @Parameter(
-        property = "jakartaee-version",
-        defaultValue = JAKARTAEE_VERSION_11
-    )
-    private String jakartaEeVersion;
-
     @Component
     private ProjectBuilder projectBuilder;
 
@@ -106,12 +99,19 @@ public class AddFacesMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
-        log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(urlPattern, welcomeFile));
-        log.debug("Project name:%s".formatted(mavenProject.getName()));
+        try {
+            MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
-        checkDependency(log);
-        checkJakartaFacesServletDeclaration(log);
-        checkWelcomePages(log);
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+            log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(urlPattern, welcomeFile));
+            log.debug("Project name:%s".formatted(mavenProject.getName()));
+
+            checkDependency(log, jakartaEeVersion);
+            checkJakartaFacesServletDeclaration(log);
+            checkWelcomePages(log);
+        } catch (ProjectBuildingException e) {
+            throw new MojoFailureException(e);
+        }
     }
 
     private void checkWelcomePages(Log log) throws MojoExecutionException {
@@ -138,7 +138,7 @@ public class AddFacesMojo extends AbstractMojo {
 
     }
 
-    private void checkDependency(Log log) throws MojoExecutionException {
+    private void checkDependency(Log log, String jakartaEeVersion) throws MojoExecutionException {
         log.debug("checking Jakarta Faces dependency");
         try {
             var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);

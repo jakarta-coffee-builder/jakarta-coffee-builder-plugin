@@ -18,16 +18,17 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
 
 /**
  * Mojo for adding persistence configuration to a Jakarta EE project.
@@ -53,14 +54,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
     name = "add-persistence"
 )
 public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
-
-
-    @Parameter(
-        property = "jakartaee-version",
-        defaultValue = JAKARTAEE_VERSION_11
-    )
-    private String jakartaEeVersion;
-
 
     /**
      * Default constructor.<br/>
@@ -110,12 +103,15 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
         log.debug("checking Jakarta Persistence dependency");
         try {
             var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+
             var jakartaEeHelper = JakartaEeHelper.getInstance();
             if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log))
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
             if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log))
                 jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
-            if (jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
+            if (!StringUtils.equals(jakartaEeVersion, JAKARTAEE_VERSION_10)
+                && jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
                 && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 

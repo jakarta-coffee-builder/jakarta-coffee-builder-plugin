@@ -16,16 +16,20 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.payara;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.PayaraMicroHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
-
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
 /**
  * @author Diego Silva <diego.silva at apuntesdejava.com>
@@ -48,20 +52,28 @@ public class AddPayaraMicroMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
-    @Parameter(
-        property = "jakartaee-version",
-        required = true,
-        defaultValue = JAKARTAEE_VERSION_11
+    @Component
+    private ProjectBuilder projectBuilder;
 
+    @Parameter(
+        defaultValue = "${session}",
+        readonly = true,
+        required = true
     )
-    private String jakartaEeVersion;
+    private MavenSession mavenSession;
 
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            var log = getLog();
+
+            MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+
             PayaraMicroHelper.getInstance().addPlugin(mavenProject, getLog(), profileId, jakartaEeVersion);
-        } catch (IOException e) {
+        } catch (ProjectBuildingException | IOException e) {
             getLog().error(e.getMessage(), e);
         }
     }
