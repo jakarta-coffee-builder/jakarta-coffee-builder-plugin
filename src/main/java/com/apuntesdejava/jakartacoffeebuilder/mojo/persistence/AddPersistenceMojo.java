@@ -24,6 +24,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
@@ -75,13 +76,14 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        var log = getLog();
-        log.debug("Project name:%s".formatted(mavenProject.getName()));
-        checkDependency(log);
-        createPersistenceXml(log);
-        var json = getDataSourceParameters();
-        createPersistenceUnit(json);
         try {
+            var log = getLog();
+            log.debug("Project name:%s".formatted(mavenProject.getName()));
+            checkDependency(log);
+            createPersistenceXml(log);
+            var json = getDataSourceParameters();
+            createPersistenceUnit(json);
+
             addDataSourceConfiguration(log, json);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoExecutionException(e);
@@ -127,9 +129,9 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
         }
     }
 
-    private void createPersistenceXml(Log log) {
-        var currentPath = mavenProject.getFile().toPath().getParent();
-        JakartaEeHelper.getInstance().createPersistenceXml(currentPath, log, persistenceUnitName);
+    private void createPersistenceXml(Log log) throws ProjectBuildingException {
+        MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+        JakartaEeHelper.getInstance().createPersistenceXml(fullProject, log, persistenceUnitName);
 
     }
 

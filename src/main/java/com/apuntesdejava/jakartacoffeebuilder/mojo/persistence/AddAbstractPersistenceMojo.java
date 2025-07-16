@@ -129,13 +129,13 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         return jsonBuilder.build();
     }
 
-    protected void createPersistenceUnit(JsonObject json) {
+    protected void createPersistenceUnit(JsonObject json) throws ProjectBuildingException {
         var log = getLog();
         if (StringUtils.isNotBlank(persistenceUnitName)) {
-            var currentPath = mavenProject.getFile().toPath().getParent();
+            MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             PersistenceXmlHelper
                 .getInstance()
-                .addDataSourceToPersistenceXml(currentPath, log, persistenceUnitName,
+                .addDataSourceToPersistenceXml(fullProject, log, persistenceUnitName,
                     json.getString(NAME));
         }
     }

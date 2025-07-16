@@ -15,8 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper.jakarta11;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.helper.RepositoryBuilder;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import jakarta.json.JsonObject;
@@ -48,17 +48,19 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
      * Builds a repository class for a specific entity in a Jakarta 11 project.
      *
      * @param mavenProject the Maven project where the repository will be created
-     * @param log the logger to log messages during the repository creation process
-     * @param entity a {@link JsonObject} representing the entity for which the repository is being created
+     * @param log          the logger to log messages during the repository creation process
+     * @param entityName
+     * @param entity       a {@link JsonObject} representing the entity for which the repository is being created
      */
     @Override
-    public void buildRepository(MavenProject mavenProject, Log log, JsonObject entity) {
-        var entityName = getEntityName(entity);
+    public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity) {
+
         try {
             log.info("Building Jakarta 11 Repository for entity: " + entityName);
             var packageDefinition = MavenProjectUtil.getRepositoryPackage(mavenProject);
             var packageEntity = MavenProjectUtil.getEntityPackage(mavenProject);
             var className = entityName + "Repository";
+            log.debug("entity:" + entity);
             var fieldId = getFieldId(entity);
             var repositoryPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
             var classRepository = StringUtils.capitalize(entity.getString("repository", "crud"));

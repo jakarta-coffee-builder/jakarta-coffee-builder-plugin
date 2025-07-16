@@ -81,6 +81,10 @@ public class MavenProjectUtil {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
     }
 
+    public static String getEnumsPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "enums");
+    }
+
     /**
      * Constructs a package name for the "repository" layer based on the Maven project details.
      *

@@ -30,7 +30,6 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -215,14 +214,17 @@ public class JakartaEeHelper {
     /**
      * Creates a `persistence.xml` file in the given Maven project.
      *
-     * @param currentPath         the path to the Maven project
+     * @param mavenProject
      * @param log                 the logger to use for logging messages
      * @param persistenceUnitName the name of the persistence unit to be created
      */
-    public void createPersistenceXml(Path currentPath, Log log, String persistenceUnitName) {
+    public void createPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnitName) {
         var persistenceXmlUtil = PersistenceXmlHelper.getInstance();
-        persistenceXmlUtil.createPersistenceXml(currentPath, log, persistenceUnitName)
-                          .ifPresent(document -> persistenceXmlUtil.savePersistenceXml(currentPath, log, document));
+        persistenceXmlUtil.createPersistenceXml(mavenProject, log, persistenceUnitName)
+                          .ifPresent(document -> {
+                              var currentPath = mavenProject.getFile().toPath().getParent();
+                              persistenceXmlUtil.savePersistenceXml(currentPath, log, document);
+                          });
     }
 
     /**

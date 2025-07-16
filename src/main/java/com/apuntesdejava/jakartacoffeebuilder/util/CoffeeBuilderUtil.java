@@ -67,6 +67,13 @@ public class CoffeeBuilderUtil {
         );
     }
 
+    public static Optional<JsonObject> getClassesDefinitions() throws IOException {
+        return Optional.ofNullable(
+            HttpUtil.getContent(HttpUtil.getUrl(Constants.CLASSES_DEFINITIONS),
+                STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
+        );
+    }
+
     /**
      * Retrieves the properties configuration for a given name.
      *

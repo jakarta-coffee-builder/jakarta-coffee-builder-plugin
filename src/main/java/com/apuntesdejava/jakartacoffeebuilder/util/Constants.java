@@ -148,6 +148,8 @@ public class Constants {
     public static final String SERVERS_URL = "/servers.json";
     public static final String SPECIFICATIONS_URL = "/specifications.json";
 
+    public static final String CLASSES_DEFINITIONS = "/classes-definitions.json";
+
     /**
      * URL to retrieve Hibernate dialect configurations.
      */

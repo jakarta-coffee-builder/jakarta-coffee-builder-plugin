@@ -17,12 +17,11 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.jakarta11.Jakarta11RepositoryBuilderImpl;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Optional;
-
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 
 /**
  * Interface for building repository classes.
@@ -34,6 +33,7 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
  */
 public interface RepositoryBuilder {
 
+
     /**
      * Obtains an instance of the default implementation of the RepositoryBuilder.
      *
@@ -44,26 +44,18 @@ public interface RepositoryBuilder {
     }
 
     /**
-     * Retrieves the name of the entity from the provided JSON object.
-     *
-     * @param entity the JSON object representing the entity
-     * @return the name of the entity
-     */
-    default String getEntityName(JsonObject entity) {
-        return entity.getString(NAME);
-    }
-
-    /**
      * Retrieves the field marked as the identifier (ID) from the entity definition.
      *
      * @param entity the JSON object representing the entity
      * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
      */
-    default Optional< JsonObject> getFieldId(JsonObject entity) {
-        return entity.getJsonArray("fields").stream()
-                .map(JsonObject.class::cast)
-                .filter(f -> f.getBoolean("isId", false))
-                .findFirst();
+    default Optional<JsonObject> getFieldId(JsonObject entity) {
+        return entity.getJsonObject("fields")
+                     .values().stream()
+                     .map(JsonValue::asJsonObject)
+                     .filter(val -> val.containsKey("isId")
+                         && val.get("isId").getValueType() == JsonValue.ValueType.TRUE)
+                     .findFirst();
     }
 
     /**
@@ -71,7 +63,8 @@ public interface RepositoryBuilder {
      *
      * @param mavenProject the Maven project instance
      * @param log          the logger for logging messages
+     * @param entityName
      * @param entity       the JSON object representing the entity
      */
-    void buildRepository(MavenProject mavenProject, Log log, JsonObject entity);
+    void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity);
 }
