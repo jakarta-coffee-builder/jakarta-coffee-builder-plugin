@@ -15,13 +15,16 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -30,6 +33,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_JAKARTAEE_CORE_API;
@@ -283,6 +287,15 @@ public class PomUtil {
                                    String groupId, String artifactId,
                                    String version,
                                    JsonObject configuration) {
+        return addPlugin(build, log, groupId, artifactId, version, configuration, null);
+    }
+
+    public static Plugin addPlugin(BuildBase build,
+                                   Log log,
+                                   String groupId, String artifactId,
+                                   String version,
+                                   JsonObject configuration, JsonArray executions) {
+
         var plugin = build
             .getPlugins()
             .stream().filter(plg -> StringUtils.equals(plg.getArtifactId(), artifactId))
@@ -302,7 +315,46 @@ public class PomUtil {
             var config = JsonUtil.jsonToXpp3Dom(configDom, configuration);
             plugin.setConfiguration(config);
         }
+        if (executions != null) {
+            var pluginExecutions = plugin.getExecutions();
+            log.debug("pluginExecutions:" + pluginExecutions);
+            executions.stream().map(JsonValue::asJsonObject).forEach(executionDefinition -> {
+                var id = executionDefinition.getString("id");
+                var phase = executionDefinition.getString("phase");
+                var pluginExecution = pluginExecutions
+                    .stream()
+                    .filter(pe ->
+                        StringUtils.equals(pe.getId(), id)
+                            && StringUtils.equals(pe.getPhase(), phase)
+                    )
+                    .findFirst()
+                    .orElseGet(() -> {
+                        var pe = new PluginExecution();
+                        pe.setPhase(phase);
+                        pe.setId(id);
+                        pe.setGoals(new ArrayList<>());
+                        pe.setConfiguration(new Xpp3Dom("configuration"));
+                        pluginExecutions.add(pe);
+                        return pe;
+                    });
+                if (executionDefinition.containsKey("goals"))
+                    executionDefinition.getJsonArray("goals")
+                                       .stream()
+                                       .map(JsonValue::asJsonObject)
+                                       .map(item -> item.getString("goal"))
+                                       .filter(goal -> !pluginExecution.getGoals().contains(goal))
+                                       .forEach(pluginExecution::addGoal);
+                if (executionDefinition.containsKey("configuration")) {
+                    var configDom = (Xpp3Dom) pluginExecution.getConfiguration();
+                    var config = JsonUtil.jsonToXpp3Dom(configDom, executionDefinition.getJsonObject("configuration"));
+                    pluginExecution.setConfiguration(config);
+                }
+            });
+
+
+        }
         log.debug("adding plugin %s".formatted(plugin));
         return plugin;
+
     }
 }

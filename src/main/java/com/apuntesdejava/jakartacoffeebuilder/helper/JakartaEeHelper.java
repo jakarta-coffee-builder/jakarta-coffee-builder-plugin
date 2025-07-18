@@ -71,9 +71,7 @@ public class JakartaEeHelper {
 
     private JakartaEeHelper() {
         try {
-            CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> {
-                this.specifications = specs;
-            });
+            CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> this.specifications = specs);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -137,7 +135,7 @@ public class JakartaEeHelper {
     /**
      * Adds a Jakarta Faces servlet declaration to the given Maven project.
      *
-     * @param mavenProject
+     * @param mavenProject The Maven project to modify.
      * @param log          the logger to use for logging messages
      * @param urlPattern   the URL pattern to use for the servlet
      * @throws IOException if an error occurs while adding the servlet declaration
@@ -157,7 +155,7 @@ public class JakartaEeHelper {
     /**
      * Adds a welcome file to the web.xml of the given Maven project.
      *
-     * @param mavenProject
+     * @param mavenProject the Maven project to modify
      * @param welcomeFile  the welcome file to add
      * @param log          the logger to use for logging messages
      * @throws IOException if an error occurs while adding the welcome file
@@ -214,7 +212,7 @@ public class JakartaEeHelper {
     /**
      * Creates a `persistence.xml` file in the given Maven project.
      *
-     * @param mavenProject
+     * @param mavenProject        the Maven project to create the file in
      * @param log                 the logger to use for logging messages
      * @param persistenceUnitName the name of the persistence unit to be created
      */
@@ -450,6 +448,34 @@ public class JakartaEeHelper {
         PomUtil.addDependency(mavenProject, log, "jakarta.validation", "jakarta.validation-api",
             "${jakarta.validation-api.version}", "provided");
         PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public void addHelperGenereSource(MavenProject mavenProject, Log log) throws MojoExecutionException {
+        var executions =
+            Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                         .add("id", "add-source")
+                         .add("phase",
+                             "generate-sources")
+                         .add("goals",
+                             Json.createArrayBuilder()
+                                 .add(
+                                     Json.createObjectBuilder().add("goal", "add-source")))
+                         .add("configuration",
+                             Json.createObjectBuilder()
+                                 .add("sources",
+
+                                     Json.createArrayBuilder()
+                                         .add(Json.createObjectBuilder()
+                                                  .add("source",
+                                                      "${project.build.directory}/generated-sources/openapi"))
+                                 )
+                         )
+                ).build();
+        PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.codehaus.mojo",
+            "build-helper-maven-plugin", "3.6.1", null, executions);
+        PomUtil.saveMavenProject(mavenProject, log);
+
     }
 
     private static class JakartaEeUtilHolder {

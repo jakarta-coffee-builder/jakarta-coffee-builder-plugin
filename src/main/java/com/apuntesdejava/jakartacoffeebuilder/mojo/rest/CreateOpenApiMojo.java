@@ -129,6 +129,7 @@ public class CreateOpenApiMojo extends AbstractMojo {
             jakartaEeHelper.addJacksonDependency(mavenProject, log);
             jakartaEeHelper.addMicroprofileOpenApiApiDependency(mavenProject, log);
             jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log, jakartaEeVersion);
+            jakartaEeHelper.addHelperGenereSource(mavenProject, log);
 
             Optional.ofNullable(openApiFileServer).ifPresent(openApiFile -> {
                 log.info("Creating open api server side with %s".formatted(openApiFile));
