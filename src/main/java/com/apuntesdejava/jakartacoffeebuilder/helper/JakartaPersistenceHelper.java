@@ -25,6 +25,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -150,14 +151,20 @@ public class JakartaPersistenceHelper {
      * @param jsonPath     the path to the JSON file containing entity definitions
      * @throws IOException if an I/O error occurs while reading the JSON file
      */
-    public void addEntities(MavenProject mavenProject, Log log, Path jsonPath) throws IOException {
+    public void addEntities(MavenProject mavenProject,
+                            Log log,
+                            Path jsonPath) throws IOException {
         var jsonContent = JsonUtil.readJsonValue(jsonPath).asJsonObject();
         var entitiesName = jsonContent.keySet();
-        jsonContent.forEach((key, value) -> addEntity(mavenProject, log, key, value.asJsonObject(), entitiesName));
+        jsonContent.forEach((key, value) -> addEntity(mavenProject, log, key, value.asJsonObject(), entitiesName
+        ));
 
     }
 
-    private void addEntity(MavenProject mavenProject, Log log, String entityName, JsonObject entity,
+    private void addEntity(MavenProject mavenProject,
+                           Log log,
+                           String entityName,
+                           JsonObject entity,
                            Set<String> entitiesName) {
         addEntityClass(mavenProject, log, entityName, entity, entitiesName);
         addRepositoryClass(mavenProject, log, entityName, entity);
@@ -185,7 +192,7 @@ public class JakartaPersistenceHelper {
                     var type = field.getString(TYPE);
                     if (field.getBoolean("list", false))
                         return createTypeListField(field, importsList, annotations, entitiesName::contains);
-                    if (StringUtils.equalsIgnoreCase(type, "enum"))
+                    if (Strings.CS.equals(type, "enum"))
                         return evaluateFieldEnumType(mavenProject, log, entityName, fieldName, field, importsList,
                             annotations);
                     return type;

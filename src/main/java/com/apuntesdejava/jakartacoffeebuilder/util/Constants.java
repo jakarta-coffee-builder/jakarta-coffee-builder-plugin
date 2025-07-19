@@ -224,6 +224,7 @@ public class Constants {
 
     public static final String VALUE = "value";
     public static final String SCHEMAS_URL = "/schemas.json";
+    public static final String OPEN_API_GENERATOR_CONFIGURATION = "/openapi-generator-config.json";
 
     private Constants() {
     }

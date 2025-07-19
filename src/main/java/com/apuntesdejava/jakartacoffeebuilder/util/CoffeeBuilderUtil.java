@@ -15,14 +15,11 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
@@ -74,6 +71,13 @@ public class CoffeeBuilderUtil {
         );
     }
 
+    public static Optional<JsonObject> getOpenApiGeneratorConfiguration() throws IOException {
+        return Optional.ofNullable(
+            HttpUtil.getContent(HttpUtil.getUrl(Constants.OPEN_API_GENERATOR_CONFIGURATION),
+                STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
+        );
+    }
+
     /**
      * Retrieves the properties configuration for a given name.
      *
@@ -105,27 +109,6 @@ public class CoffeeBuilderUtil {
         return Optional.ofNullable(response.getJsonObject(jakartaEeVersion).getJsonObject(name));
     }
 
-    /**
-     * Updates the project configuration with the given configuration name and JSON object.
-     *
-     * @param currentDirectoryPath the path to the current directory
-     * @param configurationName    the name of the configuration to update
-     * @param configuration        the JSON object containing the configuration data
-     * @throws IOException if an error occurs while updating the configuration
-     */
-    public static void updateProjectConfiguration(Path currentDirectoryPath,
-                                                  String configurationName,
-                                                  JsonObject configuration) throws IOException {
-        var configurationJson = currentDirectoryPath.resolve("project.json");
-        var configurationObject = Files.exists(configurationJson)
-            ? JsonUtil.readJsonValue(configurationJson).asJsonObject()
-            : Json.createObjectBuilder().build();
-        var json = Json.createObjectBuilder(configurationObject)
-                       .add(configurationName, configuration)
-                       .build();
-        JsonUtil.saveJsonValue(configurationJson, json);
-
-    }
 
     /**
      * Retrieves the dialect from the project configuration.

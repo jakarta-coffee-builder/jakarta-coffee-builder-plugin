@@ -24,7 +24,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
@@ -298,14 +298,14 @@ public class JakartaEeHelper {
                               .filter(entry -> {
                                   JsonObject specObject = entry.getValue().asJsonObject();
                                   return specObject.containsKey(JAKARTA_ENTERPRISE_CDI_API) &&
-                                      StringUtils.equals(specObject.getString(JAKARTA_ENTERPRISE_CDI_API), version);
+                                      Strings.CS.equals(specObject.getString(JAKARTA_ENTERPRISE_CDI_API), version);
                               })
                               .map(Map.Entry::getKey)
                               .findFirst()
                               .ifPresent(jakartaEEVersion -> {
                                   log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
                                   try {
-                                      if (StringUtils.equals(jakartaEEVersion, JAKARTAEE_VERSION_11)) {
+                                      if (Strings.CS.equals(jakartaEEVersion, JAKARTAEE_VERSION_11)) {
                                           addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
                                           addHibernateDependency(mavenProject, log);
                                           addHibernateProvider(mavenProject, log, definition.getString("dialect"));
@@ -450,7 +450,7 @@ public class JakartaEeHelper {
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
-    public void addHelperGenereSource(MavenProject mavenProject, Log log) throws MojoExecutionException {
+    public void addHelperGenerateSource(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
         var executions =
             Json.createArrayBuilder()
                 .add(Json.createObjectBuilder()
@@ -472,10 +472,12 @@ public class JakartaEeHelper {
                                  )
                          )
                 ).build();
-        PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.codehaus.mojo",
-            "build-helper-maven-plugin", "3.6.1", null, executions);
+        PomUtil
+            .findLatestPluginVersion("org.codehaus.mojo", "build-helper-maven-plugin")
+            .ifPresent(
+                version -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.codehaus.mojo",
+                    "build-helper-maven-plugin", version, null, executions));
         PomUtil.saveMavenProject(mavenProject, log);
-
     }
 
     private static class JakartaEeUtilHolder {

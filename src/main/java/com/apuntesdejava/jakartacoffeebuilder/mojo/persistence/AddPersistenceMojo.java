@@ -19,7 +19,7 @@ import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -112,7 +112,7 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
             if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log))
                 jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
-            if (!StringUtils.equals(jakartaEeVersion, JAKARTAEE_VERSION_10)
+            if (!Strings.CS.equals(jakartaEeVersion, JAKARTAEE_VERSION_10)
                 && jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
                 && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);

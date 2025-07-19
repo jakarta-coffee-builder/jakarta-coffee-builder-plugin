@@ -15,10 +15,13 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import jakarta.json.Json;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.openapitools.codegen.DefaultGenerator;
-import org.openapitools.codegen.config.CodegenConfigurator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,7 +30,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Helper class for processing OpenAPI specifications and generating server-side code.
@@ -43,14 +45,12 @@ import java.util.Map;
  * Usage:
  * <ul>
  *   <li>Obtain an instance of this helper using {@link #getInstance()}.</li>
- *   <li>Call {@link #processServer(MavenProject, File)} to process an OpenAPI file.</li>
+ *   <li>Call {@link #processServer(MavenProject, File, Log)} to process an OpenAPI file.</li>
  * </ul>
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class OpenApiGeneratorHelper {
-
-    private final Path ignoreFilePath;
 
     /**
      * Retrieves the singleton instance of the {@code OpenApiGeneratorHelper}.
@@ -62,17 +62,16 @@ public class OpenApiGeneratorHelper {
     }
 
     private OpenApiGeneratorHelper() {
-        try {
-            this.ignoreFilePath = Files.createTempFile("oag", "ignore");
-            List<String> ignoreList = List.of(
-                "**/invoker/RestApplication.java",
-                "**/invoker/RestResourceRoot.java"
-            );
-            Files.write(ignoreFilePath, ignoreList);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    }
 
+    private Path createIgnoreFilePath(File baseDir) throws IOException {
+        var ignoreFilePath = baseDir.toPath().resolve(".openapi-generator-ignore");
+        List<String> ignoreList = List.of(
+            "**/invoker/RestApplication.java",
+            "**/invoker/RestResourceRoot.java"
+        );
+        Files.write(ignoreFilePath, ignoreList);
+        return ignoreFilePath;
     }
 
     /**
@@ -84,56 +83,57 @@ public class OpenApiGeneratorHelper {
      *
      * @param mavenProject the Maven project containing the POM file.
      * @param openApiFile  the OpenAPI specification file to be processed.
+     * @param log          the logger to use for logging messages.
      * @throws URISyntaxException if there is an error with the URI syntax.
      * @throws IOException        if an I/O error occurs during processing.
      * @see <a href="https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/jaxrs-spec.md" >
      * Documentation for the jaxrs-spec Generator</a>
      */
     public void processServer(MavenProject mavenProject,
-                              File openApiFile) throws URISyntaxException, IOException {
+                              File openApiFile,
+                              Log log) throws URISyntaxException, IOException, MojoExecutionException {
 
         if (!Files.exists(openApiFile.toPath()))
             throw new FileNotFoundException("File not found:" + openApiFile);
         var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
-        CodegenConfigurator configurator = getCodegenConfigurator(mavenProject, openApiFile, apiResourcesPackage);
+        var ignoreFilePath = createIgnoreFilePath(mavenProject.getBasedir());
 
-        new DefaultGenerator()
-            .opts(configurator.toClientOptInput())
-            .generate();
+        CoffeeBuilderUtil
+            .getOpenApiGeneratorConfiguration()
+            .map(config -> {
+                var configOptionsBuilder = Json.createObjectBuilder(config.getJsonObject("configOptions"))
+                                               .add("modelPackage", apiResourcesPackage + ".model")
+                                               .add("invokerPackage", apiResourcesPackage + ".invoker")
+                                               .add("apiPackage", apiResourcesPackage);
+                return Json.createObjectBuilder()
+                           .add("generatorName", config.getString("generatorName"))
+                           .add("inputSpec", openApiFile.toURI().toString())
+                           .add("configOptions", configOptionsBuilder)
+                           .build();
+            }).ifPresent(configuration -> {
+                try {
+                    var executions = Json
+                        .createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                 .add("goals",
+                                     Json.createArrayBuilder()
+                                         .add(
+                                             Json.createObjectBuilder()
+                                                 .add("goal", "generate")
+                                         )
+                                 ).add("configuration", configuration))
+                        .build();
+                    PomUtil.findLatestPluginVersion("org.openapitools", "openapi-generator-maven-plugin")
+                           .ifPresent(version ->
+                               PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.openapitools",
+                                   "openapi-generator-maven-plugin", version, null, executions)
+                           );
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        PomUtil.saveMavenProject(mavenProject, log);
 
-    }
-
-    private CodegenConfigurator getCodegenConfigurator(MavenProject mavenProject,
-                                                       File openApiFile,
-                                                       String apiResourcesPackage) {
-        CodegenConfigurator configurator = new CodegenConfigurator();
-        configurator.setGeneratorName("jaxrs-spec");
-        configurator.setInputSpec(openApiFile.getAbsolutePath());
-        configurator.setOutputDir(mavenProject.getBuild().getDirectory() + "/generated-sources/openapi");
-        configurator.setModelPackage(apiResourcesPackage + ".model");
-        configurator.setInvokerPackage(apiResourcesPackage + ".invoker");
-        configurator.setApiPackage(apiResourcesPackage);
-        configurator.setIgnoreFileOverride(ignoreFilePath.toString());
-        configurator.setGlobalProperties(Map.of(
-            "modelTests", "false",
-            "apiTests", "false",
-            "apiDocs", "false",
-            "modelDocs", "false",
-            "verbose", "true"
-        ));
-        configurator.setAdditionalProperties(Map.ofEntries(
-            Map.entry("returnResponse", "true"),
-            Map.entry("useJakartaEe", "true"),
-            Map.entry("generateBuilders", "true"),
-            Map.entry("interfaceOnly", "true"),
-            Map.entry("useSwaggerAnnotations", "false"),
-            Map.entry("dateLibrary", "java8"),
-            Map.entry("sourceFolder", ""),
-            Map.entry("generatePom", "false"),
-            Map.entry("useMicroProfileOpenAPIAnnotations", "true")
-
-        ));
-        return configurator;
     }
 
     private static class OpenApiGeneratorHelperHolder {
