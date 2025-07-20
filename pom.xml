@@ -327,7 +327,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <!--<publishingServerId>central-portal-snapshots</publishingServerId>-->
-                            <publishingServerId>central</publishingServerId>
+                            <publishingServerId>ossrh</publishingServerId>
 
                         </configuration>
                     </plugin>
