@@ -18,16 +18,18 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
 
 /**
  * Mojo for adding persistence configuration to a Jakarta EE project.
@@ -54,14 +56,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
 )
 public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
 
-
-    @Parameter(
-        property = "jakartaee-version",
-        defaultValue = JAKARTAEE_VERSION_11
-    )
-    private String jakartaEeVersion;
-
-
     /**
      * Default constructor.<br/>
      * This constructor is used by Maven to create an instance of this Mojo.
@@ -82,13 +76,14 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        var log = getLog();
-        log.debug("Project name:%s".formatted(mavenProject.getName()));
-        checkDependency(log);
-        createPersistenceXml(log);
-        var json = getDataSourceParameters();
-        createPersistenceUnit(json);
         try {
+            var log = getLog();
+            log.debug("Project name:%s".formatted(mavenProject.getName()));
+            checkDependency(log);
+            createPersistenceXml(log);
+            var json = getDataSourceParameters();
+            createPersistenceUnit(json);
+
             addDataSourceConfiguration(log, json);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoExecutionException(e);
@@ -110,12 +105,15 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
         log.debug("checking Jakarta Persistence dependency");
         try {
             var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+
             var jakartaEeHelper = JakartaEeHelper.getInstance();
             if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log))
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
             if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log))
                 jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
-            if (jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
+            if (!Strings.CS.equals(jakartaEeVersion, JAKARTAEE_VERSION_10)
+                && jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
                 && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
                 jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
 
@@ -131,9 +129,9 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
         }
     }
 
-    private void createPersistenceXml(Log log) {
-        var currentPath = mavenProject.getFile().toPath().getParent();
-        JakartaEeHelper.getInstance().createPersistenceXml(currentPath, log, persistenceUnitName);
+    private void createPersistenceXml(Log log) throws ProjectBuildingException {
+        MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+        JakartaEeHelper.getInstance().createPersistenceXml(fullProject, log, persistenceUnitName);
 
     }
 

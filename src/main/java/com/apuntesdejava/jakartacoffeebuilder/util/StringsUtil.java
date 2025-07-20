@@ -16,6 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +34,8 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  */
 public class StringsUtil {
 
-    private StringsUtil(){}
+    private StringsUtil() {
+    }
 
 
     /**
@@ -44,8 +46,8 @@ public class StringsUtil {
      * @return the path string without the leading slash if it was present; otherwise, the original string
      */
     public static String removeCharacterRoot(String path) {
-        if (StringUtils.startsWith(path, SLASH))
-            return StringUtils.removeStart(path, SLASH);
+        if (Strings.CS.startsWith(path, SLASH))
+            return Strings.CS.removeStart(path, SLASH);
         return path;
     }
 
@@ -125,7 +127,8 @@ public class StringsUtil {
      */
     public static String findIgnoreCase(Set<String> searchAnnotations, String search) {
         return searchAnnotations.stream()
-                                .filter(item -> StringUtils.equalsIgnoreCase(item, search))
+                                .filter(item ->
+                                    Strings.CS.equals(StringUtils.lowerCase(item), StringUtils.lowerCase(search)))
                                 .findFirst()
                                 .orElse(null);
     }

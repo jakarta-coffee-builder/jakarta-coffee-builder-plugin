@@ -1,52 +1,53 @@
-[
-  {
-    "name": "Coffee",
-    "repository": "crud",
-    "fields": [
-      {
-        "name": "id",
+{
+  "Project": {
+    "fields": {
+      "id": {
         "type": "Long",
-        "isId": true
+        "isId": true,
+        "generatedValue": "Identity"
       },
-      {
-        "name": "name",
+      "name": {
         "type": "String",
         "column": {
-          "name": "coffee_name",
+          "name": "project_name",
           "length": 100,
           "unique": true,
           "nullable": false
         }
       },
-      {
-        "name": "price",
-        "type": "Double"
-      }
-    ]
-  },
-  {
-    "name": "Order",
-    "table": "order_",
-    "repository": "data",
-    "fields": [
-      {
-        "name": "id",
-        "type": "Long",
-        "isId": true
+      "startDate": {
+        "type": "LocalDate",
+        "column": {
+          "name": "start_date"
+        }
       },
-      {
-        "name": "coffee",
-        "type": "Coffee",
+      "endDate": {
+        "type": "LocalDate",
+        "column": {
+          "name": "end_date"
+        }
+      }
+    }
+  },
+  "Task": {
+    "table": "task_",
+    "fields": {
+      "taskId": {
+        "type": "UUID",
+        "isId": true,
+        "generatedValue": "UUID"
+      },
+      "project": {
+        "type": "Project",
         "manyToOne": true,
         "joinColumn": {
-          "name": "coffee_id",
+          "name": "project_id",
           "nullable": false
         }
       },
-      {
-        "name": "quantity",
-        "type": "Integer"
+      "description": {
+        "type": "String"
       }
-    ]
+    }
   }
-]
+}

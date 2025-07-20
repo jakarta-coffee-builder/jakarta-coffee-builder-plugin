@@ -30,7 +30,7 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.version>3.9.0</maven.version>
+        <maven.version>3.9.11</maven.version>
         <maven.compiler.release>21</maven.compiler.release>
         <mockito.version>5.18.0</mockito.version>
         <org.slf4j-version>2.0.17</org.slf4j-version>
@@ -100,7 +100,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>3.18.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -158,7 +158,7 @@
             <artifactId>slf4j-simple</artifactId>
             <version>${org.slf4j-version}</version>
         </dependency>
-        <dependency>
+      <!--  <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-cli</artifactId>
             <version>7.13.0</version>
@@ -176,7 +176,7 @@
                     <artifactId>guava</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <build>
@@ -327,7 +327,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <!--<publishingServerId>central-portal-snapshots</publishingServerId>-->
-                            <publishingServerId>central</publishingServerId>
+                            <publishingServerId>ossrh</publishingServerId>
 
                         </configuration>
                     </plugin>

@@ -15,13 +15,21 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import jakarta.json.Json;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.openapitools.codegen.OpenAPIGenerator;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Helper class for processing OpenAPI specifications and generating server-side code.
@@ -37,7 +45,7 @@ import java.net.URISyntaxException;
  * Usage:
  * <ul>
  *   <li>Obtain an instance of this helper using {@link #getInstance()}.</li>
- *   <li>Call {@link #processServer(MavenProject, File)} to process an OpenAPI file.</li>
+ *   <li>Call {@link #processServer(MavenProject, File, Log)} to process an OpenAPI file.</li>
  * </ul>
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
@@ -56,40 +64,75 @@ public class OpenApiGeneratorHelper {
     private OpenApiGeneratorHelper() {
     }
 
+    private Path createIgnoreFilePath(File baseDir) throws IOException {
+        var ignoreFilePath = baseDir.toPath().resolve(".openapi-generator-ignore");
+        List<String> ignoreList = List.of(
+            "**/invoker/RestApplication.java",
+            "**/invoker/RestResourceRoot.java"
+        );
+        Files.write(ignoreFilePath, ignoreList);
+        return ignoreFilePath;
+    }
+
     /**
      * Processes the OpenAPI file to generate server-side code using the OpenAPI Generator Maven plugin.
      * <p>
      * This method uses the OpenAPI Generator to create server-side code for a Maven project.
      * The generated code includes models and APIs, and it is configured to use the Helidon server framework.
      * </p>
-     * 
-     * @see <a href="https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/jaxrs-spec.md" >
-     * Documentation for the jaxrs-spec Generator</a>
      *
      * @param mavenProject the Maven project containing the POM file.
      * @param openApiFile  the OpenAPI specification file to be processed.
+     * @param log          the logger to use for logging messages.
      * @throws URISyntaxException if there is an error with the URI syntax.
      * @throws IOException        if an I/O error occurs during processing.
+     * @see <a href="https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/jaxrs-spec.md" >
+     * Documentation for the jaxrs-spec Generator</a>
      */
     public void processServer(MavenProject mavenProject,
-                              File openApiFile) throws URISyntaxException, IOException {
+                              File openApiFile,
+                              Log log) throws URISyntaxException, IOException, MojoExecutionException {
+
+        if (!Files.exists(openApiFile.toPath()))
+            throw new FileNotFoundException("File not found:" + openApiFile);
         var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
-        OpenAPIGenerator.main(
-            new String[]{
-                "generate",
-                "--input-spec", openApiFile.getAbsolutePath(),
-                "--generator-name", "jaxrs-spec",
-                "--output", mavenProject.getBuild().getDirectory()+ "/generated-sources/openapi",
-                "--model-package", apiResourcesPackage + ".model",
-                "--invoker-package", apiResourcesPackage + ".invoker",
-                "--api-package", apiResourcesPackage ,
-                "--global-property", "modelTests=false,apiTests=false,apiDocs=false,modelDocs=false",
-                "--additional-properties",
-                "returnResponse=true,useJakartaEe=true,generateBuilders=true,interfaceOnly=true,"
-                    + "useSwaggerAnnotations=false,dateLibrary=java8,sourceFolder=,generatePom=false,"
-                    + "useMicroProfileOpenAPIAnnotations=true",
-            }
-        );
+        var ignoreFilePath = createIgnoreFilePath(mavenProject.getBasedir());
+
+        CoffeeBuilderUtil
+            .getOpenApiGeneratorConfiguration()
+            .map(config -> {
+                var configOptionsBuilder = Json.createObjectBuilder(config.getJsonObject("configOptions"))
+                                               .add("modelPackage", apiResourcesPackage + ".model")
+                                               .add("invokerPackage", apiResourcesPackage + ".invoker")
+                                               .add("apiPackage", apiResourcesPackage);
+                return Json.createObjectBuilder()
+                           .add("generatorName", config.getString("generatorName"))
+                           .add("inputSpec", openApiFile.toURI().toString())
+                           .add("configOptions", configOptionsBuilder)
+                           .build();
+            }).ifPresent(configuration -> {
+                try {
+                    var executions = Json
+                        .createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                                 .add("goals",
+                                     Json.createArrayBuilder()
+                                         .add(
+                                             Json.createObjectBuilder()
+                                                 .add("goal", "generate")
+                                         )
+                                 ).add("configuration", configuration))
+                        .build();
+                    PomUtil.findLatestPluginVersion("org.openapitools", "openapi-generator-maven-plugin")
+                           .ifPresent(version ->
+                               PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.openapitools",
+                                   "openapi-generator-maven-plugin", version, null, executions)
+                           );
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        PomUtil.saveMavenProject(mavenProject, log);
 
     }
 

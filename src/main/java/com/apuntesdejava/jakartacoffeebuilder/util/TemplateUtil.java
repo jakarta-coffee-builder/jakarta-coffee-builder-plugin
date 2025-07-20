@@ -100,6 +100,10 @@ public class TemplateUtil {
         }
     }
 
+    public void createEnumFile(Log log, Map<String, Object> data, Path enumPath) throws IOException {
+        createJavaFile(log, data, enumPath, "Enum.ftl");
+    }
+
     private static class TemplateUtilHolder {
 
         private static final TemplateUtil INSTANCE = new TemplateUtil();

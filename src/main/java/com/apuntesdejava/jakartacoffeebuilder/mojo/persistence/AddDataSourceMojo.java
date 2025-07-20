@@ -22,8 +22,6 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.DataSourceUtil.validateDataSourceName;
-
 
 /**
  * Mojo that adds a data source to the Jakarta EE project.

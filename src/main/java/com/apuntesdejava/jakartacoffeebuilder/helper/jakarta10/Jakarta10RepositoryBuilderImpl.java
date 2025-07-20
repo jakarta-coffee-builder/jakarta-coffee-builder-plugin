@@ -51,11 +51,11 @@ public class Jakarta10RepositoryBuilderImpl implements RepositoryBuilder {
      *
      * @param mavenProject The Maven project being worked on.
      * @param log          The logger object to log messages during the build process.
+     * @param entityName
      * @param entity       The JSON object representing the entity for which the repository will be built.
      */
     @Override
-    public void buildRepository(MavenProject mavenProject, Log log, JsonObject entity) {
-        var entityName = getEntityName(entity);
+    public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity) {
 
         log.info("Building Jakarta 10 Repository for entity: " + entityName);
     }

@@ -24,13 +24,12 @@ import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.WebXmlUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -72,9 +71,7 @@ public class JakartaEeHelper {
 
     private JakartaEeHelper() {
         try {
-            CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> {
-                this.specifications = specs;
-            });
+            CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> this.specifications = specs);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -138,7 +135,7 @@ public class JakartaEeHelper {
     /**
      * Adds a Jakarta Faces servlet declaration to the given Maven project.
      *
-     * @param mavenProject
+     * @param mavenProject The Maven project to modify.
      * @param log          the logger to use for logging messages
      * @param urlPattern   the URL pattern to use for the servlet
      * @throws IOException if an error occurs while adding the servlet declaration
@@ -158,7 +155,7 @@ public class JakartaEeHelper {
     /**
      * Adds a welcome file to the web.xml of the given Maven project.
      *
-     * @param mavenProject
+     * @param mavenProject the Maven project to modify
      * @param welcomeFile  the welcome file to add
      * @param log          the logger to use for logging messages
      * @throws IOException if an error occurs while adding the welcome file
@@ -215,14 +212,17 @@ public class JakartaEeHelper {
     /**
      * Creates a `persistence.xml` file in the given Maven project.
      *
-     * @param currentPath         the path to the Maven project
+     * @param mavenProject        the Maven project to create the file in
      * @param log                 the logger to use for logging messages
      * @param persistenceUnitName the name of the persistence unit to be created
      */
-    public void createPersistenceXml(Path currentPath, Log log, String persistenceUnitName) {
+    public void createPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnitName) {
         var persistenceXmlUtil = PersistenceXmlHelper.getInstance();
-        persistenceXmlUtil.createPersistenceXml(currentPath, log, persistenceUnitName)
-                          .ifPresent(document -> persistenceXmlUtil.savePersistenceXml(currentPath, log, document));
+        persistenceXmlUtil.createPersistenceXml(mavenProject, log, persistenceUnitName)
+                          .ifPresent(document -> {
+                              var currentPath = mavenProject.getFile().toPath().getParent();
+                              persistenceXmlUtil.savePersistenceXml(currentPath, log, document);
+                          });
     }
 
     /**
@@ -298,14 +298,14 @@ public class JakartaEeHelper {
                               .filter(entry -> {
                                   JsonObject specObject = entry.getValue().asJsonObject();
                                   return specObject.containsKey(JAKARTA_ENTERPRISE_CDI_API) &&
-                                      StringUtils.equals(specObject.getString(JAKARTA_ENTERPRISE_CDI_API), version);
+                                      Strings.CS.equals(specObject.getString(JAKARTA_ENTERPRISE_CDI_API), version);
                               })
                               .map(Map.Entry::getKey)
                               .findFirst()
                               .ifPresent(jakartaEEVersion -> {
                                   log.debug("Jakarta EE version: %s".formatted(jakartaEEVersion));
                                   try {
-                                      if (StringUtils.equals(jakartaEEVersion, JAKARTAEE_VERSION_11)) {
+                                      if (Strings.CS.equals(jakartaEEVersion, JAKARTAEE_VERSION_11)) {
                                           addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
                                           addHibernateDependency(mavenProject, log);
                                           addHibernateProvider(mavenProject, log, definition.getString("dialect"));
@@ -447,6 +447,36 @@ public class JakartaEeHelper {
             openApi.getString("version"));
         PomUtil.addDependency(mavenProject, log, "jakarta.validation", "jakarta.validation-api",
             "${jakarta.validation-api.version}", "provided");
+        PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public void addHelperGenerateSource(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
+        var executions =
+            Json.createArrayBuilder()
+                .add(Json.createObjectBuilder()
+                         .add("id", "add-source")
+                         .add("phase",
+                             "generate-sources")
+                         .add("goals",
+                             Json.createArrayBuilder()
+                                 .add(
+                                     Json.createObjectBuilder().add("goal", "add-source")))
+                         .add("configuration",
+                             Json.createObjectBuilder()
+                                 .add("sources",
+
+                                     Json.createArrayBuilder()
+                                         .add(Json.createObjectBuilder()
+                                                  .add("source",
+                                                      "${project.build.directory}/generated-sources/openapi"))
+                                 )
+                         )
+                ).build();
+        PomUtil
+            .findLatestPluginVersion("org.codehaus.mojo", "build-helper-maven-plugin")
+            .ifPresent(
+                version -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.codehaus.mojo",
+                    "build-helper-maven-plugin", version, null, executions));
         PomUtil.saveMavenProject(mavenProject, log);
     }
 

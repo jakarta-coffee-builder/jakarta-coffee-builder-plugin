@@ -1,16 +1,20 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.jakartaee;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
-
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
 
 @Mojo(
     name = "add-validation-api"
@@ -23,12 +27,15 @@ public class AddValidationApiMojo extends AbstractMojo {
     private MavenProject mavenProject;
 
     @Parameter(
-        property = "jakartaee-version",
-        required = true,
-        defaultValue = JAKARTAEE_VERSION_11
-
+        defaultValue = "${session}",
+        readonly = true,
+        required = true
     )
-    private String jakartaEeVersion;
+    private MavenSession mavenSession;
+
+
+    @Component
+    private ProjectBuilder projectBuilder;
 
     /**
      * Constructor por defecto.
@@ -41,9 +48,13 @@ public class AddValidationApiMojo extends AbstractMojo {
         var log = getLog();
         var jakartaEeHelper = JakartaEeHelper.getInstance();
         try {
+            MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+
             jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log, jakartaEeVersion);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
+        } catch (ProjectBuildingException | IOException e) {
+            throw new MojoFailureException(e);
         }
     }
 }

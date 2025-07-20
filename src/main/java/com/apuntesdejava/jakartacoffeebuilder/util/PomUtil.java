@@ -15,13 +15,17 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
@@ -30,6 +34,8 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_JAKARTAEE_CORE_API;
@@ -82,8 +88,8 @@ public class PomUtil {
                                      String scope) {
         var model = mavenProject.getOriginalModel();
         if (model.getDependencies().stream()
-                 .filter(dependency -> StringUtils.equals(dependency.getGroupId(), groupId) &&
-                     StringUtils.equals(dependency.getArtifactId(), artifactId))
+                 .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId) &&
+                     Strings.CS.equals(dependency.getArtifactId(), artifactId))
                  .findFirst().isEmpty()) {
             var dependency = new Dependency();
             dependency.setArtifactId(artifactId);
@@ -128,7 +134,8 @@ public class PomUtil {
             var coordinatesSplit = StringUtils.split(coordinates, ":");
             var groupId = coordinatesSplit[0];
             var artifactId = coordinatesSplit[1];
-            var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : getLastVersion(groupId, artifactId);
+            var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : findLatestDependencyVersion(groupId,
+                artifactId).orElseThrow();
             log.debug("adding dependency %s".formatted(coordinates));
             log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId, version));
             addDependency(mavenProject, log, groupId, artifactId, version);
@@ -137,14 +144,52 @@ public class PomUtil {
         }
     }
 
-    private static String getLastVersion(String groupId, String artifactId) throws IOException {
-        var params = "p:jar AND a:%s AND g:%s".formatted(artifactId, groupId);
+    /**
+     * Finds the latest version of a Maven dependency from Maven Central.
+     *
+     * @param groupId the group ID of the dependency.
+     * @param artifactId the artifact ID of the dependency.
+     * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
+     * @throws IOException if an error occurs during the HTTP request.
+     */
+    public static Optional<String> findLatestDependencyVersion(String groupId, String artifactId) throws IOException {
+        return findLatestVersion(groupId, artifactId, "jar");
+    }
+
+    /**
+     * Finds the latest version of a Maven plugin from Maven Central.
+     *
+     * @param groupId the group ID of the plugin.
+     * @param artifactId the artifact ID of the plugin.
+     * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
+     * @throws IOException if an error occurs during the HTTP request.
+     */
+    public static Optional<String> findLatestPluginVersion(String groupId, String artifactId) throws IOException {
+        return findLatestVersion(groupId, artifactId, "maven-plugin");
+    }
+
+    /**
+     * Gets the latest version of a Maven artifact from Maven Central.
+     * This method is robust and handles cases where no artifact is found.
+     *
+     * @param groupId    the group ID of the artifact
+     * @param artifactId the artifact ID of the artifact
+     * @param packaging  the packaging type of the artifact (e.g., "jar", "maven-plugin")
+     * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
+     * @throws IOException if an error occurs during the HTTP request
+     */
+    public static Optional<String> findLatestVersion(String groupId,
+                                                     String artifactId,
+                                                     String packaging) throws IOException {
+        var params = "p:%s AND a:%s AND g:%s".formatted(packaging, artifactId, groupId);
         var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select",
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER, new HttpUtil.Parameter("q", params));
-        return response.getJsonObject("response")
-                       .getJsonArray("docs")
-                       .getJsonObject(0)
-                       .getString("latestVersion");
+
+        JsonArray docs = response.getJsonObject("response").getJsonArray("docs");
+        if (docs.isEmpty()) {
+            return Optional.empty(); // No results found
+        }
+        return Optional.of(docs.getJsonObject(0).getString("latestVersion"));
     }
 
     /**
@@ -178,8 +223,8 @@ public class PomUtil {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
         return mavenProject.getArtifacts().stream().
                            filter(artifact ->
-                               StringUtils.equals(artifact.getGroupId(), groupId)
-                                   && StringUtils.equals(artifact.getArtifactId(), artifactId)
+                               Strings.CS.equals(artifact.getGroupId(), groupId)
+                                   && Strings.CS.equals(artifact.getArtifactId(), artifactId)
                            ).findFirst();
 
     }
@@ -208,9 +253,9 @@ public class PomUtil {
         log.debug("groupId:%s | artifactId:%s | version: %s".formatted(groupId, artifactId, version));
         return mavenProject.getArtifacts().stream().
                            anyMatch(artifact ->
-                               StringUtils.equals(artifact.getGroupId(), groupId)
-                                   && StringUtils.equals(artifact.getArtifactId(), artifactId)
-                                   && StringUtils.equals(artifact.getVersion(), version)
+                               Strings.CS.equals(artifact.getGroupId(), groupId)
+                                   && Strings.CS.equals(artifact.getArtifactId(), artifactId)
+                                   && Strings.CS.equals(artifact.getVersion(), version)
                            );
 
     }
@@ -283,9 +328,18 @@ public class PomUtil {
                                    String groupId, String artifactId,
                                    String version,
                                    JsonObject configuration) {
+        return addPlugin(build, log, groupId, artifactId, version, configuration, null);
+    }
+
+    public static Plugin addPlugin(BuildBase build,
+                                   Log log,
+                                   String groupId, String artifactId,
+                                   String version,
+                                   JsonObject configuration, JsonArray executions) {
+
         var plugin = build
             .getPlugins()
-            .stream().filter(plg -> StringUtils.equals(plg.getArtifactId(), artifactId))
+            .stream().filter(plg -> Strings.CS.equals(plg.getArtifactId(), artifactId))
             .findFirst().orElseGet(() -> {
                 var plg = new Plugin();
                 plg.setGroupId(groupId);
@@ -302,7 +356,54 @@ public class PomUtil {
             var config = JsonUtil.jsonToXpp3Dom(configDom, configuration);
             plugin.setConfiguration(config);
         }
+        if (executions != null) {
+            var pluginExecutions = plugin.getExecutions();
+            log.debug("pluginExecutions:" + pluginExecutions);
+            executions.stream().map(JsonValue::asJsonObject).forEach(executionDefinition -> {
+                var id = executionDefinition.getString("id", StringUtils.EMPTY);
+                var phase = executionDefinition.getString("phase", StringUtils.EMPTY);
+                var pluginExecution =
+                    StringUtils.isAllBlank(id, phase)
+                        ? createPluginExecution(StringUtils.EMPTY, StringUtils.EMPTY, pluginExecutions)
+                        : pluginExecutions
+                        .stream()
+                        .filter(pe ->
+                            Strings.CS.equals(pe.getId(), id)
+                        )
+                        .findFirst()
+                        .orElseGet(() -> createPluginExecution(id, phase, pluginExecutions));
+                if (executionDefinition.containsKey("goals"))
+                    executionDefinition.getJsonArray("goals")
+                                       .stream()
+                                       .map(JsonValue::asJsonObject)
+                                       .map(item -> item.getString("goal"))
+                                       .filter(goal -> !pluginExecution.getGoals().contains(goal))
+                                       .forEach(pluginExecution::addGoal);
+                if (executionDefinition.containsKey("configuration")) {
+                    var configDom = (Xpp3Dom) pluginExecution.getConfiguration();
+                    var config = JsonUtil.jsonToXpp3Dom(configDom, executionDefinition.getJsonObject("configuration"));
+                    pluginExecution.setConfiguration(config);
+                }
+            });
+
+
+        }
         log.debug("adding plugin %s".formatted(plugin));
         return plugin;
+
+    }
+
+    private static PluginExecution createPluginExecution(String id,
+                                                         String phase,
+                                                         List<PluginExecution> pluginExecutions) {
+        var pe = new PluginExecution();
+        if (StringUtils.isNotBlank(phase))
+            pe.setPhase(phase);
+        if (StringUtils.isNotBlank(id))
+            pe.setId(id);
+        pe.setGoals(new ArrayList<>());
+        pe.setConfiguration(new Xpp3Dom("configuration"));
+        pluginExecutions.add(pe);
+        return pe;
     }
 }

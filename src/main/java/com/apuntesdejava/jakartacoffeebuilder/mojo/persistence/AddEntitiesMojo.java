@@ -104,7 +104,8 @@ public class AddEntitiesMojo extends AbstractMojo {
                 log.error("Entities file not found: " + entitiesFile.getAbsolutePath());
                 throw new MojoFailureException("Entities file not found: " + entitiesFile.getAbsolutePath());
             }
-            JakartaPersistenceHelper.getInstance().addEntities(mavenProject, log, entitiesFile.toPath());
+            JakartaPersistenceHelper.getInstance()
+                                    .addEntities(mavenProject, log, entitiesFile.toPath());
         } catch (Exception ex) {
             throw new MojoExecutionException("Error adding entities", ex);
         }
