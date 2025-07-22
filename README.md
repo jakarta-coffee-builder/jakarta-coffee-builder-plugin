@@ -1,4 +1,9 @@
 # Jakarta Coffee Builder Plugin
+![Maven Central Version](https://img.shields.io/maven-central/v/com.apuntesdejava/jakarta-coffee-builder-plugin)  ![GitHub last commit](https://img.shields.io/github/last-commit/jakarta-coffee-builder/jakarta-coffee-builder-plugin)  [![GitHub](https://img.shields.io/badge/maven-plugin-darkgreen?logo=github)](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin) 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/jakarta-coffee-builder/jakarta-coffee-builder-plugin/maven-ci-cd.yml)
+
+`develop`: ![GitHub branch check runs](https://img.shields.io/github/check-runs/jakarta-coffee-builder/jakarta-coffee-builder-plugin/develop) ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/jakarta-coffee-builder/jakarta-coffee-builder-plugin/develop)
+
 
 Maven plugin for adding and modifying Jakarta EE functionality to a project.
 
