@@ -163,17 +163,24 @@ To use the latest SNAPSHOT version, you need to use JitPack as a repository. Sin
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
                                   https://maven.apache.org/xsd/settings-1.0.0.xsd">
-        <pluginRepositories>
-            <pluginRepository>
-                <id>jitpack.io</id>
-                <url>https://jitpack.io</url>
-            </pluginRepository>
-        </pluginRepositories>
+      <profiles>
+        <profile>
+            <id>jitpacks</id>
+            <activation><activeByDefault/></activation>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>jitpack.io</id>
+                    <url>https://jitpack.io</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+      </profiles>
     </settings>
     ```
 
 2.  Invoke the plugin from the command line using the `-s` (or `--settings`) flag to specify your local settings file. Use `develop-SNAPSHOT` as the version to get the latest development build.
 
     ```shell
-    mvn -s settings-local.xml com.github.apuntesdejava.jakarta-coffee-builder:jakarta-coffee-builder-plugin:develop-SNAPSHOT:add-faces
+    mvn -s settings-local.xml \
+      com.github.apuntesdejava.jakarta-coffee-builder:jakarta-coffee-builder-plugin:develop-SNAPSHOT:add-faces
     ```
