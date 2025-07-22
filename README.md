@@ -150,5 +150,30 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
 
 | Parameter           | Definition                                                                               | Default value |
 |---------------------|------------------------------------------------------------------------------------------|---------------|
-| `profile`           | This parameter defines the ID of the Maven profile to be added.                          | `payaramicro` |
 | `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10.0.0`, `11.0.0` | `11.0.0`      |
+
+# Using SNAPSHOT version
+
+To use the latest SNAPSHOT version, you need to use JitPack as a repository. Since this plugin is meant to be executed directly from the command line without being declared in the `pom.xml`, you must configure the repository in a separate settings file.
+
+1.  Create a file named `settings-local.xml` with the following content:
+
+    ```xml
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                  https://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <pluginRepositories>
+            <pluginRepository>
+                <id>jitpack.io</id>
+                <url>https://jitpack.io</url>
+            </pluginRepository>
+        </pluginRepositories>
+    </settings>
+    ```
+
+2.  Invoke the plugin from the command line using the `-s` (or `--settings`) flag to specify your local settings file. Use `develop-SNAPSHOT` as the version to get the latest development build.
+
+    ```shell
+    mvn -s settings-local.xml com.github.apuntesdejava.jakarta-coffee-builder:jakarta-coffee-builder-plugin:develop-SNAPSHOT:add-faces
+    ```
