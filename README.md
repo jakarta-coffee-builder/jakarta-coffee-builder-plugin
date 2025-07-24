@@ -48,6 +48,9 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-faces
 
 ```
 
+**Showing**
+[![asciicast](https://asciinema.org/a/30Zyd628az3toF03XtZ5eSLRc.svg)](https://asciinema.org/a/30Zyd628az3toF03XtZ5eSLRc)
+
 ### Add Jakarta Facelet Page (Template)
 
 Add a Facelet page
@@ -64,6 +67,16 @@ mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.2-SNAPSHOT:add-face-tem
 | `inserts` | Names of inserts block names   | `section1,section2,section3`   |
 
 
+
+**Example**
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-template \
+    -Dname=/WEB-INF/template/main.xhtml \
+    -Dinserts=header,body,footer
+```
+**Showing**
+[![asciicast](https://asciinema.org/a/tD2VpNkH5EHSQaTYRu9pasArc.svg)](https://asciinema.org/a/tD2VpNkH5EHSQaTYRu9pasArc)
+
 ### Add Jakarta Faces Page
 
 Add a Face page, associating it with a Managed Bean. It can also be done by using a specified Facelet template
@@ -79,6 +92,26 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
 | `name`         | Name of the Face page to create                                                                       |               |                                |
 | `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |                                |
 | `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               | `/WEB-INF/templates/template1` |
+
+
+
+**Example**
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page \
+    -Dname=hello-world \
+    -Dmanaged-bean=false
+
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page \
+    -Dname=persons \
+    -Dmanaged-bean=true
+
+```
+
+**Showing**
+
+Creating page with / without Managed Bean:
+[![asciicast](https://asciinema.org/a/And0N0LueNSaMCKV9VnyKm1gr.svg)](https://asciinema.org/a/And0N0LueNSaMCKV9VnyKm1gr)
+
 
 ## Jakarta Persistence
 
@@ -127,6 +160,41 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
 | `port-number`           | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration. |                     |
 | `properties`            | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.  |                     |
 | `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. |                     | 
+
+
+### Add Jakarta Persistence Entity
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-entities
+
+```
+
+**Parameters**
+
+| Parameter       | Definition                                                                                        | Example                                                                                                                   |
+|-----------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/blob/main/examples/entities.json) |
+
+**Example JSON File**
+```json
+``
+
+
+## Jakarta RESTful Web Services
+
+### Create REST services with OpenAPI specifications
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:create-openapi
+```
+
+**Parameters**
+
+| Parameter        | Definition                                                                        | Example                                                                                                                 |
+|------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `openapi-server` | The name of the yml file is specified with the server-side OpenAPI specification. | [openapi.yaml](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/blob/main/examples/openapi.yaml) |
+
+**Note**
+- Each endpoint must be identified by a label
 
 ### Add Glassfish Embedded Plugin
 
