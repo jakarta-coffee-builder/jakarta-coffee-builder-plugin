@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
@@ -95,6 +97,7 @@ public class OpenApiGeneratorHelper {
 
         if (!Files.exists(openApiFile.toPath()))
             throw new FileNotFoundException("File not found:" + openApiFile);
+        Path openApiPath = copyToProjectPath(mavenProject.getBasedir(), openApiFile);
         var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
         var ignoreFilePath = createIgnoreFilePath(mavenProject.getBasedir());
 
@@ -107,7 +110,7 @@ public class OpenApiGeneratorHelper {
                                                .add("apiPackage", apiResourcesPackage);
                 return Json.createObjectBuilder()
                            .add("generatorName", config.getString("generatorName"))
-                           .add("inputSpec", openApiFile.toURI().toString())
+                           .add("inputSpec", openApiPath.getFileName().toString())
                            .add("configOptions", configOptionsBuilder)
                            .build();
             }).ifPresent(configuration -> {
@@ -134,6 +137,12 @@ public class OpenApiGeneratorHelper {
             });
         PomUtil.saveMavenProject(mavenProject, log);
 
+    }
+
+    private Path copyToProjectPath(File basedir, File openApiFile) throws IOException {
+        Path path = Paths.get(basedir.getAbsolutePath(), openApiFile.getName());
+        Files.copy(openApiFile.toPath(), path, StandardCopyOption.REPLACE_EXISTING);
+        return path;
     }
 
     private static class OpenApiGeneratorHelperHolder {
