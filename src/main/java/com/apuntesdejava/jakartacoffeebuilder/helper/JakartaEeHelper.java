@@ -329,7 +329,8 @@ public class JakartaEeHelper {
         CoffeeBuilderUtil.getDependencyConfiguration("hibernate")
                          .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
                              hibernate.getString("version")));
-        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
+        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}",
+            List.of(Map.of(GROUP_ID, "jakarta.inject", ARTIFACT_ID, "jakarta.inject-api")));
         CoffeeBuilderUtil.getDependencyConfiguration("maven-compiler-plugin")
                          .ifPresent(
                              mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
@@ -341,8 +342,8 @@ public class JakartaEeHelper {
                                          Json.createObjectBuilder()
                                              .add("path",
                                                  Json.createObjectBuilder()
-                                                     .add("groupId", "org.hibernate.orm")
-                                                     .add("artifactId", "hibernate-jpamodelgen")
+                                                     .add(GROUP_ID, "org.hibernate.orm")
+                                                     .add(ARTIFACT_ID, "hibernate-jpamodelgen")
                                                      .add("version", "${hibernate.version}")))
                                      .build()));
 

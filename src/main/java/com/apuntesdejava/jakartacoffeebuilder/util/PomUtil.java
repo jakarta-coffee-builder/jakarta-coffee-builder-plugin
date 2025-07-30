@@ -24,6 +24,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -36,8 +37,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ARTIFACT_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GROUP_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_JAKARTAEE_CORE_API;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PLATFORM;
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
@@ -66,9 +70,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
  */
 public class PomUtil {
 
-    private PomUtil() {
-    }
-
 
     /**
      * Adds a dependency to the given Maven project.
@@ -77,15 +78,18 @@ public class PomUtil {
      * @param log          the logger to use for logging messages
      * @param groupId      the group ID of the dependency
      * @param artifactId   the artifact ID of the dependency
-     * @param version      the version of the dependency
+     * @param version      the version of the dependency|
      * @param scope        the scope of the dependency
+     * @param exclusions   an array of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
+     *                     Each map in the array defines a single exclusion.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String groupId,
                                      String artifactId,
                                      String version,
-                                     String scope) {
+                                     String scope,
+                                     List<Map<String, String>> exclusions) {
         var model = mavenProject.getOriginalModel();
         if (model.getDependencies().stream()
                  .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId) &&
@@ -98,9 +102,55 @@ public class PomUtil {
             if (StringUtils.isNotBlank(scope)) {
                 dependency.setScope(scope);
             }
+            if (exclusions != null)
+                exclusions.forEach(exclude -> {
+                    var exclusion = new Exclusion();
+                    exclusion.setGroupId(exclude.get(GROUP_ID));
+                    exclusion.setArtifactId(exclude.get(ARTIFACT_ID));
+                    dependency.addExclusion(exclusion);
+                });
             log.debug("adding dependency %s".formatted(dependency));
             model.addDependency(dependency);
         }
+    }
+
+    /**
+     * Adds a dependency to the given Maven project with exclusions and no specific scope.
+     *
+     * @param mavenProject the Maven project to which the dependency will be added
+     * @param log the logger to use for logging messages
+     * @param groupId the group ID of the dependency
+     * @param artifactId the artifact ID of the dependency
+     * @param version the version of the dependency
+     * @param exclusions a list of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
+     *                   Each map in the list defines a single exclusion.
+     */
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version,
+                                     List<Map<String, String>> exclusions) {
+        addDependency(mavenProject, log, groupId, artifactId, version, null, exclusions);
+    }
+
+    /**
+     * Adds a dependency to the given Maven project with a specified scope and no exclusions.
+     *
+     * @param mavenProject the Maven project to which the dependency will be added
+     * @param log the logger to use for logging messages
+     * @param groupId the group ID of the dependency
+     * @param artifactId the artifact ID of the dependency
+     * @param version the version of the dependency
+     * @param scope the scope of the dependency (e.g., "compile", "provided", "test")
+     */
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version,
+                                     String scope) {
+        addDependency(mavenProject, log, groupId, artifactId, version, scope, null);
     }
 
     /**
@@ -117,7 +167,7 @@ public class PomUtil {
                                      String groupId,
                                      String artifactId,
                                      String version) {
-        addDependency(mavenProject, log, groupId, artifactId, version, null);
+        addDependency(mavenProject, log, groupId, artifactId, version, null, null);
     }
 
     /**
@@ -147,7 +197,7 @@ public class PomUtil {
     /**
      * Finds the latest version of a Maven dependency from Maven Central.
      *
-     * @param groupId the group ID of the dependency.
+     * @param groupId    the group ID of the dependency.
      * @param artifactId the artifact ID of the dependency.
      * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
      * @throws IOException if an error occurs during the HTTP request.
@@ -159,7 +209,7 @@ public class PomUtil {
     /**
      * Finds the latest version of a Maven plugin from Maven Central.
      *
-     * @param groupId the group ID of the plugin.
+     * @param groupId    the group ID of the plugin.
      * @param artifactId the artifact ID of the plugin.
      * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
      * @throws IOException if an error occurs during the HTTP request.
@@ -405,5 +455,8 @@ public class PomUtil {
         pe.setConfiguration(new Xpp3Dom("configuration"));
         pluginExecutions.add(pe);
         return pe;
+    }
+
+    private PomUtil() {
     }
 }
