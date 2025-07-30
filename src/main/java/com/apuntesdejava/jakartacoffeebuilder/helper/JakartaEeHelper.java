@@ -458,11 +458,11 @@ public class JakartaEeHelper {
                          .add("id", "add-source")
                          .add("phase",
                              "generate-sources")
-                         .add("goals",
+                         .add(GOALS,
                              Json.createArrayBuilder()
                                  .add(
-                                     Json.createObjectBuilder().add("goal", "add-source")))
-                         .add("configuration",
+                                     Json.createObjectBuilder().add(GOAL, "add-source")))
+                         .add(CONFIGURATION,
                              Json.createObjectBuilder()
                                  .add("sources",
 
@@ -478,6 +478,15 @@ public class JakartaEeHelper {
             .ifPresent(
                 version -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.codehaus.mojo",
                     "build-helper-maven-plugin", version, null, executions));
+        PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public boolean hasNotPrimeFacesDependency(MavenProject mavenProject, Log log) {
+        return !PomUtil.existsDependency(mavenProject, log, ORG_PRIMEFACES, PRIMEFACES);
+    }
+
+    public void addPrimeFacesDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
+        PomUtil.addDependency(mavenProject, log, "%s:%s".formatted(ORG_PRIMEFACES, PRIMEFACES));
         PomUtil.saveMavenProject(mavenProject, log);
     }
 

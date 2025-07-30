@@ -106,55 +106,48 @@ public class AddFacesMojo extends AbstractMojo {
             log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(urlPattern, welcomeFile));
             log.debug("Project name:%s".formatted(mavenProject.getName()));
 
-            checkDependency(log, jakartaEeVersion);
-            checkJakartaFacesServletDeclaration(log);
-            checkWelcomePages(log);
+            checkDependency(log, jakartaEeVersion, fullProject);
+            checkJakartaFacesServletDeclaration(log, fullProject);
+            checkWelcomePages(log, fullProject);
         } catch (ProjectBuildingException e) {
             throw new MojoFailureException(e);
         }
     }
 
-    private void checkWelcomePages(Log log) throws MojoExecutionException {
+    private void checkWelcomePages(Log log, MavenProject fullProject) throws MojoExecutionException {
         try {
             log.debug("Checking Welcome Pages configuration");
-            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             JakartaEeHelper.getInstance().addWelcomePages(fullProject, welcomeFile, log);
-        } catch (ProjectBuildingException | IOException ex) {
+        } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Welcome Pages", ex);
         }
     }
 
-    private void checkJakartaFacesServletDeclaration(Log log) throws MojoExecutionException {
+    private void checkJakartaFacesServletDeclaration(Log log, MavenProject fullProject) throws MojoExecutionException {
         try {
             log.debug("Checking Jakarta Faces Declaration");
-            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
             JakartaEeHelper.getInstance().addJakartaFacesServletDeclaration(fullProject, log, urlPattern);
-        } catch (ProjectBuildingException | IOException ex) {
+        } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Jakarta Faces Servlet Declaration", ex);
         }
 
     }
 
-    private void checkDependency(Log log, String jakartaEeVersion) throws MojoExecutionException {
+    private void checkDependency(Log log,
+                                 String jakartaEeVersion,
+                                 MavenProject fullProject) throws MojoExecutionException {
         log.debug("checking Jakarta Faces dependency");
-        try {
-            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
-            var jakartaEeUtil = JakartaEeHelper.getInstance();
-            if (!jakartaEeUtil.hasJakartaFacesDependency(fullProject, log)) {
-                jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
-            }
-            if (jakartaEeUtil.hasNotJakartaCdiDependency(fullProject, log))
-                jakartaEeUtil.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
-
-        } catch (ProjectBuildingException ex) {
-            log.error(ex);
-            throw new MojoExecutionException("Error resolving dependencies", ex);
-
+        var jakartaEeUtil = JakartaEeHelper.getInstance();
+        if (!jakartaEeUtil.hasJakartaFacesDependency(fullProject, log)) {
+            jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
         }
+        if (jakartaEeUtil.hasNotJakartaCdiDependency(fullProject, log))
+            jakartaEeUtil.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
+
     }
 
 }

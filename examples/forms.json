@@ -1,0 +1,11 @@
+{
+  "ProjectList": {
+    "entity": "Project",
+    "title": "Projects List",
+    "template": {
+      "facelet": "/WEB-INF/templates/template1.xhtml",
+      "define": "section2"
+    },
+    "indexTo": "/index.xhtml"
+  }
+}

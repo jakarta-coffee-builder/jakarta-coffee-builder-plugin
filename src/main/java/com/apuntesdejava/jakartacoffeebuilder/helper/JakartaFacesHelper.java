@@ -21,6 +21,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -40,7 +41,7 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
  */
 public class JakartaFacesHelper {
 
-    private JakartaFacesHelper() {
+    protected JakartaFacesHelper() {
     }
 
     /**
@@ -54,7 +55,7 @@ public class JakartaFacesHelper {
         return JakartaFacesUtilHolder.INSTANCE;
     }
 
-    private Optional<Path> createXhtmlFile(MavenProject mavenProject, Log log, String pageName) throws IOException {
+    protected Optional<Path> createXhtmlFile(MavenProject mavenProject, Log log, String pageName) throws IOException {
         var webdir = PathsUtil.getWebappPath(mavenProject);
         var xhtml = webdir.resolve(pageName + ".xhtml");
         if (Files.exists(xhtml)) {
@@ -115,7 +116,7 @@ public class JakartaFacesHelper {
      */
     public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
         log.debug("Creating managed bean for " + pageName);
-        var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject) ;
+        var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject);
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
         var managedBean = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         var annotationsClasses = Map.of(
@@ -206,7 +207,7 @@ public class JakartaFacesHelper {
                                 String templateName,
                                 List<String> inserts) throws IOException {
         createXhtmlFile(mavenProject, log,
-            StringUtils.removeStart(StringUtils.removeEnd(templateName, ".xhtml"), SLASH)).ifPresent(xhtml -> {
+            Strings.CS.removeStart(Strings.CS.removeEnd(templateName, ".xhtml"), SLASH)).ifPresent(xhtml -> {
             var xmlUtil = XmlUtil.getInstance();
             var facePage = xmlUtil.getDocument(log, xhtml, (documentBuilder) -> {
                 var docType = documentBuilder.getDOMImplementation()

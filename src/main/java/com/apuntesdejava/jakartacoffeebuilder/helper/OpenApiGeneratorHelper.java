@@ -33,6 +33,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CONFIGURATION;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOAL;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
+
 /**
  * Helper class for processing OpenAPI specifications and generating server-side code.
  * <p>
@@ -118,13 +122,13 @@ public class OpenApiGeneratorHelper {
                     var executions = Json
                         .createArrayBuilder()
                         .add(Json.createObjectBuilder()
-                                 .add("goals",
+                                 .add(GOALS,
                                      Json.createArrayBuilder()
                                          .add(
                                              Json.createObjectBuilder()
-                                                 .add("goal", "generate")
+                                                 .add(GOAL, "generate")
                                          )
-                                 ).add("configuration", configuration))
+                                 ).add(CONFIGURATION, configuration))
                         .build();
                     PomUtil.findLatestPluginVersion("org.openapitools", "openapi-generator-maven-plugin")
                            .ifPresent(version ->

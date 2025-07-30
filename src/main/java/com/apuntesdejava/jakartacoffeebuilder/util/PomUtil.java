@@ -41,6 +41,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ARTIFACT_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CONFIGURATION;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOAL;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GROUP_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_JAKARTAEE_CORE_API;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PLATFORM;
@@ -118,12 +121,12 @@ public class PomUtil {
      * Adds a dependency to the given Maven project with exclusions and no specific scope.
      *
      * @param mavenProject the Maven project to which the dependency will be added
-     * @param log the logger to use for logging messages
-     * @param groupId the group ID of the dependency
-     * @param artifactId the artifact ID of the dependency
-     * @param version the version of the dependency
-     * @param exclusions a list of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
-     *                   Each map in the list defines a single exclusion.
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency
+     * @param artifactId   the artifact ID of the dependency
+     * @param version      the version of the dependency
+     * @param exclusions   a list of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
+     *                     Each map in the list defines a single exclusion.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -138,11 +141,11 @@ public class PomUtil {
      * Adds a dependency to the given Maven project with a specified scope and no exclusions.
      *
      * @param mavenProject the Maven project to which the dependency will be added
-     * @param log the logger to use for logging messages
-     * @param groupId the group ID of the dependency
-     * @param artifactId the artifact ID of the dependency
-     * @param version the version of the dependency
-     * @param scope the scope of the dependency (e.g., "compile", "provided", "test")
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency
+     * @param artifactId   the artifact ID of the dependency
+     * @param version      the version of the dependency
+     * @param scope        the scope of the dependency (e.g., "compile", "provided", "test")
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -279,7 +282,13 @@ public class PomUtil {
 
     }
 
-
+    /**
+     * Retrieves the current Jakarta EE version from the project's dependencies.
+     * It specifically looks for the {@code jakarta.platform:jakarta.jakartaee-core-api} dependency.
+     * @param mavenProject The Maven project to inspect.
+     * @param log The logger for logging messages.
+     * @return An {@link Optional} containing the version string if found, otherwise an empty Optional.
+     */
     public static Optional<String> getJakartaEeCurrentVersion(MavenProject mavenProject, Log log) {
         return getDependency(mavenProject, log, JAKARTA_PLATFORM, JAKARTA_JAKARTAEE_CORE_API)
             .map(Artifact::getVersion);
@@ -381,6 +390,19 @@ public class PomUtil {
         return addPlugin(build, log, groupId, artifactId, version, configuration, null);
     }
 
+    /**
+     * Adds a plugin to the given Maven build base, allowing for configuration and execution definitions.
+     * If the plugin already exists, it will be updated.
+     *
+     * @param build the Maven build base to which the plugin will be added (e.g., {@code Build} or {@code PluginManagement})
+     * @param log the logger to use for logging messages
+     * @param groupId the group ID of the plugin
+     * @param artifactId the artifact ID of the plugin
+     * @param version the version of the plugin
+     * @param configuration the configuration of the plugin as a JsonObject (can be null)
+     * @param executions a JsonArray defining plugin executions (can be null)
+     * @return the Plugin object that was added or updated
+     */
     public static Plugin addPlugin(BuildBase build,
                                    Log log,
                                    String groupId, String artifactId,
@@ -402,45 +424,47 @@ public class PomUtil {
         if (configuration != null) {
             var configDom = Optional
                 .ofNullable((Xpp3Dom) plugin.getConfiguration())
-                .orElseGet(() -> new Xpp3Dom("configuration"));
+                .orElseGet(() -> new Xpp3Dom(CONFIGURATION));
             var config = JsonUtil.jsonToXpp3Dom(configDom, configuration);
             plugin.setConfiguration(config);
         }
         if (executions != null) {
-            var pluginExecutions = plugin.getExecutions();
-            log.debug("pluginExecutions:" + pluginExecutions);
-            executions.stream().map(JsonValue::asJsonObject).forEach(executionDefinition -> {
-                var id = executionDefinition.getString("id", StringUtils.EMPTY);
-                var phase = executionDefinition.getString("phase", StringUtils.EMPTY);
-                var pluginExecution =
-                    StringUtils.isAllBlank(id, phase)
-                        ? createPluginExecution(StringUtils.EMPTY, StringUtils.EMPTY, pluginExecutions)
-                        : pluginExecutions
-                        .stream()
-                        .filter(pe ->
-                            Strings.CS.equals(pe.getId(), id)
-                        )
-                        .findFirst()
-                        .orElseGet(() -> createPluginExecution(id, phase, pluginExecutions));
-                if (executionDefinition.containsKey("goals"))
-                    executionDefinition.getJsonArray("goals")
-                                       .stream()
-                                       .map(JsonValue::asJsonObject)
-                                       .map(item -> item.getString("goal"))
-                                       .filter(goal -> !pluginExecution.getGoals().contains(goal))
-                                       .forEach(pluginExecution::addGoal);
-                if (executionDefinition.containsKey("configuration")) {
-                    var configDom = (Xpp3Dom) pluginExecution.getConfiguration();
-                    var config = JsonUtil.jsonToXpp3Dom(configDom, executionDefinition.getJsonObject("configuration"));
-                    pluginExecution.setConfiguration(config);
-                }
-            });
-
-
+            addExecutions(log, plugin, executions);
         }
         log.debug("adding plugin %s".formatted(plugin));
         return plugin;
 
+    }
+
+    private static void addExecutions(Log log, Plugin plugin, JsonArray executions) {
+        var pluginExecutions = plugin.getExecutions();
+        log.debug("pluginExecutions:" + pluginExecutions);
+        executions.stream().map(JsonValue::asJsonObject).forEach(executionDefinition -> {
+            var id = executionDefinition.getString("id", StringUtils.EMPTY);
+            var phase = executionDefinition.getString("phase", StringUtils.EMPTY);
+            var pluginExecution =
+                StringUtils.isAllBlank(id, phase)
+                    ? createPluginExecution(StringUtils.EMPTY, StringUtils.EMPTY, pluginExecutions)
+                    : pluginExecutions
+                    .stream()
+                    .filter(pe ->
+                        Strings.CS.equals(pe.getId(), id)
+                    )
+                    .findFirst()
+                    .orElseGet(() -> createPluginExecution(id, phase, pluginExecutions));
+            if (executionDefinition.containsKey(GOALS))
+                executionDefinition.getJsonArray(GOALS)
+                                   .stream()
+                                   .map(JsonValue::asJsonObject)
+                                   .map(item -> item.getString(GOAL))
+                                   .filter(goal -> !pluginExecution.getGoals().contains(goal))
+                                   .forEach(pluginExecution::addGoal);
+            if (executionDefinition.containsKey(CONFIGURATION)) {
+                var configDom = (Xpp3Dom) pluginExecution.getConfiguration();
+                var config = JsonUtil.jsonToXpp3Dom(configDom, executionDefinition.getJsonObject(CONFIGURATION));
+                pluginExecution.setConfiguration(config);
+            }
+        });
     }
 
     private static PluginExecution createPluginExecution(String id,
@@ -452,7 +476,7 @@ public class PomUtil {
         if (StringUtils.isNotBlank(id))
             pe.setId(id);
         pe.setGoals(new ArrayList<>());
-        pe.setConfiguration(new Xpp3Dom("configuration"));
+        pe.setConfiguration(new Xpp3Dom(CONFIGURATION));
         pluginExecutions.add(pe);
         return pe;
     }
