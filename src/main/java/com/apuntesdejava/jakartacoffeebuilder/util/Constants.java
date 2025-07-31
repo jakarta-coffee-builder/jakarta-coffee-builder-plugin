@@ -202,19 +202,6 @@ public class Constants {
     public static final String SLASH = "/";
 
     /**
-     * Name of the XSLT file for XML formatting.
-     */
-    public static final String XML_XSLT = "format-xml.xslt";
-    /**
-     * Name of the XSLT file for XHTML formatting.
-     */
-    public static final String XHTML_XSLT = "format-xhtml.xslt";
-    /**
-     * Name of the XSLT file for XHTML composition formatting.
-     */
-    public static final String XHTML_COMPOSITION_XSLT = "format-xhtml-composition.xslt";
-
-    /**
      * Datasource declaration in `web.xml`.
      */
     public static final String DATASOURCE_DECLARE_WEB = "web.xml";

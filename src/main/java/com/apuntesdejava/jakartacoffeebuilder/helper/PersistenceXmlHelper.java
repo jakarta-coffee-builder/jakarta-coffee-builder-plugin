@@ -23,7 +23,7 @@ import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.w3c.dom.Document;
+import org.dom4j.Document;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -81,16 +81,15 @@ public class PersistenceXmlHelper {
                 JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
                     "persistence").orElseThrow();
 
-                var persistenceElem = document.createElement("persistence");
-                persistenceElem.setAttribute("xmlns", "https://jakarta.ee/xml/ns/persistence");
-                persistenceElem.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                persistenceElem.setAttribute("xsi:schemaLocation",
+                var persistenceElem = document.addElement("persistence");
+                persistenceElem.addAttribute("xmlns", "https://jakarta.ee/xml/ns/persistence");
+                persistenceElem.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                persistenceElem.addAttribute("xsi:schemaLocation",
                     "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url"));
-                persistenceElem.setAttribute("version", schemaDescription.getString("version"));
+                persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
                 var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
-                persistenceUnitElem.setAttribute(NAME, persistenceUnitName);
-                document.appendChild(persistenceElem);
+                persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -137,13 +136,13 @@ public class PersistenceXmlHelper {
         createPersistenceXml(mavenProject, log, persistenceUnit)
             .ifPresent(document -> {
                 var xmlUtil = XmlUtil.getInstance();
-                xmlUtil.findElementsStream(document, log,
+                xmlUtil.findElementsStream(document,
                            "//persistence-unit[@name='%s' and not(jta-data-source/text()='%s')]"
                                .formatted(persistenceUnit, name))
                        .findFirst()
                        .ifPresent(element -> {
                            xmlUtil.removeElement(element, "jta-data-source");
-                           xmlUtil.addElement(element, "jta-data-source").setTextContent(name);
+                           xmlUtil.addElement(element, "jta-data-source").setText(name);
                            var currentPath = mavenProject.getBasedir().toPath();
                            savePersistenceXml(currentPath, log, document);
                        });
@@ -161,10 +160,10 @@ public class PersistenceXmlHelper {
         var persistencePath = getPersistencePath(currentPath);
         var xmlUtil = XmlUtil.getInstance();
         xmlUtil.getDocument(log, persistencePath).ifPresent(persistenceXml -> {
-            xmlUtil.findElementsStream(persistenceXml, log, "//persistence-unit")
+            xmlUtil.findElementsStream(persistenceXml, "//persistence-unit")
                    .findFirst()
                    .ifPresent(elem -> {
-                       if (xmlUtil.findElementsStream(persistenceXml, log,
+                       if (xmlUtil.findElementsStream(persistenceXml,
                                       "//persistence-unit/provider[text()='%s']".formatted(HIBERNATE_PROVIDER))
                                   .findFirst().isEmpty())
                            xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
