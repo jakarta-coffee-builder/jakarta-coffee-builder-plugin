@@ -24,6 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.QName;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +46,11 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
  */
 public class JakartaFacesHelper {
 
-    protected JakartaFacesHelper() {
+    private static final Namespace FACES_NS_HTML_NAMESPACE = new Namespace("h", FACES_NS_HTML);
+    private static final Namespace FACES_NS_CORE_NAMESPACE = new Namespace("f", FACES_NS_CORE);
+    private static final Namespace FACES_NS_UI_NAMESPACE = new Namespace("ui", FACES_NS_UI);
+
+    private JakartaFacesHelper() {
     }
 
     /**
@@ -55,7 +64,7 @@ public class JakartaFacesHelper {
         return JakartaFacesUtilHolder.INSTANCE;
     }
 
-    protected Optional<Path> createXhtmlFile(MavenProject mavenProject, Log log, String pageName) throws IOException {
+    private Optional<Path> createXhtmlFile(MavenProject mavenProject, Log log, String pageName) throws IOException {
         var webdir = PathsUtil.getWebappPath(mavenProject);
         var xhtml = webdir.resolve(pageName + ".xhtml");
         if (Files.exists(xhtml)) {
@@ -82,25 +91,28 @@ public class JakartaFacesHelper {
         var beanClassName = StringsUtil.toPascalCase(pageName) + "Bean";
         createXhtmlFile(mavenProject, log, pageName).ifPresent(xhtml -> {
             var xmlUtil = XmlUtil.getInstance();
-            var facePage = xmlUtil.getDocument(log, xhtml, (documentBuilder) -> {
-                var docType = documentBuilder.getDOMImplementation()
-                                             .createDocumentType("html", "-//W3C//DTD XHTML 1.0 Transitional//EN",
-                                                 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-                return documentBuilder.getDOMImplementation().createDocument(null, "html", docType);
+            var facePage = xmlUtil.getDocument(log, xhtml, () -> {
+                Document document = DocumentHelper.createDocument();
+                String rootElementName = "html";
+                String publicId = "-//W3C//DTD XHTML 1.0 Transitional//EN";
+                String systemId = "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd";
+                document.addDocType(rootElementName, publicId, systemId);
+                return document;
             }, document -> {
-                var htmlElem = document.getDocumentElement();
-                htmlElem.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-                htmlElem.setAttribute("xmlns:h", FACES_NS_HTML);
-                htmlElem.setAttribute("xmlns:f", FACES_NS_CORE);
+                var htmlElem = document.addElement("html");
 
-                var viewElem = xmlUtil.addElementNS(htmlElem, FACES_NS_CORE, "f:view");
-                var bodyElem = xmlUtil.addElementNS(viewElem, FACES_NS_HTML, "h:body");
+                htmlElem.addAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+                htmlElem.add(FACES_NS_HTML_NAMESPACE);
+                htmlElem.add(FACES_NS_CORE_NAMESPACE);
+
+                var viewElem = xmlUtil.addElement(htmlElem, "view", FACES_NS_CORE_NAMESPACE);
+                var bodyElem = xmlUtil.addElement(viewElem, "body", FACES_NS_HTML_NAMESPACE);
                 if (createManagedBean) {
-                    var labelElem = xmlUtil.addElementNS(bodyElem, FACES_NS_HTML, "h:outputText");
-                    labelElem.setAttribute(VALUE, "#{%s.name}".formatted(StringUtils.uncapitalize(beanClassName)));
+                    var labelElem = xmlUtil.addElement(bodyElem, "outputText", FACES_NS_HTML_NAMESPACE);
+                    labelElem.addAttribute(VALUE, "#{%s.name}".formatted(StringUtils.uncapitalize(beanClassName)));
                 }
             }).orElseThrow();
-            xmlUtil.saveDocument(facePage, log, xhtml, XHTML_XSLT);
+            xmlUtil.saveDocument(facePage, log, xhtml);
         });
     }
 
@@ -157,35 +169,24 @@ public class JakartaFacesHelper {
         createXhtmlFile(mavenProject, log, pageName).ifPresent(xhtml -> {
 
             var xmlUtil = XmlUtil.getInstance();
-            var facePage = xmlUtil.getDocument(log, xhtml, (documentBuilder) -> {
-                var docType = documentBuilder.getDOMImplementation()
-                                             .createDocumentType("composition",
-                                                 "-//W3C//DTD XHTML 1.0 Transitional//EN",
-                                                 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-                return documentBuilder.getDOMImplementation()
-                                      .createDocument(FACES_NS_UI, "ui:composition", docType);
-            }, document -> {
-                var htmlElem = document.getDocumentElement();
-                htmlElem.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-                htmlElem.setAttribute("xmlns:ui", FACES_NS_UI);
-                htmlElem.setAttribute("xmlns:h", FACES_NS_HTML);
-                htmlElem.setAttribute("template", templateFacelet);
+            var facePage = xmlUtil.getDocument(log, xhtml, document -> {
+                var htmlElem = getRootElementForTemplate(document);
+                htmlElem.addAttribute("template", templateFacelet);
 
                 var template = xmlUtil.getDocument(log,
                     xhtml.getParent().resolve(StringsUtil.removeCharacterRoot(templateFacelet))).orElseThrow();
 
-                xmlUtil.findElementsStream(template, log, "//ui:insert",
-                           Map.of("ui", FACES_NS_UI))
+                xmlUtil.findElementsStream(template, "//ui:insert", Map.of("ui", FACES_NS_UI))
                        .forEach(insertElem -> {
-                           var name = insertElem.getAttribute(NAME);
-                           var defineTag = xmlUtil.addElementNS(htmlElem, FACES_NS_UI, "ui:define");
-                           defineTag.setAttribute(NAME, name);
-                           var labelElem = xmlUtil.addElementNS(defineTag, FACES_NS_HTML, "h:outputText");
-                           labelElem.setAttribute(VALUE, createManagedBean ? "#{%s.name}".formatted(
+                           var name = insertElem.attributeValue(NAME);
+                           var defineTag = xmlUtil.addElement(htmlElem, "define", FACES_NS_UI_NAMESPACE);
+                           defineTag.addAttribute(NAME, name);
+                           var labelElem = xmlUtil.addElement(defineTag, "outputText", FACES_NS_HTML_NAMESPACE);
+                           labelElem.addAttribute(VALUE, createManagedBean ? "#{%s.name}".formatted(
                                StringUtils.uncapitalize(beanClassName)) : name);
                        });
             }).orElseThrow();
-            xmlUtil.saveDocument(facePage, log, xhtml, XHTML_COMPOSITION_XSLT);
+            xmlUtil.saveDocument(facePage, log, xhtml);
         });
     }
 
@@ -207,35 +208,38 @@ public class JakartaFacesHelper {
                                 String templateName,
                                 List<String> inserts) throws IOException {
         createXhtmlFile(mavenProject, log,
-            Strings.CS.removeStart(Strings.CS.removeEnd(templateName, ".xhtml"), SLASH)).ifPresent(xhtml -> {
-            var xmlUtil = XmlUtil.getInstance();
-            var facePage = xmlUtil.getDocument(log, xhtml, (documentBuilder) -> {
-                var docType = documentBuilder.getDOMImplementation()
-                                             .createDocumentType("html", "-//W3C//DTD XHTML 1.0 Transitional//EN",
-                                                 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-                return documentBuilder.getDOMImplementation().createDocument(null, "html", docType);
-            }, document -> {
-                var htmlElem = document.getDocumentElement();
-                htmlElem.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-                htmlElem.setAttribute("xmlns:h", FACES_NS_HTML);
-                htmlElem.setAttribute("xmlns:f", FACES_NS_CORE);
-                htmlElem.setAttribute("xmlns:ui", FACES_NS_UI);
+            Strings.CS.removeStart(Strings.CS.removeEnd(templateName, ".xhtml"), SLASH))
+            .ifPresent(xhtml -> {
+                var xmlUtil = XmlUtil.getInstance();
+                var facePage = xmlUtil.getDocument(log, xhtml, document -> {
+                    var htmlElem = getRootElementForTemplate(document);
 
-                var bodyElem = xmlUtil.addElementNS(htmlElem, FACES_NS_HTML, "h:body");
-                Optional.ofNullable(inserts).ifPresent(insertList -> insertList.forEach(insert -> {
-                    var insertElem = xmlUtil.addElementNS(bodyElem, FACES_NS_UI, "ui:insert");
-                    insertElem.setAttribute(NAME, insert);
-                    insertElem.setTextContent(insert);
-                }));
+                    var bodyElem = xmlUtil.addElement(htmlElem, "body", FACES_NS_HTML_NAMESPACE);
+                    Optional.ofNullable(inserts).ifPresent(insertList -> insertList.forEach(insert -> {
+                        var insertElem = xmlUtil.addElement(bodyElem, "insert", FACES_NS_UI_NAMESPACE);
+                        insertElem.addAttribute(NAME, insert);
+                        insertElem.setText(insert);
+                    }));
 
-            }).orElseThrow();
-            xmlUtil.saveDocument(facePage, log, xhtml, XHTML_XSLT);
-        });
+                }).orElseThrow();
+                xmlUtil.saveDocument(facePage, log, xhtml);
+            });
     }
 
+    private Element getRootElementForTemplate(Document document) {
+        QName rootQName = new QName("composition", FACES_NS_UI_NAMESPACE);
+        Element rootElement = document.addElement(rootQName);
+        rootElement.add(FACES_NS_HTML_NAMESPACE);
+        rootElement.add(FACES_NS_UI_NAMESPACE);
+
+        rootElement.addAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+        return rootElement;
+    }
 
     private static class JakartaFacesUtilHolder {
 
         private static final JakartaFacesHelper INSTANCE = new JakartaFacesHelper();
     }
+
+
 }

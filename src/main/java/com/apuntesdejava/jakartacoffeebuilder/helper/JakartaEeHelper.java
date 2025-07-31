@@ -330,7 +330,10 @@ public class JakartaEeHelper {
                          .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
                              hibernate.getString("version")));
         PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}",
-            List.of(Map.of(GROUP_ID, "jakarta.inject", ARTIFACT_ID, "jakarta.inject-api")));
+            List.of(
+                Map.of(GROUP_ID, "jakarta.inject", ARTIFACT_ID, "jakarta.inject-api"),
+                Map.of(GROUP_ID, "jakarta.persistence", ARTIFACT_ID, "jakarta.persistence-api")
+            ));
         CoffeeBuilderUtil.getDependencyConfiguration("maven-compiler-plugin")
                          .ifPresent(
                              mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
