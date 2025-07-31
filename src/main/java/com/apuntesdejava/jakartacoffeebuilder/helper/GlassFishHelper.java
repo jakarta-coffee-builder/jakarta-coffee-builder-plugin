@@ -15,12 +15,23 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import jakarta.json.Json;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Helper class for managing GlassFish-related operations, specifically for adding the embedded GlassFish Maven plugin to a project.
@@ -75,5 +86,30 @@ public class GlassFishHelper {
 
         PomUtil.saveMavenProject(mavenProject, log);
 
+    }
+
+    public Optional<Path> download(MavenProject mavenProject, String jakartaEeVersion, Log log) throws IOException {
+        return CoffeeBuilderUtil
+            .getServerDefinition("glassfish")
+            .map(def -> def.getString(jakartaEeVersion))
+            .map(glassfishVersion -> {
+                try {
+                    var artifact = PomUtil.getArtifactInfo("org.glassfish.main.extras", "glassfish-embedded-all",
+                        glassfishVersion);
+                    String uri = StringUtils.replaceChars(artifact.getString("g"), ".", "/");
+                    String artifactId = artifact.getString("a");
+                    String version = artifact.getString("v");
+                    String url = "https://repo1.maven.org/maven2/%s/%s/%s/%2$s-%3$s.jar"
+                        .formatted(uri, artifactId, version);
+                    var localFile = Paths.get(mavenProject.getBuild().getDirectory(), artifactId + ".jar");
+                    try (var in = URI.create(url).toURL().openStream()) {
+                        Files.copy(in, localFile, REPLACE_EXISTING);
+                    }
+                    return localFile;
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
+            });
     }
 }

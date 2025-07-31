@@ -50,7 +50,7 @@ public class JakartaFacesHelper {
     private static final Namespace FACES_NS_CORE_NAMESPACE = new Namespace("f", FACES_NS_CORE);
     private static final Namespace FACES_NS_UI_NAMESPACE = new Namespace("ui", FACES_NS_UI);
 
-    private JakartaFacesHelper() {
+    protected JakartaFacesHelper() {
     }
 
     /**
