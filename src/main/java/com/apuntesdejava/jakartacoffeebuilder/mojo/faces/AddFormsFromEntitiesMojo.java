@@ -31,6 +31,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,8 +40,6 @@ import java.nio.file.Path;
  * It also ensures that PrimeFaces is a dependency in the project.
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
- * @goal add-forms-from-entities
- * @requiresDependencyResolution compile
  */
 
 @Mojo(
@@ -53,6 +52,13 @@ public class AddFormsFromEntitiesMojo extends AbstractMojo {
         property = "forms-file"
     )
     private File formsFile;
+
+    @Parameter(
+        required = true,
+        property = "entities-file"
+    )
+    private File entitiesFile;
+
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
@@ -74,8 +80,8 @@ public class AddFormsFromEntitiesMojo extends AbstractMojo {
             var formsPath = validateFile(formsFile);
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             checkDependency(log, fullProject);
-            PrimeFacesHelper.getInstance().addFormsFromEntities(fullProject, log, formsPath);
-        } catch (ProjectBuildingException e) {
+            PrimeFacesHelper.getInstance().addFormsFromEntities(fullProject, log, formsPath, entitiesFile.toPath());
+        } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
     }

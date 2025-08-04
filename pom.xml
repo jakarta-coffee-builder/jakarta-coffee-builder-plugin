@@ -30,7 +30,7 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.version>3.9.4</maven.version>
+        <maven.version>3.9.6</maven.version>
         <maven.compiler.release>21</maven.compiler.release>
         <mockito.version>5.18.0</mockito.version>
         <org.slf4j-version>2.0.17</org.slf4j-version>

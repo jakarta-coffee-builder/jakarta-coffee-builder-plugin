@@ -15,7 +15,6 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -27,7 +26,6 @@ import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -84,15 +82,6 @@ public class XmlUtil {
     private XmlUtil() {
     }
 
-    private File createXsltTemp(String xsltName) throws IOException {
-        var classLoader = XmlUtil.class.getClassLoader();
-        var resourceUrl = classLoader.getResource(xsltName);
-        if (resourceUrl == null) throw new RuntimeException("Resource not found: " + xsltName);
-        var tempFile = File.createTempFile("resource-temp", ".xslt");
-        tempFile.deleteOnExit();
-        FileUtils.copyURLToFile(resourceUrl, tempFile);
-        return tempFile;
-    }
 
     /**
      * Adds a new element with the specified tag name and content to the given parent element.

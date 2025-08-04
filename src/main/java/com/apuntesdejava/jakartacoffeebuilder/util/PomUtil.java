@@ -36,6 +36,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,6 +84,7 @@ public class PomUtil {
      * @param artifactId   the artifact ID of the dependency
      * @param version      the version of the dependency|
      * @param scope        the scope of the dependency
+     * @param classifier   the classifier of the dependency
      * @param exclusions   an array of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
      *                     Each map in the array defines a single exclusion.
      */
@@ -92,7 +94,7 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      String scope,
-                                     List<Map<String, String>> exclusions) {
+                                     String classifier, List<Map<String, String>> exclusions) {
         var model = mavenProject.getOriginalModel();
         if (model.getDependencies().stream()
                  .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId) &&
@@ -102,6 +104,8 @@ public class PomUtil {
             dependency.setArtifactId(artifactId);
             dependency.setGroupId(groupId);
             dependency.setVersion(version);
+            if (StringUtils.isNotBlank(classifier))
+                dependency.setClassifier(classifier);
             if (StringUtils.isNotBlank(scope)) {
                 dependency.setScope(scope);
             }
@@ -115,6 +119,16 @@ public class PomUtil {
             log.debug("adding dependency %s".formatted(dependency));
             model.addDependency(dependency);
         }
+    }
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version,
+                                     String scope,
+                                     List<Map<String, String>> exclusions) {
+        addDependency(mavenProject, log, groupId, artifactId, version, scope, null, exclusions);
     }
 
     /**
@@ -134,7 +148,7 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      List<Map<String, String>> exclusions) {
-        addDependency(mavenProject, log, groupId, artifactId, version, null, exclusions);
+        addDependency(mavenProject, log, groupId, artifactId, version, null, null, exclusions);
     }
 
     /**
@@ -153,7 +167,7 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      String scope) {
-        addDependency(mavenProject, log, groupId, artifactId, version, scope, null);
+        addDependency(mavenProject, log, groupId, artifactId, version, scope, null, null);
     }
 
     /**
@@ -170,7 +184,7 @@ public class PomUtil {
                                      String groupId,
                                      String artifactId,
                                      String version) {
-        addDependency(mavenProject, log, groupId, artifactId, version, null, null);
+        addDependency(mavenProject, log, groupId, artifactId, version, null, null, null);
     }
 
     /**
@@ -183,6 +197,14 @@ public class PomUtil {
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String coordinates) {
+        addDependency(mavenProject, log, coordinates, null);
+    }
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String coordinates,
+                                     String classifier
+    ) {
         try {
             var coordinatesSplit = StringUtils.split(coordinates, ":");
             var groupId = coordinatesSplit[0];
@@ -191,7 +213,7 @@ public class PomUtil {
                 artifactId).orElseThrow();
             log.debug("adding dependency %s".formatted(coordinates));
             log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId, version));
-            addDependency(mavenProject, log, groupId, artifactId, version);
+            addDependency(mavenProject, log, groupId, artifactId, version, null, classifier, Collections.emptyList());
         } catch (IOException ex) {
             log.error("Error getting last version of %s".formatted(coordinates), ex);
         }

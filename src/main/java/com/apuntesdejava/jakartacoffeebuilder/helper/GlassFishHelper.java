@@ -88,7 +88,17 @@ public class GlassFishHelper {
 
     }
 
-    public Optional<Path> download(MavenProject mavenProject, String jakartaEeVersion, Log log) throws IOException {
+    /**
+     * Downloads the GlassFish embedded JAR file from Maven Central.
+     * The version of GlassFish to download is determined by the provided Jakarta EE version.
+     *
+     * @param mavenProject     The Maven project, used to determine the download directory.
+     * @param log              The Maven log for logging messages.
+     * @param jakartaEeVersion The Jakarta EE version, used to look up the corresponding GlassFish version.
+     * @return An Optional containing the Path to the downloaded JAR file if successful, or an empty Optional if the download fails or the definition is not found.
+     * @throws IOException If an I/O error occurs during the download process.
+     */
+    public Optional<Path> download(MavenProject mavenProject, Log log, String jakartaEeVersion) throws IOException {
         return CoffeeBuilderUtil
             .getServerDefinition("glassfish")
             .map(def -> def.getString(jakartaEeVersion))

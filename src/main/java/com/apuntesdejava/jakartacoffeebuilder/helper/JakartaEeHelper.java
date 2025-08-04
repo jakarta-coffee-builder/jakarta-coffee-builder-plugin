@@ -489,7 +489,7 @@ public class JakartaEeHelper {
     }
 
     public void addPrimeFacesDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
-        PomUtil.addDependency(mavenProject, log, "%s:%s".formatted(ORG_PRIMEFACES, PRIMEFACES));
+        PomUtil.addDependency(mavenProject, log, "%s:%s".formatted(ORG_PRIMEFACES, PRIMEFACES), "jakarta");
         PomUtil.saveMavenProject(mavenProject, log);
     }
 
