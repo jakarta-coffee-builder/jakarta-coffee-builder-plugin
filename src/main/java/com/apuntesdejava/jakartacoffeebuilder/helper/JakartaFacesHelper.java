@@ -20,6 +20,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
+import jakarta.json.JsonObject;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -129,6 +130,10 @@ public class JakartaFacesHelper {
         }).orElseThrow();
     }
 
+    public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
+        createManagedBean(mavenProject, log, pageName, null);
+    }
+
     /**
      * Creates a managed bean file for a given page in the specified Maven project. The method
      * generates a Java class file for the managed bean, placing it in the appropriate package
@@ -139,7 +144,10 @@ public class JakartaFacesHelper {
      * @param pageName     the name of the page for which the managed bean is being created
      * @throws IOException if an input/output error occurs during file operations
      */
-    public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
+    public void createManagedBean(MavenProject mavenProject,
+                                  Log log,
+                                  String pageName,
+                                  JsonObject entityDefinition) throws IOException {
         log.debug("Creating managed bean for " + pageName);
         var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject);
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
@@ -148,14 +156,28 @@ public class JakartaFacesHelper {
             "jakarta.enterprise.context.RequestScoped", Map.of(),
             "jakarta.inject.Named", Map.of()
         );
+        var fields = getFieldsDefinitions(entityDefinition);
         TemplateUtil.getInstance().createJavaBeanFile(log,
             Map.of(PACKAGE_NAME, packageDefinition,
                 CLASS_NAME, className,
-                FIELDS, List.of(
-                    Map.of(TYPE, "String",
-                        NAME, NAME)
-                ),
+                FIELDS, fields,
                 "annotations", annotationsClasses), managedBean);
+    }
+
+    private List<Map<String, String>> getFieldsDefinitions(JsonObject entityDefinition) {
+        return entityDefinition == null
+            ? List.of(
+            Map.of(TYPE, "String",
+                NAME, NAME)
+        ) : entityDefinition.getJsonObject(FIELDS)
+                            .entrySet()
+                            .stream()
+                            .map(entry
+                                -> Map.of(
+                                TYPE, entry.getValue().asJsonObject().getString(TYPE),
+                                NAME, entry.getKey())
+                            )
+                            .toList();
     }
 
     /**

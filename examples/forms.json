@@ -7,6 +7,20 @@
       "facelet": "/WEB-INF/template/template2.xhtml",
       "define": "insert3"
     },
-    "indexTo": "/index.xhtml"
-  }
+    "fields": {
+      "id": {
+        "label": "Project Id"
+      },
+      "name": {
+        "label": "Project Name"
+      },
+      "startDate": {
+        "label": "Start Date"
+      },
+      "endDate": {
+        "label": "End Date"
+      }
+    }
+  },
+  "indexTo": "/index.xhtml"
 }

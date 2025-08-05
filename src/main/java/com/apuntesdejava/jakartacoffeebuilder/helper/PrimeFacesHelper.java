@@ -54,20 +54,34 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         var formsJson = JsonUtil.readJsonValue(formsPath).asJsonObject();
         var entitiesJson = JsonUtil.readJsonValue(entitiesPth).asJsonObject();
         var webAppPath = PathsUtil.getWebappPath(mavenProject);
-        formsJson.forEach((key, value) -> {
-            var formJson = value.asJsonObject();
-            createForm(log, webAppPath, key, formJson, entitiesJson.getJsonObject(formJson.getString("entity")));
+        formsJson.forEach((formName, value) -> {
+            var formDescription = value.asJsonObject();
+            try {
+                var base = formDescription.getString("base", "/");
+                var pageName = StringsUtil.removeCharacterRoot(base + formName);
+                var entityName = formDescription.getString("entity");
+                var entityDescription = entitiesJson.getJsonObject(entityName);
+                JakartaEeHelper.getInstance().createDomain(mavenProject, entityName, entityDescription);
+                createManagedBean(mavenProject, log, pageName);
+                createForm(log, webAppPath, formName, pageName, formDescription, entityDescription);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
-    private void createForm(Log log, Path webAppPath, String formName, JsonObject formDescription, JsonObject entity) {
-        var base = formDescription.getString("base", "/");
-        var pageName = StringsUtil.removeCharacterRoot(base + formName);
+    private void createForm(Log log,
+                            Path webAppPath,
+                            String formName,
+                            String pageName, JsonObject formDescription,
+                            JsonObject entity) throws IOException {
+
         var pagePath = webAppPath.resolve(pageName + ".xhtml");
         var title = formDescription.getString("title", formName);
         var templateDesc = formDescription.getJsonObject("template");
         var entityName = formDescription.getString("entity");
         var formIdName = StringUtils.uncapitalize(entityName) + "Form";
+
         var pageXhtml = templateDesc == null
             ? createFacePage(log, pagePath, entity, formIdName)
             : createFacePageWithTemplate(log, pagePath, templateDesc, entity, formIdName);

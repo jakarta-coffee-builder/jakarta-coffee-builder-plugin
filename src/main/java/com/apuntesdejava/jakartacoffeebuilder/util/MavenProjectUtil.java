@@ -125,6 +125,10 @@ public class MavenProjectUtil {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
     }
 
+    public static String getDomainModelPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
+    }
+
     /**
      * Retrieves an active profile from the Maven project by its ID.
      * If the profile does not exist, a new one is created, added to the active profiles, and returned.

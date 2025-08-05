@@ -240,17 +240,16 @@ public class JakartaEeHelper {
         log.debug("Datasource:%s".formatted(json));
         DataSourceCreatorFactory
             .getDataSourceCreator(mavenProject, log, declare)
-            .ifPresent(
-                dataSourceCreator -> {
-                    try {
-                        dataSourceCreator
-                            .dataSourceParameters(json)
-                            .build();
-                    } catch (IOException e) {
-                        log.error("Error creating datasource", e);
-                        throw new RuntimeException(e);
-                    }
-                });
+            .ifPresent(dataSourceCreator -> {
+                try {
+                    dataSourceCreator
+                        .dataSourceParameters(json)
+                        .build();
+                } catch (IOException e) {
+                    log.error("Error creating datasource", e);
+                    throw new RuntimeException(e);
+                }
+            });
     }
 
     /**
@@ -491,6 +490,10 @@ public class JakartaEeHelper {
     public void addPrimeFacesDependency(MavenProject mavenProject, Log log) throws MojoExecutionException {
         PomUtil.addDependency(mavenProject, log, "%s:%s".formatted(ORG_PRIMEFACES, PRIMEFACES), "jakarta");
         PomUtil.saveMavenProject(mavenProject, log);
+    }
+
+    public void createDomain(MavenProject mavenProject, String entityName, JsonObject entityDescription) {
+        var modelPackage = MavenProjectUtil.getDomainModelPackage(mavenProject);
     }
 
     private static class JakartaEeUtilHolder {
