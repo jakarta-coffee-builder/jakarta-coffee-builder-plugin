@@ -9,12 +9,13 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.apache.maven.plugin.logging.Log;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.mockito.Mockito;
 
 public class JsonUtilTest {
-
 
     @Test
     void readJsonValueReadsValidJsonFile() throws IOException {
@@ -55,10 +56,10 @@ public class JsonUtilTest {
     @Test
     void jsonToXpp3DomConvertsJsonObjectToXpp3Dom() {
         JsonObject jsonObject = Json.createObjectBuilder()
-                                    .add("key", "value")
-                                    .build();
+            .add("key", "value")
+            .build();
         Xpp3Dom config = new Xpp3Dom("root");
-        Xpp3Dom result = JsonUtil.jsonToXpp3Dom(config, jsonObject);
+        Xpp3Dom result = JsonUtil.jsonToXpp3Dom(Mockito.mock(Log.class), config, jsonObject);
         assertNotNull(result.getChild("key"));
         assertEquals("value", result.getChild("key").getValue());
     }
@@ -67,8 +68,8 @@ public class JsonUtilTest {
     void saveJsonValueWritesJsonToFile() throws IOException {
         Path tempFile = Files.createTempFile("test", ".json");
         JsonObject jsonObject = Json.createObjectBuilder()
-                                    .add("key", "value")
-                                    .build();
+            .add("key", "value")
+            .build();
         JsonUtil.saveJsonValue(tempFile, jsonObject);
         String content = Files.readString(tempFile);
         assertTrue(content.contains("\"key\":\"value\""));

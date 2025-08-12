@@ -14,6 +14,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -49,7 +50,7 @@ public class AddDomainModelMojo extends AbstractMojo {
             var formsPath = validateFile(entitiesFile);
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             ArchitectureHelper.getInstance().checkDependency(fullProject, log);
-        } catch (ProjectBuildingException e) {
+        } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
     }

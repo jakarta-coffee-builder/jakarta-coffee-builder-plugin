@@ -333,11 +333,11 @@ public class JakartaEeHelper {
                 Map.of(GROUP_ID, "jakarta.inject", ARTIFACT_ID, "jakarta.inject-api"),
                 Map.of(GROUP_ID, "jakarta.persistence", ARTIFACT_ID, "jakarta.persistence-api")
             ));
-        CoffeeBuilderUtil.getDependencyConfiguration("maven-compiler-plugin")
+        CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
                          .ifPresent(
                              mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
-                                 "org.apache.maven.plugins",
-                                 "maven-compiler-plugin",
+                                 ORG_APACHE_MAVEN_PLUGINS,
+                                 MAVEN_COMPILER_PLUGIN,
                                  mavenCompilerPlugin.getString("version"),
                                  Json.createObjectBuilder()
                                      .add("annotationProcessorPaths",

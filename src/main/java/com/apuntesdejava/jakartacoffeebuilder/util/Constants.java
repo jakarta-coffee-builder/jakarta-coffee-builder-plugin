@@ -279,6 +279,11 @@ public class Constants {
      */
     public static final String GOAL = "goal";
 
+    public static final String ORG_APACHE_MAVEN_PLUGINS = "org.apache.maven.plugins";
+    public static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
+    public static final String ORG_MAPSTRUCT = "org.mapstruct";
+    public static final String MAPSTRUCT = "mapstruct";
+
     private Constants() {
     }
 }
