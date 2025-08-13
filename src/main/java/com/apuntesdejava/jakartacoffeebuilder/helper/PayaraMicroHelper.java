@@ -83,8 +83,6 @@ public class PayaraMicroHelper {
             configuration);
         log.debug("plugin: %s".formatted(plugin));
 
-        PomUtil.saveMavenProject(mavenProject, log);
-
 
     }
 

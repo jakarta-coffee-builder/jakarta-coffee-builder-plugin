@@ -24,6 +24,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -377,8 +378,7 @@ public class PomUtil {
                                            String groupId,
                                            String artifactId,
                                            String version) {
-        log.
-            debug("groupId:%s | artifactId:%s | version: %s".formatted(groupId, artifactId, version));
+        log.debug("groupId:%s | artifactId:%s | version: %s".formatted(groupId, artifactId, version));
         return mavenProject.getArtifacts().stream().
             anyMatch(artifact
                 -> Strings.CS.equals(artifact.getGroupId(), groupId)
@@ -560,6 +560,42 @@ public class PomUtil {
         pe.setConfiguration(new Xpp3Dom(CONFIGURATION));
         pluginExecutions.add(pe);
         return pe;
+    }
+
+    /**
+     * Adds a dependency management to the given Maven project.
+     *
+     * @param mavenProject the Maven project to which the dependency management will be added
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency management
+     * @param artifactId   the artifact ID of the dependency management
+     * @param scope        the scope of the dependency management
+     */
+    public static void addDependencyManagement(MavenProject mavenProject, Log log, String groupId,
+                                               String artifactId, String scope) {
+        var dependencyManagement = Optional
+            .ofNullable(mavenProject.getModel().getDependencyManagement())
+            .orElseGet(() -> {
+                var list = new DependencyManagement();
+                mavenProject.getModel().setDependencyManagement(list);
+                return list;
+            });
+        var find = dependencyManagement
+            .getDependencies()
+            .stream()
+            .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId)
+            && Strings.CS.equals(dependency.getArtifactId(), artifactId))
+            .findFirst();
+        if (find.isEmpty()) {
+            var dependency = new Dependency();
+            dependency.setGroupId(groupId);
+            dependency.setArtifactId(artifactId);
+            if (!StringUtils.isBlank(scope)) {
+                dependency.setScope(scope);
+            }
+            dependencyManagement.addDependency(dependency);
+        }
+
     }
 
     private PomUtil() {

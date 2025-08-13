@@ -16,6 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.glassfish;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.GlassFishHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -74,7 +75,10 @@ public class AddGlassFishEmbeddedMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        var log = getLog();
         GlassFishHelper.getInstance()
-                       .addPlugin(mavenProject, getLog(), profileId, port, contextRoot);
+                       .addPlugin(mavenProject, log, profileId, port, contextRoot);
+        PomUtil.saveMavenProject(mavenProject, log);
+
     }
 }

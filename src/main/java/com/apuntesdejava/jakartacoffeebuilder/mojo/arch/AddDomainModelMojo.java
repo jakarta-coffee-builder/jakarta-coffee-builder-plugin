@@ -2,6 +2,7 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.arch;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.ArchitectureHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -50,6 +51,7 @@ public class AddDomainModelMojo extends AbstractMojo {
             var formsPath = validateFile(entitiesFile);
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             ArchitectureHelper.getInstance().checkDependency(fullProject, log);
+            PomUtil.saveMavenProject(mavenProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }

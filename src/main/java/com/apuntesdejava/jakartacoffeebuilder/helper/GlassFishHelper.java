@@ -84,8 +84,6 @@ public class GlassFishHelper {
             configuration);
         log.debug("plugin: %s".formatted(plugin));
 
-        PomUtil.saveMavenProject(mavenProject, log);
-
     }
 
     /**

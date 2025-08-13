@@ -58,15 +58,18 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  * Provides methods to read JSON data and add entity definitions to the project.
  * Utilizes various utilities for JSON processing, string manipulation, and template generation.
  * This class follows the singleton pattern to ensure a single instance is used.
- *
- * <p>Key functionalities include:</p>
+ * <p>
+ * <p>
+ * Key functionalities include:</p>
  * <ul>
- *   <li>Reading JSON data from a specified path and processing it to add entities to a Maven project.</li>
- *   <li>Generating field definitions and annotations from JSON data.</li>
- *   <li>Creating import statements for Jakarta Persistence annotations.</li>
+ * <li>Reading JSON data from a specified path and processing it to add entities to a Maven project.</li>
+ * <li>Generating field definitions and annotations from JSON data.</li>
+ * <li>Creating import statements for Jakarta Persistence annotations.</li>
  * </ul>
- *
- * <p>Note: This class is not intended to be instantiated directly. Use {@link #getInstance()} to obtain the singleton instance.</p>
+ * <p>
+ * <p>
+ * Note: This class is not intended to be instantiated directly. Use {@link #getInstance()} to obtain the singleton
+ * instance.</p>
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  * @see JsonUtil
@@ -79,10 +82,12 @@ public class JakartaPersistenceHelper {
     private static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
         "ElementCollection");
     private final JsonObject classesDefinitions;
+    private final String suffix;
 
     private JakartaPersistenceHelper() {
         try {
             this.classesDefinitions = CoffeeBuilderUtil.getClassesDefinitions().orElseThrow();
+            this.suffix = "Entity";
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -100,9 +105,9 @@ public class JakartaPersistenceHelper {
 
     private static Map<String, Object> getMapFromJsonObject(JsonObject column) {
         return column.entrySet()
-                     .stream()
-                     .collect(LinkedHashMap::new,
-                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
+            .stream()
+            .collect(LinkedHashMap::new,
+                (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
     }
 
     private static String getKeyName(Set<String> keys, String otherName) {
@@ -135,8 +140,9 @@ public class JakartaPersistenceHelper {
             if (field.containsKey(IS_ID)) {
                 item.put(IS_ID, field.getBoolean(IS_ID, false));
             }
-            if (!annotations.isEmpty())
+            if (!annotations.isEmpty()) {
                 item.put("annotations", annotations);
+            }
             return item;
         }).toList();
     }
@@ -149,15 +155,15 @@ public class JakartaPersistenceHelper {
      * @param mavenProject the Maven project to which entities will be added
      * @param log          the logger used for logging debug and error messages
      * @param jsonPath     the path to the JSON file containing entity definitions
+     *
      * @throws IOException if an I/O error occurs while reading the JSON file
      */
     public void addEntities(MavenProject mavenProject,
                             Log log,
                             Path jsonPath) throws IOException {
         var jsonContent = JsonUtil.readJsonValue(jsonPath).asJsonObject();
-        var entitiesName = jsonContent.keySet();
-        jsonContent.forEach((key, value) -> addEntity(mavenProject, log, key, value.asJsonObject(), entitiesName
-        ));
+        var entitiesName = jsonContent.keySet().stream().map(className -> className + suffix).collect(Collectors.toSet());
+        jsonContent.forEach((key, value) -> addEntity(mavenProject, log, key, value.asJsonObject(), entitiesName));
 
     }
 
@@ -166,7 +172,7 @@ public class JakartaPersistenceHelper {
                            String entityName,
                            JsonObject entity,
                            Set<String> entitiesName) {
-        addEntityClass(mavenProject, log, entityName, entity, entitiesName);
+        addEntityClass(mavenProject, log, entityName + suffix, entity, entitiesName);
         addRepositoryClass(mavenProject, log, entityName, entity);
     }
 
@@ -190,11 +196,13 @@ public class JakartaPersistenceHelper {
             var fields = createFieldsDefinitions(fieldsJson,
                 (fieldName, field, annotations) -> {
                     var type = field.getString(TYPE);
-                    if (field.getBoolean("list", false))
+                    if (field.getBoolean("list", false)) {
                         return createTypeListField(field, importsList, annotations, entitiesName::contains);
-                    if (Strings.CS.equals(type, "enum"))
+                    }
+                    if (Strings.CS.equals(type, "enum")) {
                         return evaluateFieldEnumType(mavenProject, log, entityName, fieldName, field, importsList,
                             annotations);
+                    }
                     return type;
                 });
             importsList.addAll(createImportsCollection(fieldsJson));
@@ -208,9 +216,10 @@ public class JakartaPersistenceHelper {
             if (StringUtils.isNotBlank(tableName)) {
                 fieldsMap.put("tableName", tableName);
             }
+            fieldsMap.put("entityName", Strings.CS.removeEnd(entityName, suffix));
 
             TemplateUtil.getInstance()
-                        .createEntityFile(log, fieldsMap, entityPath);
+                .createEntityFile(log, fieldsMap, entityPath);
         } catch (IOException ex) {
             log.error("Error adding entity: " + entity.getString(NAME), ex);
         }
@@ -232,7 +241,7 @@ public class JakartaPersistenceHelper {
             enumValues);
         importsList.add(fullName);
         importsList.add("jakarta.persistence.Enumerated");
-    /*   importsList.add("jakarta.persistence.EnumType");
+        /*   importsList.add("jakarta.persistence.EnumType");
         annotations.add(Map.of(
             "name", "Enumerated",
             "description", Map.of("value", "EnumType.STRING")
@@ -283,22 +292,22 @@ public class JakartaPersistenceHelper {
     private Collection<String> importsFromFieldsClassesType(JsonObject fields) throws IOException {
 
         return fields.values().stream()
-                     .map(JsonValue::asJsonObject)
-                     .map(field -> field.getString(TYPE))
-                     .filter(classesDefinitions::containsKey)
-                     .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
-                     .collect(Collectors.toCollection(LinkedHashSet::new));
+            .map(JsonValue::asJsonObject)
+            .map(field -> field.getString(TYPE))
+            .filter(classesDefinitions::containsKey)
+            .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private Collection<String> createImportsCollection(JsonObject fieldsJson) {
         return fieldsJson.values().stream()
-                         .map(JsonValue::asJsonObject)
-                         .map(JsonObject::keySet)
-                         .flatMap(Set::stream)
-                         .map(key -> StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS_FIELD_KEYS, key))
-                         .filter(Objects::nonNull)
-                         .map(key -> "jakarta.persistence." + key)
-                         .collect(Collectors.toSet());
+            .map(JsonValue::asJsonObject)
+            .map(JsonObject::keySet)
+            .flatMap(Set::stream)
+            .map(key -> StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS_FIELD_KEYS, key))
+            .filter(Objects::nonNull)
+            .map(key -> "jakarta.persistence." + key)
+            .collect(Collectors.toSet());
     }
 
     private static class JakartaPersistenceUtilHolder {

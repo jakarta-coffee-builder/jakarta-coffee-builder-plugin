@@ -18,6 +18,7 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.PrimeFacesHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -81,12 +82,14 @@ public class AddFormsFromEntitiesMojo extends AbstractMojo {
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             checkDependency(log, fullProject);
             PrimeFacesHelper.getInstance().addFormsFromEntities(fullProject, log, formsPath, entitiesFile.toPath());
+
+            PomUtil.saveMavenProject(fullProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
     }
 
-    private void checkDependency(Log log, MavenProject fullProject) throws MojoExecutionException {
+    private void checkDependency(Log log, MavenProject fullProject)   {
         log.debug("Checking PrimeFaces dependency");
         var jakartaEeUtil = JakartaEeHelper.getInstance();
         if (jakartaEeUtil.hasNotPrimeFacesDependency(fullProject, log))

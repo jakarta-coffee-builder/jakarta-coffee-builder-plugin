@@ -53,6 +53,8 @@ public class AddValidationApiMojo extends AbstractMojo {
             var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
 
             jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log, jakartaEeVersion);
+
+            PomUtil.saveMavenProject(mavenProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e);
         }

@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -66,12 +67,14 @@ public class AddDataSourceMojo extends AddAbstractPersistenceMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
+            init();
 
             log.debug("Project name:%s".formatted(mavenProject.getName()));
             log.info("Adding datasource %s".formatted(datasourceName));
             var json = getDataSourceParameters();
             createPersistenceUnit(json);
             addDataSourceConfiguration(log, json);
+            PomUtil.saveMavenProject(fullProject, log);
 
         } catch (IOException | ProjectBuildingException e) {
             throw new MojoExecutionException(e);

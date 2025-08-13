@@ -136,7 +136,6 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
 | `port-number`           | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration. |                     |
 | `properties`            | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.  |                     |
 | `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. |                     | 
-| `jakartaee-version`     | This parameter defines the Jakarta EE version to use. Values allowed: `10.0.0`, `11.0.0`                               | `11.0.0`            |
 
 
 ### Add DataSource configuration
@@ -220,10 +219,6 @@ Add PayaraMicro Plugin
 ```shell
 mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
 ```
-
-| Parameter           | Definition                                                                               | Default value |
-|---------------------|------------------------------------------------------------------------------------------|---------------|
-| `jakartaee-version` | This parameter defines the Jakarta EE version to use. Values allowed: `10.0.0`, `11.0.0` | `11.0.0`      |
 
 # Using SNAPSHOT version
 

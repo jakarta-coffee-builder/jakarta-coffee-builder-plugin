@@ -73,6 +73,8 @@ public class AddPayaraMicroMojo extends AbstractMojo {
             var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
 
             PayaraMicroHelper.getInstance().addPlugin(mavenProject, getLog(), profileId, jakartaEeVersion);
+
+            PomUtil.saveMavenProject(mavenProject, log);
         } catch (ProjectBuildingException | IOException e) {
             getLog().error(e.getMessage(), e);
         }

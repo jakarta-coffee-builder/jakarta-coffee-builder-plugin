@@ -69,7 +69,6 @@ public class ArchitectureHelper {
                                     )
                             )
                             .build()));
-            PomUtil.saveMavenProject(mavenProject, log);
         }
     }
 

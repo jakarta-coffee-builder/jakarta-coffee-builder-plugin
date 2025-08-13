@@ -139,7 +139,7 @@ public class OpenApiGeneratorHelper {
                     throw new RuntimeException(e);
                 }
             });
-        PomUtil.saveMavenProject(mavenProject, log);
+
 
     }
 
