@@ -19,19 +19,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-
 @Mojo(
     name = "add-domain-model"
 )
 public class AddDomainModelMojo extends AbstractMojo {
+
     @Parameter(
         required = true,
         property = "entities-file"
     )
     private File entitiesFile;
 
-
-    @Parameter(defaultValue = "${project}", readonly = true)
+    @Parameter(defaultValue = "${project}",
+        readonly = true)
     private MavenProject mavenProject;
 
     @Component
@@ -50,7 +50,10 @@ public class AddDomainModelMojo extends AbstractMojo {
             var log = getLog();
             var formsPath = validateFile(entitiesFile);
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
-            ArchitectureHelper.getInstance().checkDependency(fullProject, log);
+            var architectureHelper = ArchitectureHelper.getInstance();
+            architectureHelper.checkDependency(fullProject, log);
+            architectureHelper.createDtos(mavenProject, log, formsPath);
+
             PomUtil.saveMavenProject(mavenProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e.getMessage(), e);
@@ -58,8 +61,9 @@ public class AddDomainModelMojo extends AbstractMojo {
     }
 
     private Path validateFile(File formsFile) throws MojoExecutionException {
-        if (!Files.exists(formsFile.toPath()))
+        if (!Files.exists(formsFile.toPath())) {
             throw new MojoExecutionException("File not found:" + formsFile);
+        }
         return formsFile.toPath();
     }
 }

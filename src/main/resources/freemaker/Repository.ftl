@@ -2,12 +2,12 @@ package ${packageName};
 
 <#if (importsList??) && (importsList?size > 0)>
     <#list importsList as importItem>
-        import ${importItem};
+import ${importItem};
     </#list>
 </#if>
 <#if (annotations??) && (annotations?size > 0)>
     <#list annotations?keys as importItem>
-        import ${importItem};
+import ${importItem};
     </#list>
 </#if>
 import ${packageEntity}.${entityName};

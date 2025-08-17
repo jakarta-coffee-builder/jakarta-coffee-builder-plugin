@@ -54,10 +54,9 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
- * A helper class for managing Jakarta Persistence entities within a Maven project.
- * Provides methods to read JSON data and add entity definitions to the project.
- * Utilizes various utilities for JSON processing, string manipulation, and template generation.
- * This class follows the singleton pattern to ensure a single instance is used.
+ * A helper class for managing Jakarta Persistence entities within a Maven project. Provides methods to read JSON data
+ * and add entity definitions to the project. Utilizes various utilities for JSON processing, string manipulation, and
+ * template generation. This class follows the singleton pattern to ensure a single instance is used.
  * <p>
  * <p>
  * Key functionalities include:</p>
@@ -94,8 +93,8 @@ public class JakartaPersistenceHelper {
     }
 
     /**
-     * Retrieves the singleton instance of the `JakartaPersistenceHelper` class.
-     * This method ensures that only one instance of the class is created and reused.
+     * Retrieves the singleton instance of the `JakartaPersistenceHelper` class. This method ensures that only one
+     * instance of the class is created and reused.
      *
      * @return the singleton instance of `JakartaPersistenceHelper`
      */
@@ -105,9 +104,9 @@ public class JakartaPersistenceHelper {
 
     private static Map<String, Object> getMapFromJsonObject(JsonObject column) {
         return column.entrySet()
-            .stream()
-            .collect(LinkedHashMap::new,
-                (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
+                     .stream()
+                     .collect(LinkedHashMap::new,
+                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
     }
 
     private static String getKeyName(Set<String> keys, String otherName) {
@@ -148,21 +147,23 @@ public class JakartaPersistenceHelper {
     }
 
     /**
-     * Adds entities to the specified Maven project by reading JSON data from the given path.
-     * The JSON data can be either an array or an object representing entities.
-     * Each entity is processed and added to the project using the addEntity method.
+     * Adds entities to the specified Maven project by reading JSON data from the given path. The JSON data can be
+     * either an array or an object representing entities. Each entity is processed and added to the project using the
+     * addEntity method.
      *
      * @param mavenProject the Maven project to which entities will be added
      * @param log          the logger used for logging debug and error messages
      * @param jsonPath     the path to the JSON file containing entity definitions
-     *
      * @throws IOException if an I/O error occurs while reading the JSON file
      */
     public void addEntities(MavenProject mavenProject,
                             Log log,
                             Path jsonPath) throws IOException {
         var jsonContent = JsonUtil.readJsonValue(jsonPath).asJsonObject();
-        var entitiesName = jsonContent.keySet().stream().map(className -> className + suffix).collect(Collectors.toSet());
+        var entitiesName = jsonContent.keySet()
+                                      .stream()
+                                      .map(className -> className + suffix)
+                                      .collect(Collectors.toSet());
         jsonContent.forEach((key, value) -> addEntity(mavenProject, log, key, value.asJsonObject(), entitiesName));
 
     }
@@ -179,7 +180,8 @@ public class JakartaPersistenceHelper {
     private void addRepositoryClass(MavenProject mavenProject, Log log, String entityName, JsonObject entity) {
         log.debug("Adding repository for entity: " + entityName);
         var repositoryBuilder = RepositoryBuilder.getInstance();
-        repositoryBuilder.buildRepository(mavenProject, log, entityName, entity);
+        repositoryBuilder.buildRepository(mavenProject, log, entityName + suffix, entity,
+            importsFromFieldsClassesType(entity.getJsonObject(FIELDS)));
 
     }
 
@@ -203,6 +205,9 @@ public class JakartaPersistenceHelper {
                         return evaluateFieldEnumType(mavenProject, log, entityName, fieldName, field, importsList,
                             annotations);
                     }
+                    if (entitiesName.contains(type + suffix)) {
+                        return type + suffix;
+                    }
                     return type;
                 });
             importsList.addAll(createImportsCollection(fieldsJson));
@@ -219,7 +224,7 @@ public class JakartaPersistenceHelper {
             fieldsMap.put("entityName", Strings.CS.removeEnd(entityName, suffix));
 
             TemplateUtil.getInstance()
-                .createEntityFile(log, fieldsMap, entityPath);
+                        .createEntityFile(log, fieldsMap, entityPath);
         } catch (IOException ex) {
             log.error("Error adding entity: " + entity.getString(NAME), ex);
         }
@@ -289,25 +294,25 @@ public class JakartaPersistenceHelper {
 
     }
 
-    private Collection<String> importsFromFieldsClassesType(JsonObject fields) throws IOException {
+    private Collection<String> importsFromFieldsClassesType(JsonObject fields) {
 
         return fields.values().stream()
-            .map(JsonValue::asJsonObject)
-            .map(field -> field.getString(TYPE))
-            .filter(classesDefinitions::containsKey)
-            .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+                     .map(JsonValue::asJsonObject)
+                     .map(field -> field.getString(TYPE))
+                     .filter(classesDefinitions::containsKey)
+                     .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
+                     .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private Collection<String> createImportsCollection(JsonObject fieldsJson) {
         return fieldsJson.values().stream()
-            .map(JsonValue::asJsonObject)
-            .map(JsonObject::keySet)
-            .flatMap(Set::stream)
-            .map(key -> StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS_FIELD_KEYS, key))
-            .filter(Objects::nonNull)
-            .map(key -> "jakarta.persistence." + key)
-            .collect(Collectors.toSet());
+                         .map(JsonValue::asJsonObject)
+                         .map(JsonObject::keySet)
+                         .flatMap(Set::stream)
+                         .map(key -> StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS_FIELD_KEYS, key))
+                         .filter(Objects::nonNull)
+                         .map(key -> "jakarta.persistence." + key)
+                         .collect(Collectors.toSet());
     }
 
     private static class JakartaPersistenceUtilHolder {

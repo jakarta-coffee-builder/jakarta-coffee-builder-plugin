@@ -105,16 +105,16 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
 
             var jakartaEeHelper = JakartaEeHelper.getInstance();
             if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log)) {
-                jakartaEeHelper.addJakartaCdiDependency(fullProject, log, jakartaEeVersion);
+                jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
             }
             if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log)) {
-                jakartaEeHelper.addJakartaPersistenceDependency(fullProject, log, jakartaEeVersion);
+                jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
             }
 
-            jakartaEeHelper.addPersistenceClassProvider(fullProject, log);
+            jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
             CoffeeBuilderUtil.getJdbcConfiguration(url)
                 .ifPresent(definition
-                    -> jakartaEeHelper.checkDataDependencies(fullProject, log, definition));
+                    -> jakartaEeHelper.checkDataDependencies(mavenProject, log, definition));
 
         } catch (IOException ex) {
             log.error(ex);

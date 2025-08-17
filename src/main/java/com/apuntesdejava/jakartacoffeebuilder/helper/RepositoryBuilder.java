@@ -21,6 +21,7 @@ import jakarta.json.JsonValue;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -61,10 +62,11 @@ public interface RepositoryBuilder {
     /**
      * Builds the repository class for the specified entity.
      *
-     * @param mavenProject the Maven project instance
-     * @param log          the logger for logging messages
-     * @param entityName
-     * @param entity       the JSON object representing the entity
+     * @param mavenProject      the Maven project instance
+     * @param log               the logger for logging messages
+     * @param entityName        the name of the entity
+     * @param entity            the JSON object representing the entity
+     * @param additionalImports a collection of additional imports to be added to the repository class
      */
-    void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity);
+    void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity, Collection<String> additionalImports);
 }

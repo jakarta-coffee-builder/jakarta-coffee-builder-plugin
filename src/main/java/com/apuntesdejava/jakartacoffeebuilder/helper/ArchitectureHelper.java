@@ -23,6 +23,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ARTIFACT_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GROUP_ID;
@@ -41,7 +42,6 @@ public class ArchitectureHelper {
     }
 
     public void checkDependency(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
-        var jakartaEeUtil = JakartaEeHelper.getInstance();
         log.debug("Checking org.mapstruct depending");
         if (!PomUtil.existsDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT)) {
             var version = PomUtil.findLatestDependencyVersion(ORG_MAPSTRUCT, MAPSTRUCT).orElseThrow();
@@ -70,6 +70,9 @@ public class ArchitectureHelper {
                             )
                             .build()));
         }
+    }
+
+    public void createDtos(MavenProject mavenProject, Log log, Path formsPath) {
     }
 
     private static class ArchitectureHelperHolder {

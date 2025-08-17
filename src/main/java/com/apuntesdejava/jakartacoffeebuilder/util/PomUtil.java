@@ -576,9 +576,9 @@ public class PomUtil {
         var dependencyManagement = Optional
             .ofNullable(mavenProject.getModel().getDependencyManagement())
             .orElseGet(() -> {
-                var list = new DependencyManagement();
-                mavenProject.getModel().setDependencyManagement(list);
-                return list;
+                var dm = new DependencyManagement();
+                mavenProject.getModel().setDependencyManagement(dm);
+                return dm;
             });
         var find = dependencyManagement
             .getDependencies()

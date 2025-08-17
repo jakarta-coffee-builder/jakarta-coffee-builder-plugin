@@ -312,7 +312,7 @@ public class JakartaEeHelper {
                                 addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
                                 addHibernateDependency(mavenProject, log);
                                 addHibernateProvider(mavenProject, log, definition.getString("dialect"));
-                                addJakartaInjectDependencyManagment(mavenProject,log);
+                                addJakartaInjectDependencyManagement(mavenProject, log);
                             }
                             PomUtil.addDependency(mavenProject, log, definition.getString("coordinates"));
                         } catch (MojoExecutionException | IOException e) {
@@ -498,8 +498,8 @@ public class JakartaEeHelper {
         var modelPackage = MavenProjectUtil.getDomainModelPackage(mavenProject);
     }
 
-    private void addJakartaInjectDependencyManagment(MavenProject mavenProject, Log log) {
-        PomUtil.addDependencyManagement(mavenProject,log,"jakarta.inject","jakarta.inject-api","provided");
+    private void addJakartaInjectDependencyManagement(MavenProject mavenProject, Log log) {
+        PomUtil.addDependencyManagement(mavenProject, log, "jakarta.inject", "jakarta.inject-api", "provided");
     }
 
     private static class JakartaEeUtilHolder {
