@@ -112,6 +112,10 @@ public class TemplateUtil {
         createJavaFile(log, fieldsMap, mapperPath, "Mapper.ftl");
     }
 
+    public void createPojoFile(Log log, Map<String, Object> fieldsMap, Path modelPath) throws IOException {
+        createJavaFile(log, fieldsMap, modelPath, "Pojo.ftl");
+    }
+
     private static class TemplateUtilHolder {
 
         private static final TemplateUtil INSTANCE = new TemplateUtil();

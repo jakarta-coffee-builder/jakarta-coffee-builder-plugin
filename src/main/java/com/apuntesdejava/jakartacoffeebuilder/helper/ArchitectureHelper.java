@@ -115,7 +115,7 @@ public class ArchitectureHelper {
                 Map.entry(FIELDS, fields)
             );
 
-            TemplateUtil.getInstance().createRecordFile(log, fieldsMap, modelPath);
+            TemplateUtil.getInstance().createPojoFile(log, fieldsMap, modelPath);
 
         } catch (IOException ex) {
             log.error("Error creating model " + modelName, ex);
