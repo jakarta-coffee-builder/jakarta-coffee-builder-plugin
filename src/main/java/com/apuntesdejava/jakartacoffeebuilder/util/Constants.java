@@ -15,6 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import java.util.Set;
+
 /**
  * The Constants class serves as a centralized repository for constant values
  * used throughout the application. These constants include string identifiers,
@@ -283,6 +285,8 @@ public class Constants {
     public static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
     public static final String ORG_MAPSTRUCT = "org.mapstruct";
     public static final String MAPSTRUCT = "mapstruct";
+    public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
+        "ElementCollection");
 
     private Constants() {
     }

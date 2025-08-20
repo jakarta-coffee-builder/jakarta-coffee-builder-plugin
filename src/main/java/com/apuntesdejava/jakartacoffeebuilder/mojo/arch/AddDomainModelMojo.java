@@ -16,6 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.mojo.arch;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.ArchitectureHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.JsonUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -40,8 +41,10 @@ public class AddDomainModelMojo extends AbstractMojo {
     )
     private File entitiesFile;
 
-    @Parameter(defaultValue = "${project}",
-        readonly = true)
+    @Parameter(
+        defaultValue = "${project}",
+        readonly = true
+    )
     private MavenProject mavenProject;
 
 
@@ -52,7 +55,12 @@ public class AddDomainModelMojo extends AbstractMojo {
             var formsPath = validateFile(entitiesFile);
             var architectureHelper = ArchitectureHelper.getInstance();
             architectureHelper.checkDependency(mavenProject, log);
-            architectureHelper.createDtos(mavenProject, log, formsPath);
+
+            var jsonContent = JsonUtil.readJsonValue(formsPath).asJsonObject();
+            var entitiesName = jsonContent.keySet();
+
+            architectureHelper.createDtos(mavenProject, log,jsonContent);
+            architectureHelper.createMappers(mavenProject, log,jsonContent);
 
             PomUtil.saveMavenProject(mavenProject, log);
         } catch (IOException e) {

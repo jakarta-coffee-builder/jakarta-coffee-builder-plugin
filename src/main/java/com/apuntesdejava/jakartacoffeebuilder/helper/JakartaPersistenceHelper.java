@@ -26,7 +26,6 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.apache.commons.lang3.function.TriFunction;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -35,7 +34,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,10 +41,10 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.SEARCH_ANNOTATIONS_FIELD_KEYS;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FIELDS;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IMPORTS_LIST;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IS_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TABLE_NAME;
@@ -78,8 +76,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  */
 public class JakartaPersistenceHelper {
 
-    private static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
-        "ElementCollection");
+
     private final JsonObject classesDefinitions;
     private final String suffix;
 
@@ -102,49 +99,6 @@ public class JakartaPersistenceHelper {
         return JakartaPersistenceUtilHolder.INSTANCE;
     }
 
-    private static Map<String, Object> getMapFromJsonObject(JsonObject column) {
-        return column.entrySet()
-                     .stream()
-                     .collect(LinkedHashMap::new,
-                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
-    }
-
-    private static String getKeyName(Set<String> keys, String otherName) {
-        return keys.stream().filter(key -> key.equalsIgnoreCase(otherName)).findFirst().orElse(null);
-    }
-
-    private static List<Map<String, Object>> createFieldsDefinitions(JsonObject fieldsJson,
-                                                                     TriFunction<String, JsonObject, List<Map<String, Object>>, String> evaluateField) {
-        return fieldsJson.entrySet().stream().map(fieldEntry -> {
-            var field = fieldEntry.getValue().asJsonObject();
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put(NAME, fieldEntry.getKey());
-            List<Map<String, Object>> annotations = new LinkedList<>();
-            var type = evaluateField.apply(fieldEntry.getKey(), field, annotations);
-            item.put(TYPE, type);
-            var keys = field.keySet();
-            if (StringsUtil.containsAnyIgnoreCase(SEARCH_ANNOTATIONS_FIELD_KEYS, keys)) {
-                var annotationsList = StringsUtil.findIgnoreCase(SEARCH_ANNOTATIONS_FIELD_KEYS, keys);
-                List<Map<String, Object>> annot = annotationsList.stream().map(annotationName -> {
-                    Map<String, Object> annotationMap = new LinkedHashMap<>();
-                    annotationMap.put(NAME, annotationName);
-                    var aField = field.get(getKeyName(keys, annotationName));
-                    if (aField.getValueType() == JsonValue.ValueType.OBJECT) {
-                        annotationMap.put("description", getMapFromJsonObject(aField.asJsonObject()));
-                    }
-                    return annotationMap;
-                }).toList();
-                annotations.addAll(annot);
-            }
-            if (field.containsKey(IS_ID)) {
-                item.put(IS_ID, field.getBoolean(IS_ID, false));
-            }
-            if (!annotations.isEmpty()) {
-                item.put("annotations", annotations);
-            }
-            return item;
-        }).toList();
-    }
 
     /**
      * Adds entities to the specified Maven project by reading JSON data from the given path. The JSON data can be
@@ -181,7 +135,7 @@ public class JakartaPersistenceHelper {
         log.debug("Adding repository for entity: " + entityName);
         var repositoryBuilder = RepositoryBuilder.getInstance();
         repositoryBuilder.buildRepository(mavenProject, log, entityName + suffix, entity,
-            importsFromFieldsClassesType(entity.getJsonObject(FIELDS)));
+            ClassDefinitionHelper.getInstance().importsFromFieldsClassesType(entity.getJsonObject(FIELDS)));
 
     }
 
@@ -195,7 +149,8 @@ public class JakartaPersistenceHelper {
 
             var fieldsJson = entity.getJsonObject(FIELDS);
             Collection<String> importsList = new LinkedHashSet<>();
-            var fields = createFieldsDefinitions(fieldsJson,
+            var classDefinitionHelper =  ClassDefinitionHelper.getInstance();
+            var fields =classDefinitionHelper.createFieldsDefinitions(fieldsJson,
                 (fieldName, field, annotations) -> {
                     var type = field.getString(TYPE);
                     if (field.getBoolean("list", false)) {
@@ -211,7 +166,7 @@ public class JakartaPersistenceHelper {
                     return type;
                 });
             importsList.addAll(createImportsCollection(fieldsJson));
-            importsList.addAll(importsFromFieldsClassesType(fieldsJson));
+            importsList.addAll(classDefinitionHelper.importsFromFieldsClassesType(fieldsJson));
 
             Map<String, Object> fieldsMap = new LinkedHashMap<>(
                 Map.of(PACKAGE_NAME, packageDefinition,
@@ -294,15 +249,7 @@ public class JakartaPersistenceHelper {
 
     }
 
-    private Collection<String> importsFromFieldsClassesType(JsonObject fields) {
 
-        return fields.values().stream()
-                     .map(JsonValue::asJsonObject)
-                     .map(field -> field.getString(TYPE))
-                     .filter(classesDefinitions::containsKey)
-                     .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
-                     .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
 
     private Collection<String> createImportsCollection(JsonObject fieldsJson) {
         return fieldsJson.values().stream()

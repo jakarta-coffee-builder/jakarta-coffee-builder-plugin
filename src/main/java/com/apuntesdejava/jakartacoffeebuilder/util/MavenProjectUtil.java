@@ -81,6 +81,14 @@ public class MavenProjectUtil {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
     }
 
+    public static String getModelPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
+    }
+
+    public static String getMapperPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "mapper");
+    }
+
     public static String getEnumsPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "enums");
     }
