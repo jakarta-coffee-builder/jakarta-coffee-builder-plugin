@@ -333,6 +333,7 @@ public class JakartaEeHelper {
             .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
             hibernate.getString("version")));
         PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
+        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-processor", "${hibernate.version}");
 
         CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
             .ifPresent(

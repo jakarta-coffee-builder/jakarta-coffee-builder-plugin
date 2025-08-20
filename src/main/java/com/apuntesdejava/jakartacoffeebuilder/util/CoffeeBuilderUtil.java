@@ -114,6 +114,7 @@ public class CoffeeBuilderUtil {
      * Retrieves the dialect from the project configuration.
      *
      * @param url@return an Optional containing the dialect string if present
+     * @return 
      * @throws IOException if an error occurs while reading the configuration
      */
     public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
