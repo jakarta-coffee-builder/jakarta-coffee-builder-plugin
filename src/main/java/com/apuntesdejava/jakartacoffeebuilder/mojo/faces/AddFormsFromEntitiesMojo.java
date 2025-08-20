@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Diego Silva <diego.silva at apuntesdejava.com>.
+ * Copyright 2024 Diego Silva diego.silva at apuntesdejava.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.mojo.payara;
+package com.apuntesdejava.jakartacoffeebuilder.mojo.faces;
 
-import com.apuntesdejava.jakartacoffeebuilder.helper.PayaraMicroHelper;
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
+import com.apuntesdejava.jakartacoffeebuilder.helper.PrimeFacesHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -29,26 +31,36 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * This Mojo adds forms based on entities defined in a specified file.
+ * It also ensures that PrimeFaces is a dependency in the project.
+ *
+ * @author Diego Silva diego.silva at apuntesdejava.com
  */
+
 @Mojo(
-    name = "add-payaramicro"
+    name = "add-forms-from-entities"
 )
+public class AddFormsFromEntitiesMojo extends AbstractMojo {
 
-public class AddPayaraMicroMojo extends AbstractMojo {
     @Parameter(
-        property = "profile",
         required = true,
-        defaultValue = "payaramicro"
+        property = "forms-file"
     )
-    private String profileId;
+    private File formsFile;
 
-    /**
-     * The Maven project.
-     */
+    @Parameter(
+        required = true,
+        property = "entities-file"
+    )
+    private File entitiesFile;
+
+
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
@@ -62,22 +74,32 @@ public class AddPayaraMicroMojo extends AbstractMojo {
     )
     private MavenSession mavenSession;
 
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
-
+            var formsPath = validateFile(formsFile);
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+            checkDependency(log, fullProject);
+            PrimeFacesHelper.getInstance().addFormsFromEntities(fullProject, log, formsPath, entitiesFile.toPath());
 
-            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
-
-            PayaraMicroHelper.getInstance().addPlugin(mavenProject, getLog(), profileId, jakartaEeVersion);
-
-            PomUtil.saveMavenProject(mavenProject, log);
+            PomUtil.saveMavenProject(fullProject, log);
         } catch (ProjectBuildingException | IOException e) {
-            getLog().error(e.getMessage(), e);
+            throw new MojoFailureException(e.getMessage(), e);
         }
     }
 
+    private void checkDependency(Log log, MavenProject fullProject)   {
+        log.debug("Checking PrimeFaces dependency");
+        var jakartaEeUtil = JakartaEeHelper.getInstance();
+        if (jakartaEeUtil.hasNotPrimeFacesDependency(fullProject, log))
+            jakartaEeUtil.addPrimeFacesDependency(mavenProject, log);
+
+    }
+
+    private Path validateFile(File formsFile) throws MojoExecutionException {
+        if (!Files.exists(formsFile.toPath()))
+            throw new MojoExecutionException("File not found:" + formsFile);
+        return formsFile.toPath();
+    }
 }

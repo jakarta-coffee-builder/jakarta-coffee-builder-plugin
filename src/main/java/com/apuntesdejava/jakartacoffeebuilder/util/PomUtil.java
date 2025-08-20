@@ -24,6 +24,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.BuildBase;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -36,11 +37,15 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ARTIFACT_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CONFIGURATION;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOAL;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GROUP_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_JAKARTAEE_CORE_API;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PLATFORM;
@@ -49,7 +54,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
 /**
  * Utility class for handling Maven POM file operations.
  * <p>
- * This class provides methods to add dependencies to a Maven project, check for existing dependencies,
+ * This class provides methods to add dependencies to a Maven project, check for existing
+ * dependencies,
  * and save the current state of a Maven project to its POM file.
  * </p>
  * <p>
@@ -70,7 +76,6 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSO
  */
 public class PomUtil {
 
-
     /**
      * Adds a dependency to the given Maven project.
      *
@@ -80,7 +85,9 @@ public class PomUtil {
      * @param artifactId   the artifact ID of the dependency
      * @param version      the version of the dependency|
      * @param scope        the scope of the dependency
-     * @param exclusions   an array of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
+     * @param classifier   the classifier of the dependency
+     * @param exclusions   an array of maps, where each map represents an exclusion with "groupId"
+     *                     and "artifactId" keys.
      *                     Each map in the array defines a single exclusion.
      */
     public static void addDependency(MavenProject mavenProject,
@@ -89,41 +96,56 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      String scope,
-                                     List<Map<String, String>> exclusions) {
+                                     String classifier, List<Map<String, String>> exclusions) {
         var model = mavenProject.getOriginalModel();
         if (model.getDependencies().stream()
-                 .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId) &&
-                     Strings.CS.equals(dependency.getArtifactId(), artifactId))
-                 .findFirst().isEmpty()) {
+            .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId)
+            && Strings.CS.equals(dependency.getArtifactId(), artifactId))
+            .findFirst().isEmpty()) {
             var dependency = new Dependency();
             dependency.setArtifactId(artifactId);
             dependency.setGroupId(groupId);
             dependency.setVersion(version);
+            if (StringUtils.isNotBlank(classifier)) {
+                dependency.setClassifier(classifier);
+            }
             if (StringUtils.isNotBlank(scope)) {
                 dependency.setScope(scope);
             }
-            if (exclusions != null)
+            if (exclusions != null) {
                 exclusions.forEach(exclude -> {
                     var exclusion = new Exclusion();
                     exclusion.setGroupId(exclude.get(GROUP_ID));
                     exclusion.setArtifactId(exclude.get(ARTIFACT_ID));
                     dependency.addExclusion(exclusion);
                 });
+            }
             log.debug("adding dependency %s".formatted(dependency));
             model.addDependency(dependency);
         }
+    }
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String groupId,
+                                     String artifactId,
+                                     String version,
+                                     String scope,
+                                     List<Map<String, String>> exclusions) {
+        addDependency(mavenProject, log, groupId, artifactId, version, scope, null, exclusions);
     }
 
     /**
      * Adds a dependency to the given Maven project with exclusions and no specific scope.
      *
      * @param mavenProject the Maven project to which the dependency will be added
-     * @param log the logger to use for logging messages
-     * @param groupId the group ID of the dependency
-     * @param artifactId the artifact ID of the dependency
-     * @param version the version of the dependency
-     * @param exclusions a list of maps, where each map represents an exclusion with "groupId" and "artifactId" keys.
-     *                   Each map in the list defines a single exclusion.
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency
+     * @param artifactId   the artifact ID of the dependency
+     * @param version      the version of the dependency
+     * @param exclusions   a list of maps, where each map represents an exclusion with "groupId" and
+     *                     "artifactId" keys.
+     *                     Each map in the list defines a single exclusion.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -131,18 +153,18 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      List<Map<String, String>> exclusions) {
-        addDependency(mavenProject, log, groupId, artifactId, version, null, exclusions);
+        addDependency(mavenProject, log, groupId, artifactId, version, null, null, exclusions);
     }
 
     /**
      * Adds a dependency to the given Maven project with a specified scope and no exclusions.
      *
      * @param mavenProject the Maven project to which the dependency will be added
-     * @param log the logger to use for logging messages
-     * @param groupId the group ID of the dependency
-     * @param artifactId the artifact ID of the dependency
-     * @param version the version of the dependency
-     * @param scope the scope of the dependency (e.g., "compile", "provided", "test")
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency
+     * @param artifactId   the artifact ID of the dependency
+     * @param version      the version of the dependency
+     * @param scope        the scope of the dependency (e.g., "compile", "provided", "test")
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -150,7 +172,7 @@ public class PomUtil {
                                      String artifactId,
                                      String version,
                                      String scope) {
-        addDependency(mavenProject, log, groupId, artifactId, version, scope, null);
+        addDependency(mavenProject, log, groupId, artifactId, version, scope, null, null);
     }
 
     /**
@@ -167,7 +189,7 @@ public class PomUtil {
                                      String groupId,
                                      String artifactId,
                                      String version) {
-        addDependency(mavenProject, log, groupId, artifactId, version, null, null);
+        addDependency(mavenProject, log, groupId, artifactId, version, null, null, null);
     }
 
     /**
@@ -175,20 +197,32 @@ public class PomUtil {
      *
      * @param mavenProject the Maven project to which the dependency will be added
      * @param log          the logger to use for logging messages
-     * @param coordinates  the coordinates of the dependency in the format groupId:artifactId:version
+     * @param coordinates  the coordinates of the dependency in the format
+     *                     groupId:artifactId:version
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String coordinates) {
+        addDependency(mavenProject, log, coordinates, null);
+    }
+
+    public static void addDependency(MavenProject mavenProject,
+                                     Log log,
+                                     String coordinates,
+                                     String classifier
+    ) {
         try {
             var coordinatesSplit = StringUtils.split(coordinates, ":");
             var groupId = coordinatesSplit[0];
             var artifactId = coordinatesSplit[1];
-            var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : findLatestDependencyVersion(groupId,
+            var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : findLatestDependencyVersion(
+                groupId,
                 artifactId).orElseThrow();
             log.debug("adding dependency %s".formatted(coordinates));
-            log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId, version));
-            addDependency(mavenProject, log, groupId, artifactId, version);
+            log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId,
+                version));
+            addDependency(mavenProject, log, groupId, artifactId, version, null, classifier,
+                Collections.emptyList());
         } catch (IOException ex) {
             log.error("Error getting last version of %s".formatted(coordinates), ex);
         }
@@ -199,7 +233,10 @@ public class PomUtil {
      *
      * @param groupId    the group ID of the dependency.
      * @param artifactId the artifact ID of the dependency.
-     * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
+     *
+     * @return an {@link Optional} containing the latest version string, or an empty Optional if not
+     *         found.
+     *
      * @throws IOException if an error occurs during the HTTP request.
      */
     public static Optional<String> findLatestDependencyVersion(String groupId, String artifactId) throws IOException {
@@ -211,7 +248,10 @@ public class PomUtil {
      *
      * @param groupId    the group ID of the plugin.
      * @param artifactId the artifact ID of the plugin.
-     * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
+     *
+     * @return an {@link Optional} containing the latest version string, or an empty Optional if not
+     *         found.
+     *
      * @throws IOException if an error occurs during the HTTP request.
      */
     public static Optional<String> findLatestPluginVersion(String groupId, String artifactId) throws IOException {
@@ -225,7 +265,10 @@ public class PomUtil {
      * @param groupId    the group ID of the artifact
      * @param artifactId the artifact ID of the artifact
      * @param packaging  the packaging type of the artifact (e.g., "jar", "maven-plugin")
-     * @return an {@link Optional} containing the latest version string, or an empty Optional if not found.
+     *
+     * @return an {@link Optional} containing the latest version string, or an empty Optional if not
+     *         found.
+     *
      * @throws IOException if an error occurs during the HTTP request
      */
     public static Optional<String> findLatestVersion(String groupId,
@@ -243,27 +286,51 @@ public class PomUtil {
     }
 
     /**
-     * Checks if a dependency with the specified group ID and artifact ID exists in the given Maven project.
+     * Retrieves detailed information about a specific Maven artifact from Maven Central.
+     *
+     * @param groupId    the group ID of the artifact.
+     * @param artifactId the artifact ID of the artifact.
+     * @param version    the version of the artifact.
+     *
+     * @return a {@link JsonObject} containing the artifact's information.
+     *
+     * @throws IOException if an error occurs during the HTTP request or if the artifact is not
+     *                     found.
+     */
+    public static JsonObject getArtifactInfo(String groupId, String artifactId, String version) throws IOException {
+        var params = "v:%s AND a:%s AND g:%s".formatted(version, artifactId, groupId);
+        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select",
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER, new HttpUtil.Parameter("q", params));
+        return response.getJsonObject("response").getJsonArray("docs").getJsonObject(0);
+    }
+
+    /**
+     * Checks if a dependency with the specified group ID and artifact ID exists in the given Maven
+     * project.
      *
      * @param mavenProject the Maven project to check for the dependency
      * @param log          the logger to use for logging messages
      * @param groupId      the group ID of the dependency to check
      * @param artifactId   the artifact ID of the dependency to check
+     *
      * @return true if the dependency exists, false otherwise
      */
-    public static boolean existsDependency(MavenProject mavenProject, Log log, String groupId, String artifactId) {
+    public static boolean existsDependency(MavenProject mavenProject, Log log, String groupId,
+                                           String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
         return getDependency(mavenProject, log, groupId, artifactId).isPresent();
 
     }
 
     /**
-     * Retrieves a dependency with the specified group ID and artifact ID from the given Maven project.
+     * Retrieves a dependency with the specified group ID and artifact ID from the given Maven
+     * project.
      *
      * @param mavenProject the Maven project to retrieve the dependency from
      * @param log          the logger to use for logging messages
      * @param groupId      the group ID of the dependency to retrieve
      * @param artifactId   the artifact ID of the dependency to retrieve
+     *
      * @return an Optional containing the dependency if found, or an empty Optional if not found
      */
     public static Optional<Artifact> getDependency(MavenProject mavenProject,
@@ -272,27 +339,38 @@ public class PomUtil {
                                                    String artifactId) {
         log.debug("groupId:%s | artifactId:%s".formatted(groupId, artifactId));
         return mavenProject.getArtifacts().stream().
-                           filter(artifact ->
-                               Strings.CS.equals(artifact.getGroupId(), groupId)
-                                   && Strings.CS.equals(artifact.getArtifactId(), artifactId)
-                           ).findFirst();
+            filter(artifact
+                -> Strings.CS.equals(artifact.getGroupId(), groupId)
+            && Strings.CS.equals(artifact.getArtifactId(), artifactId)
+            ).findFirst();
 
     }
 
-
+    /**
+     * Retrieves the current Jakarta EE version from the project's dependencies.
+     * It specifically looks for the {@code jakarta.platform:jakarta.jakartaee-core-api} dependency.
+     *
+     * @param mavenProject The Maven project to inspect.
+     * @param log          The logger for logging messages.
+     *
+     * @return An {@link Optional} containing the version string if found, otherwise an empty
+     *         Optional.
+     */
     public static Optional<String> getJakartaEeCurrentVersion(MavenProject mavenProject, Log log) {
         return getDependency(mavenProject, log, JAKARTA_PLATFORM, JAKARTA_JAKARTAEE_CORE_API)
             .map(Artifact::getVersion);
     }
 
     /**
-     * Checks if a dependency with the specified group ID, artifact ID, and version exists in the given Maven project.
+     * Checks if a dependency with the specified group ID, artifact ID, and version exists in the
+     * given Maven project.
      *
      * @param mavenProject the Maven project to check for the dependency
      * @param log          the logger to use for logging messages
      * @param groupId      the group ID of the dependency to check
      * @param artifactId   the artifact ID of the dependency to check
      * @param version      the version of the dependency to check
+     *
      * @return true if the dependency exists, false otherwise
      */
     public static boolean existsDependency(MavenProject mavenProject,
@@ -302,11 +380,11 @@ public class PomUtil {
                                            String version) {
         log.debug("groupId:%s | artifactId:%s | version: %s".formatted(groupId, artifactId, version));
         return mavenProject.getArtifacts().stream().
-                           anyMatch(artifact ->
-                               Strings.CS.equals(artifact.getGroupId(), groupId)
-                                   && Strings.CS.equals(artifact.getArtifactId(), artifactId)
-                                   && Strings.CS.equals(artifact.getVersion(), version)
-                           );
+            anyMatch(artifact
+                -> Strings.CS.equals(artifact.getGroupId(), groupId)
+            && Strings.CS.equals(artifact.getArtifactId(), artifactId)
+            && Strings.CS.equals(artifact.getVersion(), version)
+            );
 
     }
 
@@ -315,6 +393,7 @@ public class PomUtil {
      *
      * @param mavenProject the Maven project to save
      * @param log          the logger to use for logging messages
+     *
      * @throws MojoExecutionException if an error occurs while saving the POM file
      */
     public static void saveMavenProject(MavenProject mavenProject, Log log) throws MojoExecutionException {
@@ -335,7 +414,8 @@ public class PomUtil {
      * @param propertyName  the name of the property to set
      * @param propertyValue the value of the property to set
      */
-    public static void setProperty(MavenProject mavenProject, Log log, String propertyName, String propertyValue) {
+    public static void setProperty(MavenProject mavenProject, Log log, String propertyName,
+                                   String propertyValue) {
         var model = mavenProject.getOriginalModel();
         model.getProperties().setProperty(propertyName, propertyValue);
         log.debug("setting property %s=%s".formatted(propertyName, propertyValue));
@@ -350,6 +430,7 @@ public class PomUtil {
      * @param artifactId    the artifact ID of the plugin
      * @param version       the version of the plugin
      * @param configuration the configuration of the plugin as a JsonObject
+     *
      * @return the Plugin object that was added
      */
     public static Plugin addPlugin(MavenProject mavenProject,
@@ -365,12 +446,14 @@ public class PomUtil {
     /**
      * Adds a plugin to the given Maven build base.
      *
-     * @param build         the Maven build base to which the plugin will be added (e.g., {@code Build} or {@code PluginManagement})
+     * @param build         the Maven build base to which the plugin will be added (e.g.,
+     *                      {@code Build} or {@code PluginManagement})
      * @param log           the logger to use for logging messages
      * @param groupId       the group ID of the plugin
      * @param artifactId    the artifact ID of the plugin
      * @param version       the version of the plugin
      * @param configuration the configuration of the plugin as a JsonObject
+     *
      * @return the Plugin object that was added or updated
      */
     public static Plugin addPlugin(BuildBase build,
@@ -381,6 +464,22 @@ public class PomUtil {
         return addPlugin(build, log, groupId, artifactId, version, configuration, null);
     }
 
+    /**
+     * Adds a plugin to the given Maven build base, allowing for configuration and execution
+     * definitions.
+     * If the plugin already exists, it will be updated.
+     *
+     * @param build         the Maven build base to which the plugin will be added (e.g.,
+     *                      {@code Build} or {@code PluginManagement})
+     * @param log           the logger to use for logging messages
+     * @param groupId       the group ID of the plugin
+     * @param artifactId    the artifact ID of the plugin
+     * @param version       the version of the plugin
+     * @param configuration the configuration of the plugin as a JsonObject (can be null)
+     * @param executions    a JsonArray defining plugin executions (can be null)
+     *
+     * @return the Plugin object that was added or updated
+     */
     public static Plugin addPlugin(BuildBase build,
                                    Log log,
                                    String groupId, String artifactId,
@@ -402,59 +501,101 @@ public class PomUtil {
         if (configuration != null) {
             var configDom = Optional
                 .ofNullable((Xpp3Dom) plugin.getConfiguration())
-                .orElseGet(() -> new Xpp3Dom("configuration"));
-            var config = JsonUtil.jsonToXpp3Dom(configDom, configuration);
+                .orElseGet(() -> new Xpp3Dom(CONFIGURATION));
+            var config = JsonUtil.jsonToXpp3Dom(log, configDom, configuration, true);
             plugin.setConfiguration(config);
         }
         if (executions != null) {
-            var pluginExecutions = plugin.getExecutions();
-            log.debug("pluginExecutions:" + pluginExecutions);
-            executions.stream().map(JsonValue::asJsonObject).forEach(executionDefinition -> {
-                var id = executionDefinition.getString("id", StringUtils.EMPTY);
-                var phase = executionDefinition.getString("phase", StringUtils.EMPTY);
-                var pluginExecution =
-                    StringUtils.isAllBlank(id, phase)
-                        ? createPluginExecution(StringUtils.EMPTY, StringUtils.EMPTY, pluginExecutions)
-                        : pluginExecutions
-                        .stream()
-                        .filter(pe ->
-                            Strings.CS.equals(pe.getId(), id)
-                        )
-                        .findFirst()
-                        .orElseGet(() -> createPluginExecution(id, phase, pluginExecutions));
-                if (executionDefinition.containsKey("goals"))
-                    executionDefinition.getJsonArray("goals")
-                                       .stream()
-                                       .map(JsonValue::asJsonObject)
-                                       .map(item -> item.getString("goal"))
-                                       .filter(goal -> !pluginExecution.getGoals().contains(goal))
-                                       .forEach(pluginExecution::addGoal);
-                if (executionDefinition.containsKey("configuration")) {
-                    var configDom = (Xpp3Dom) pluginExecution.getConfiguration();
-                    var config = JsonUtil.jsonToXpp3Dom(configDom, executionDefinition.getJsonObject("configuration"));
-                    pluginExecution.setConfiguration(config);
-                }
-            });
-
-
+            addExecutions(log, plugin, executions);
         }
         log.debug("adding plugin %s".formatted(plugin));
         return plugin;
 
     }
 
+    private static void addExecutions(Log log, Plugin plugin, JsonArray executions) {
+        var pluginExecutions = plugin.getExecutions();
+        log.debug("pluginExecutions:" + pluginExecutions);
+        executions.stream().map(JsonValue::asJsonObject).forEach(executionDefinition -> {
+            var id = executionDefinition.getString("id", StringUtils.EMPTY);
+            var phase = executionDefinition.getString("phase", StringUtils.EMPTY);
+            var pluginExecution
+                = StringUtils.isAllBlank(id, phase)
+                ? createPluginExecution(StringUtils.EMPTY, StringUtils.EMPTY, pluginExecutions)
+                : pluginExecutions
+                    .stream()
+                    .filter(pe
+                        -> Strings.CS.equals(pe.getId(), id)
+                    )
+                    .findFirst()
+                    .orElseGet(() -> createPluginExecution(id, phase, pluginExecutions));
+            if (executionDefinition.containsKey(GOALS)) {
+                executionDefinition.getJsonArray(GOALS)
+                    .stream()
+                    .map(JsonValue::asJsonObject)
+                    .map(item -> item.getString(GOAL))
+                    .filter(goal -> !pluginExecution.getGoals().contains(goal))
+                    .forEach(pluginExecution::addGoal);
+            }
+            if (executionDefinition.containsKey(CONFIGURATION)) {
+                var configDom = (Xpp3Dom) pluginExecution.getConfiguration();
+                var config = JsonUtil.jsonToXpp3Dom(log, configDom, executionDefinition.getJsonObject(
+                    CONFIGURATION));
+                pluginExecution.setConfiguration(config);
+            }
+        });
+    }
+
     private static PluginExecution createPluginExecution(String id,
                                                          String phase,
                                                          List<PluginExecution> pluginExecutions) {
         var pe = new PluginExecution();
-        if (StringUtils.isNotBlank(phase))
+        if (StringUtils.isNotBlank(phase)) {
             pe.setPhase(phase);
-        if (StringUtils.isNotBlank(id))
+        }
+        if (StringUtils.isNotBlank(id)) {
             pe.setId(id);
+        }
         pe.setGoals(new ArrayList<>());
-        pe.setConfiguration(new Xpp3Dom("configuration"));
+        pe.setConfiguration(new Xpp3Dom(CONFIGURATION));
         pluginExecutions.add(pe);
         return pe;
+    }
+
+    /**
+     * Adds a dependency management to the given Maven project.
+     *
+     * @param mavenProject the Maven project to which the dependency management will be added
+     * @param log          the logger to use for logging messages
+     * @param groupId      the group ID of the dependency management
+     * @param artifactId   the artifact ID of the dependency management
+     * @param scope        the scope of the dependency management
+     */
+    public static void addDependencyManagement(MavenProject mavenProject, Log log, String groupId,
+                                               String artifactId, String scope) {
+        var dependencyManagement = Optional
+            .ofNullable(mavenProject.getModel().getDependencyManagement())
+            .orElseGet(() -> {
+                var dm = new DependencyManagement();
+                mavenProject.getModel().setDependencyManagement(dm);
+                return dm;
+            });
+        var find = dependencyManagement
+            .getDependencies()
+            .stream()
+            .filter(dependency -> Strings.CS.equals(dependency.getGroupId(), groupId)
+            && Strings.CS.equals(dependency.getArtifactId(), artifactId))
+            .findFirst();
+        if (find.isEmpty()) {
+            var dependency = new Dependency();
+            dependency.setGroupId(groupId);
+            dependency.setArtifactId(artifactId);
+            if (!StringUtils.isBlank(scope)) {
+                dependency.setScope(scope);
+            }
+            dependencyManagement.addDependency(dependency);
+        }
+
     }
 
     private PomUtil() {

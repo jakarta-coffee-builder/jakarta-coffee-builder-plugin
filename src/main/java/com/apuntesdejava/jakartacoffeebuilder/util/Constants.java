@@ -15,6 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import java.util.Set;
+
 /**
  * The Constants class serves as a centralized repository for constant values
  * used throughout the application. These constants include string identifiers,
@@ -50,6 +52,9 @@ public class Constants {
      */
     public static final String JAKARTA_JAKARTAEE_API = "jakarta.jakartaee-api";
 
+    /**
+     * Identifier for the Jakarta EE Core API.
+     */
     public static final String JAKARTA_JAKARTAEE_CORE_API = "jakarta.jakartaee-core-api";
 
     /**
@@ -116,6 +121,9 @@ public class Constants {
      * Key for the name of an entity.
      */
     public static final String NAME = "name";
+    /**
+     * Key for the type of an entity or field.
+     */
     public static final String TYPE = "type";
     /**
      * Key for the table name of an entity.
@@ -146,13 +154,27 @@ public class Constants {
      * URL to retrieve configured dependencies.
      */
     public static final String DEV_BASE_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop";
+    /**
+     * Production base URL for retrieving configured dependencies.
+     */
     public static final String PRD_BASE_URL = "https://jakarta-coffee-builder.github.io/configuration";
-
+    /**
+     * URL path for retrieving dependency configurations.
+     */
     public static final String DEPENDENCIES_URL = "/dependencies.json";
 
+    /**
+     * URL path for retrieving server configurations.
+     */
     public static final String SERVERS_URL = "/servers.json";
+    /**
+     * URL path for retrieving specification configurations.
+     */
     public static final String SPECIFICATIONS_URL = "/specifications.json";
 
+    /**
+     * URL path for retrieving class definitions.
+     */
     public static final String CLASSES_DEFINITIONS = "/classes-definitions.json";
 
     /**
@@ -214,12 +236,57 @@ public class Constants {
      */
     public static final String DATASOURCE_PAYARA = "payara";
 
+    /**
+     * Generic key for a value.
+     */
     public static final String VALUE = "value";
+    /**
+     * URL to retrieve schema definitions.
+     */
     public static final String SCHEMAS_URL = "/schemas.json";
+    /**
+     * URL to retrieve OpenAPI Generator configurations.
+     */
     public static final String OPEN_API_GENERATOR_CONFIGURATION = "/openapi-generator-config.json";
 
+    /**
+     * Key for the Maven groupId.
+     */
     public static final String GROUP_ID = "groupId";
+    /**
+     * Key for the Maven artifactId.
+     */
     public static final String ARTIFACT_ID = "artifactId";
+
+    /**
+     * Group ID for PrimeFaces.
+     */
+    public static final String ORG_PRIMEFACES = "org.primefaces";
+    /**
+     * Artifact ID for PrimeFaces.
+     */
+    public static final String PRIMEFACES = "primefaces";
+
+    /**
+     * Key for configuration settings.
+     */
+    public static final String CONFIGURATION = "configuration";
+
+    /**
+     * Key for a list of goals.
+     */
+    public static final String GOALS = "goals";
+    /**
+     * Key for a single goal.
+     */
+    public static final String GOAL = "goal";
+
+    public static final String ORG_APACHE_MAVEN_PLUGINS = "org.apache.maven.plugins";
+    public static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
+    public static final String ORG_MAPSTRUCT = "org.mapstruct";
+    public static final String MAPSTRUCT = "mapstruct";
+    public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
+        "ElementCollection");
 
     private Constants() {
     }

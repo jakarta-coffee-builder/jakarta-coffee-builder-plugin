@@ -17,19 +17,14 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
-import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
-
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
 
 /**
  * Mojo for adding persistence configuration to a Jakarta EE project.
@@ -40,8 +35,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VE
  * <p>
  * Usage:
  * <ul>
- *   <li>Configure the Mojo in the Maven POM file.</li>
- *   <li>Specify the Jakarta EE version and persistence unit name as parameters.</li>
+ * <li>Configure the Mojo in the Maven POM file.</li>
+ * <li>Specify the Jakarta EE version and persistence unit name as parameters.</li>
  * </ul>
  * <p>
  * <p>
@@ -73,10 +68,10 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
      * @throws MojoExecutionException if an error occurs during execution.
      * @throws MojoFailureException   if a required dependency is missing or cannot be resolved.
      */
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
+            init();
             var log = getLog();
             log.debug("Project name:%s".formatted(mavenProject.getName()));
             checkDependency(log);
@@ -85,6 +80,7 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
             createPersistenceUnit(json);
 
             addDataSourceConfiguration(log, json);
+            PomUtil.saveMavenProject(fullProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoExecutionException(e);
         }
@@ -99,30 +95,28 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
      * </p>
      *
      * @param log the Maven logger instance.
+     *
      * @throws MojoExecutionException if an error occurs while resolving dependencies.
      */
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Persistence dependency");
         try {
-            var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
 
             var jakartaEeHelper = JakartaEeHelper.getInstance();
-            if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log))
+            if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log)) {
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
-            if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log))
+            }
+            if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log)) {
                 jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
-            if (!Strings.CS.equals(jakartaEeVersion, JAKARTAEE_VERSION_10)
-                && jakartaEeHelper.hasNotJakartaDataDependency(fullProject, log)
-                && jakartaEeHelper.isValidAddJakartaDataDependency(fullProject, log))
-                jakartaEeHelper.addJakartaDataDependency(mavenProject, log, jakartaEeVersion);
+            }
 
             jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
             CoffeeBuilderUtil.getJdbcConfiguration(url)
-                             .ifPresent(definition ->
-                                 jakartaEeHelper.checkDataDependencies(fullProject, log, definition));
+                .ifPresent(definition
+                    -> jakartaEeHelper.checkDataDependencies(mavenProject, log, definition));
 
-        } catch (ProjectBuildingException | IOException ex) {
+        } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error resolving dependencies", ex);
 
@@ -130,7 +124,6 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
     }
 
     private void createPersistenceXml(Log log) throws ProjectBuildingException {
-        MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
         JakartaEeHelper.getInstance().createPersistenceXml(fullProject, log, persistenceUnitName);
 
     }

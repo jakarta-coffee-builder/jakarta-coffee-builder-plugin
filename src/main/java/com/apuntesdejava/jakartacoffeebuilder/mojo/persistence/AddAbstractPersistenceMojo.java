@@ -40,12 +40,13 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_D
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.DataSourceUtil.validateDataSourceName;
 
-
 /**
  * Abstract base class for Mojos that add persistence-related configurations.
  */
 public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
-    @Parameter(defaultValue = "${project}", readonly = true)
+
+    @Parameter(defaultValue = "${project}",
+        readonly = true)
     protected MavenProject mavenProject;
     @Parameter(
         property = "datasourceName",
@@ -100,11 +101,17 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         property = "persistence-unit-name"
     )
     protected String persistenceUnitName;
+    protected MavenProject fullProject;
+
+    protected void init() throws ProjectBuildingException {
+        this.fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
+
+    }
 
     protected JsonObject getDataSourceParameters() {
         datasourceName = validateDataSourceName(declare, datasourceName);
         var jsonBuilder = Json.createObjectBuilder()
-                              .add(NAME, datasourceName);
+            .add(NAME, datasourceName);
 
         if (StringUtils.isNotBlank(serverName)) {
             jsonBuilder.add("serverName", serverName);
@@ -132,7 +139,6 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     protected void createPersistenceUnit(JsonObject json) throws ProjectBuildingException {
         var log = getLog();
         if (StringUtils.isNotBlank(persistenceUnitName)) {
-            MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             PersistenceXmlHelper
                 .getInstance()
                 .addDataSourceToPersistenceXml(fullProject, log, persistenceUnitName,
@@ -142,24 +148,23 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
 
     protected void addDataSourceConfiguration(Log log, JsonObject json) throws ProjectBuildingException, IOException {
         var jakartaEeHelper = JakartaEeHelper.getInstance();
-        var fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
         CoffeeBuilderUtil.getJdbcConfiguration(url)
-                         .ifPresent(definition -> {
-                             jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
-                             jakartaEeHelper.addDataSource(fullProject, log, declare,
-                                 getDataSourceProperties(json, definition.getString("dataSourceClass"))
-                             );
-                         });
+            .ifPresent(definition -> {
+                jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
+                jakartaEeHelper.addDataSource(fullProject, log, declare,
+                    getDataSourceProperties(json, definition.getString("dataSourceClass"))
+                );
+            });
 
 //        CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);
     }
 
     private JsonObject getDataSourceProperties(JsonObject json, String className) {
         var newValues = Json.createObjectBuilder(json)
-                            .add("className", className).build();
+            .add("className", className).build();
         var dataSourceProps = Json.createObjectBuilder();
 
-        List<String> properties = Arrays.asList(
+        List<String> datasourceProperties = Arrays.asList(
             "description",
             "name",
             "className",
@@ -178,13 +183,14 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
             "minPoolSize",
             "maxIdleTime",
             "maxStatements");
-        properties.stream().filter(newValues::containsKey).forEach(prop -> {
+        datasourceProperties.stream().filter(newValues::containsKey).forEach(prop -> {
             var value = newValues.get(prop);
             var type = value.getValueType();
-            if (type == JsonValue.ValueType.OBJECT)
+            if (type == JsonValue.ValueType.OBJECT) {
                 dataSourceProps.add(prop, value.asJsonObject());
-            else
+            } else {
                 dataSourceProps.add(prop, newValues.getString(prop));
+            }
         });
         return dataSourceProps.build();
     }

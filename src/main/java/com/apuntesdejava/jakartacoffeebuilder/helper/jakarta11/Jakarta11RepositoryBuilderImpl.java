@@ -25,6 +25,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
@@ -47,13 +48,14 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
     /**
      * Builds a repository class for a specific entity in a Jakarta 11 project.
      *
-     * @param mavenProject the Maven project where the repository will be created
-     * @param log          the logger to log messages during the repository creation process
-     * @param entityName
-     * @param entity       a {@link JsonObject} representing the entity for which the repository is being created
+     * @param mavenProject      the Maven project where the repository will be created
+     * @param log               the logger to log messages during the repository creation process
+     * @param entityName        the name of the entity for which the repository is being created
+     * @param entity            a {@link JsonObject} representing the entity for which the repository is being created
+     * @param additionalImports a collection of additional imports to be added to the repository class
      */
     @Override
-    public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity) {
+    public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity, Collection<String> additionalImports) {
 
         try {
             log.info("Building Jakarta 11 Repository for entity: " + entityName);
@@ -72,6 +74,7 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
                             "entityName", entityName,
                             "classRepository", classRepository,
                             "packageEntity", packageEntity,
+                            "importsList", additionalImports,
                             "idType", fieldId.map(f -> f.getString(TYPE)).orElse("Long")
                         ), repositoryPath);
         } catch (IOException e) {

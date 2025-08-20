@@ -104,6 +104,14 @@ public class TemplateUtil {
         createJavaFile(log, data, enumPath, "Enum.ftl");
     }
 
+    public void createRecordFile(Log log, Map<String, Object> fieldsMap, Path modelPath) throws IOException {
+        createJavaFile(log, fieldsMap, modelPath, "Record.ftl");
+    }
+
+    public void createMapperFile(Log log, Map<String, Object> fieldsMap, Path mapperPath) throws IOException {
+        createJavaFile(log, fieldsMap, mapperPath, "Mapper.ftl");
+    }
+
     private static class TemplateUtilHolder {
 
         private static final TemplateUtil INSTANCE = new TemplateUtil();

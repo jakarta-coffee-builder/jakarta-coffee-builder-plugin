@@ -13,7 +13,8 @@
           "length": 100,
           "unique": true,
           "nullable": false
-        }
+        },
+        "label":"Nombre del proyecto"
       },
       "startDate": {
         "type": "LocalDate",

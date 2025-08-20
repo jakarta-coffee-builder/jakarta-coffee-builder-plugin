@@ -140,6 +140,8 @@ public class CreateOpenApiMojo extends AbstractMojo {
                 }
 
             });
+            PomUtil.saveMavenProject(mavenProject, log);
+
         } catch (IOException | ProjectBuildingException e) {
             log.error("Error while adding Jackson dependency: %s".formatted(e.getMessage()));
             throw new MojoFailureException(e);
