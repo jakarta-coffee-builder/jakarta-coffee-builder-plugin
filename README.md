@@ -220,35 +220,23 @@ Add PayaraMicro Plugin
 mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
 ```
 
-# Using SNAPSHOT version
+### Add Domain Model
 
-To use the latest SNAPSHOT version, you need to use JitPack as a repository. Since this plugin is meant to be executed directly from the command line without being declared in the `pom.xml`, you must configure the repository in a separate settings file.
+The domain model is based using the definition of entities
 
-1.  Create a file named `settings-local.xml` with the following content:
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model
+```
 
-    ```xml
-    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-                                  https://maven.apache.org/xsd/settings-1.0.0.xsd">
-      <profiles>
-        <profile>
-            <id>jitpacks</id>
-            <activation><activeByDefault/></activation>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>jitpack.io</id>
-                    <url>https://jitpack.io</url>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
-      </profiles>
-    </settings>
-    ```
+**Parameters**
 
-2.  Invoke the plugin from the command line using the `-s` (or `--settings`) flag to specify your local settings file. Use `develop-SNAPSHOT` as the version to get the latest development build.
+| Parameter       | Definition                                                                                        | Example                                                                                                                   |
+|-----------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/blob/main/examples/entities.json) |
 
-    ```shell
-    mvn -s settings-local.xml \
-      com.github.apuntesdejava.jakarta-coffee-builder:jakarta-coffee-builder-plugin:develop-SNAPSHOT:add-faces
-    ```
+**Example**
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model \
+    -Dentities-file=entities.json
+```
