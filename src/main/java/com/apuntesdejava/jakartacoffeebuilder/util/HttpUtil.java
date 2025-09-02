@@ -18,20 +18,24 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DEV_BASE_URL
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PRD_BASE_URL;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
+
 /**
  * Utility class for performing HTTP requests.
  * <p>
- * Provides methods to execute HTTP GET requests and convert the responses
- * into different formats using conversion functions.
+ * Provides methods to execute HTTP GET requests and convert the responses into different formats using conversion
+ * functions.
  * </p>
  */
 public class HttpUtil {
+
+    private static final System.Logger LOG = System.getLogger(HttpUtil.class.getName());
+
     private HttpUtil() {
     }
 
     /**
-     * Executes an HTTP GET request to the specified URL with optional query parameters
-     * and converts the response content using the provided converter function.
+     * Executes an HTTP GET request to the specified URL with optional query parameters and converts the response
+     * content using the provided converter function.
      *
      * @param <T>        the type of the result produced by the converter
      * @param address    the URL to send the GET request to
@@ -45,15 +49,16 @@ public class HttpUtil {
                                    Parameter... parameters) throws IOException {
         try (final var httpClient = HttpClients.createDefault()) {
             var queryParams = Arrays.stream(parameters)
-                                    .map(p -> p.name() + "=" + URLEncoder.encode(p.value(), StandardCharsets.UTF_8))
-                                    .reduce((p1, p2) -> p1 + "&" + p2)
-                                    .orElse(EMPTY);
+                    .map(p -> p.name() + "=" + URLEncoder.encode(p.value(), StandardCharsets.UTF_8))
+                    .reduce((p1, p2) -> p1 + "&" + p2)
+                    .orElse(EMPTY);
             var requestUrl = address + (parameters.length == 0 ? EMPTY : ("?" + queryParams));
             var httpGet = new HttpGet(requestUrl);
+            LOG.log(System.Logger.Level.DEBUG, () -> "Request URL:" + requestUrl);
             return httpClient.execute(httpGet, response -> {
                 var responseString = EntityUtils.toString(response.getEntity());
                 return converter.apply(responseString);
-            });
+            }); 
         }
     }
 
@@ -80,7 +85,7 @@ public class HttpUtil {
 
     public static String getUrl(String serviceUrl) {
         return (BooleanUtils.toBoolean(System.getProperty("devel", "false"))
-            ? DEV_BASE_URL : PRD_BASE_URL) + serviceUrl;
+                ? DEV_BASE_URL : PRD_BASE_URL) + serviceUrl;
     }
 
     //make function  get content from url

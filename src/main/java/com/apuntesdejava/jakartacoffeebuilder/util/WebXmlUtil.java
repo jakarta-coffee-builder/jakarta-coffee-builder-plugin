@@ -90,9 +90,8 @@ public class WebXmlUtil {
                 JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
                     "web-app").orElseThrow();
 
-                var webAppElement = document.addElement("web-app");
+                var webAppElement = document.addElement("web-app", "https://jakarta.ee/xml/ns/jakartaee");
                 webAppElement.addAttribute("version", schemaDescription.getString("version"));
-                webAppElement.addAttribute("xmlns", "https://jakarta.ee/xml/ns/jakartaee");
                 webAppElement.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
                 webAppElement.addAttribute("xsi:schemaLocation",
                     "https://jakarta.ee/xml/ns/jakartaee " + schemaDescription.getString("url"));
@@ -173,7 +172,7 @@ public class WebXmlUtil {
     public void addDataSource(Document document, Log log, Map<String, Object> properties) {
         var xmlUtil = XmlUtil.getInstance();
         if (xmlUtil.findElementsStream(document,
-            "//data-source/name[text()='%s']".formatted(properties.get(NAME))).findFirst().isEmpty()) {
+            "//*[local-name()='data-source'][*[local-name()='name' and text()='%s']]".formatted(properties.get(NAME))).findFirst().isEmpty()) {
             var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
             properties.forEach((key, value) -> {
                 if (value instanceof Collection<?> collection) {

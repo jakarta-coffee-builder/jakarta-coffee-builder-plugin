@@ -34,6 +34,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.HIBERNATE_PR
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
 
+import org.dom4j.Namespace;
+
 /**
  * Helper class for managing `persistence.xml` files.
  * Provides methods to create and save `persistence.xml` documents.
@@ -42,7 +44,10 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
  */
 public class PersistenceXmlHelper {
 
+    private final Namespace persistenceNS;
+
     private PersistenceXmlHelper() {
+        this.persistenceNS = new Namespace("", "https://jakarta.ee/xml/ns/persistence");
     }
 
     /**
@@ -79,13 +84,12 @@ public class PersistenceXmlHelper {
             try {
                 var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log).orElseThrow();
                 JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
-                    "persistence").orElseThrow();
+                        "persistence").orElseThrow();
 
-                var persistenceElem = document.addElement("persistence");
-                persistenceElem.addAttribute("xmlns", "https://jakarta.ee/xml/ns/persistence");
-                persistenceElem.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-                persistenceElem.addAttribute("xsi:schemaLocation",
-                    "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url"));
+                var persistenceElem = document.addElement("persistence", "https://jakarta.ee/xml/ns/persistence");
+//                persistenceElem.add(new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"));
+//                persistenceElem.add(new Namespace("schemaLocation",
+//                    "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url")));
                 persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
                 var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
@@ -117,10 +121,10 @@ public class PersistenceXmlHelper {
      */
     protected Path getPersistencePath(Path currentPath) {
         return currentPath.resolve("src")
-                          .resolve("main")
-                          .resolve("resources")
-                          .resolve("META-INF")
-                          .resolve("persistence.xml");
+                .resolve("main")
+                .resolve("resources")
+                .resolve("META-INF")
+                .resolve("persistence.xml");
     }
 
     /**
@@ -134,19 +138,19 @@ public class PersistenceXmlHelper {
      */
     public void addDataSourceToPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnit, String name) {
         createPersistenceXml(mavenProject, log, persistenceUnit)
-            .ifPresent(document -> {
-                var xmlUtil = XmlUtil.getInstance();
-                xmlUtil.findElementsStream(document,
-                           "//persistence-unit[@name='%s' and not(jta-data-source/text()='%s')]"
-                               .formatted(persistenceUnit, name))
-                       .findFirst()
-                       .ifPresent(element -> {
-                           xmlUtil.removeElement(element, "jta-data-source");
-                           xmlUtil.addElement(element, "jta-data-source").setText(name);
-                           var currentPath = mavenProject.getBasedir().toPath();
-                           savePersistenceXml(currentPath, log, document);
-                       });
-            });
+                .ifPresent(document -> {
+                    var xmlUtil = XmlUtil.getInstance();
+                    xmlUtil.findElementsStream(document,
+                                    "//*[local-name()='persistence-unit'][@name='%s'][not(*[local-name()='jta-data-source' and text()='%s'])]"
+                                            .formatted(persistenceUnit, name))
+                            .findFirst()
+                            .ifPresent(element -> {
+                                xmlUtil.removeElement(element, "jta-data-source");
+                                xmlUtil.addElement(element, "jta-data-source").setText(name);
+                                var currentPath = mavenProject.getBasedir().toPath();
+                                savePersistenceXml(currentPath, log, document);
+                            });
+                });
     }
 
     /**
@@ -160,36 +164,38 @@ public class PersistenceXmlHelper {
         var persistencePath = getPersistencePath(currentPath);
         var xmlUtil = XmlUtil.getInstance();
         xmlUtil.getDocument(log, persistencePath).ifPresent(persistenceXml -> {
-            xmlUtil.findElementsStream(persistenceXml, "//persistence-unit")
-                   .findFirst()
-                   .ifPresent(elem -> {
-                       if (xmlUtil.findElementsStream(persistenceXml,
-                                      "//persistence-unit/provider[text()='%s']".formatted(HIBERNATE_PROVIDER))
-                                  .findFirst().isEmpty())
-                           xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
-                       xmlUtil.getElement(elem, "properties").ifPresent(properties -> {
-                           if (StringUtils.isNotBlank(dialectClass))
-                               xmlUtil.addElement(properties, "property",
-                                   Map.of(NAME, "hibernate.dialect", VALUE, dialectClass));
-                           try {
-                               CoffeeBuilderUtil.getPropertiesConfiguration("jpa-hibernate")
-                                                .ifPresent(propertiesConfig -> propertiesConfig
-                                                    .stream()
-                                                    .map(JsonValue::asJsonObject)
-                                                    .forEach(property -> {
-                                                        var name = property.getString(NAME);
-                                                        var value = property.getString(VALUE);
-                                                        xmlUtil.addElement(
+            xmlUtil.findElementsStream(persistenceXml, "//*[local-name()='persistence-unit']")
+                    .findFirst()
+                    .ifPresent(elem -> {
+                        if (xmlUtil.findElementsStream(persistenceXml,
+                                        "//*[local-name()='persistence-unit']/*[local-name()='provider' and text()='%s']"
+                                                .formatted(HIBERNATE_PROVIDER))
+                                .findFirst().isEmpty()) {
+                            xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
+                        }
+                        xmlUtil.getElement(elem, "properties", persistenceNS).ifPresent(properties -> {
+                            if (StringUtils.isNotBlank(dialectClass))
+                                xmlUtil.addElement(properties, "property",
+                                        Map.of(NAME, "hibernate.dialect", VALUE, dialectClass));
+                            try {
+                                CoffeeBuilderUtil.getPropertiesConfiguration("jpa-hibernate")
+                                        .ifPresent(propertiesConfig -> propertiesConfig
+                                                .stream()
+                                                .map(JsonValue::asJsonObject)
+                                                .forEach(property -> {
+                                                    var name = property.getString(NAME);
+                                                    var value = property.getString(VALUE);
+                                                    xmlUtil.addElement(
                                                             properties, "property",
                                                             Map.of(NAME, name, VALUE, value)
-                                                        );
-                                                    }));
-                           } catch (IOException e) {
-                               log.error(e.getMessage(), e);
-                           }
-                       });
+                                                    );
+                                                }));
+                            } catch (IOException e) {
+                                log.error(e.getMessage(), e);
+                            }
+                        });
 
-                   });
+                    });
             xmlUtil.saveDocument(persistenceXml, log, persistencePath);
         });
 

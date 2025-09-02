@@ -153,7 +153,10 @@ public class XmlUtil {
      */
     public void addElementAtStart(Element parent, Log log, String tagName, String textContent) {
         if (findElementsStream(parent.getDocument(), tagName).findFirst().isPresent()) return;
-        var element = DocumentHelper.createElement(tagName);
+
+        QName qName = new QName(tagName, parent.getNamespace());
+        var element = DocumentHelper.createElement(qName);
+
         element.setText(textContent);
         parent.content().addFirst(element);
     }
@@ -227,8 +230,8 @@ public class XmlUtil {
             }
             Files.createDirectories(path.getParent());
             var doc = createDocumentType == null
-                ? DocumentHelper.createDocument()
-                : createDocumentType.get();
+                    ? DocumentHelper.createDocument()
+                    : createDocumentType.get();
             Optional.ofNullable(postCreate).ifPresent(p -> p.accept(doc));
             return Optional.of(doc);
         } catch (IOException | DocumentException e) {
@@ -370,6 +373,24 @@ public class XmlUtil {
     }
 
     /**
+     * Retrieves the first child element with the specified tag name and namespace from the given parent element.
+     * If the element does not exist, it is created.
+     *
+     * @param parentElement the parent element to search within
+     * @param elementName   the tag name of the child element to retrieve
+     * @param namespace     the namespace of the element
+     * @return the first child element with the specified tag name, or a new element if not found
+     */
+    public Optional<Element> getElement(Element parentElement, String elementName, Namespace namespace) {
+        QName qName = new QName(elementName, namespace);
+        Element element = parentElement.element(qName);
+        if (element == null) {
+            return Optional.of(parentElement.addElement(qName));
+        }
+        return Optional.of(element);
+    }
+
+    /**
      * Removes the first child element with the specified tag name from the given parent element.
      *
      * @param element         the parent element from which the child element will be removed
@@ -377,6 +398,18 @@ public class XmlUtil {
      */
     public void removeElement(Element element, String tagNameToRemove) {
         Optional.ofNullable((Element) element.selectSingleNode(tagNameToRemove)).ifPresent(element::remove);
+    }
+
+    /**
+     * Removes the first child element with the specified tag name and namespace from the given parent element.
+     *
+     * @param element         the parent element from which the child element will be removed
+     * @param tagNameToRemove the tag name of the child element to be removed
+     * @param namespace       the namespace of the element
+     */
+    public void removeElement(Element element, String tagNameToRemove, Namespace namespace) {
+        QName qName = new QName(tagNameToRemove, namespace);
+        Optional.ofNullable(element.element(qName)).ifPresent(element::remove);
     }
 
     private static class XmlUtilHolder {

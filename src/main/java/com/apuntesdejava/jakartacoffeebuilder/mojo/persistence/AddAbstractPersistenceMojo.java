@@ -49,7 +49,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         readonly = true)
     protected MavenProject mavenProject;
     @Parameter(
-        property = "datasourceName",
+        property = "datasource-name",
         required = true,
         defaultValue = "defaultDatasource"
     )
