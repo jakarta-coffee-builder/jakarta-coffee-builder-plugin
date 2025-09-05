@@ -4,8 +4,8 @@
     "title": "Projects List",
     "base": "/",
     "template": {
-      "facelet": "/WEB-INF/template/template2.xhtml",
-      "define": "insert3"
+      "facelet": "/WEB-INF/templates/template1.xhtml",
+      "define": "body"
     },
     "fields": {
       "id": {

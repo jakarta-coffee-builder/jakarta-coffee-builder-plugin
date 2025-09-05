@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FIELDS;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
+import jakarta.json.JsonValue;
 
 public class PrimeFacesHelper extends JakartaFacesHelper {
 
@@ -48,33 +49,40 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
     }
 
     public void addFormsFromEntities(MavenProject mavenProject,
-                                     Log log,
-                                     Path formsPath,
-                                     Path entitiesPth) throws IOException {
+            Log log,
+            Path formsPath,
+            Path entitiesPth) throws IOException {
         var formsJson = JsonUtil.readJsonValue(formsPath).asJsonObject();
         var entitiesJson = JsonUtil.readJsonValue(entitiesPth).asJsonObject();
         var webAppPath = PathsUtil.getWebappPath(mavenProject);
-        formsJson.forEach((formName, value) -> {
-            var formDescription = value.asJsonObject();
-            try {
-                var base = formDescription.getString("base", "/");
-                var pageName = StringsUtil.removeCharacterRoot(base + formName);
-                var entityName = formDescription.getString("entity");
-                var entityDescription = entitiesJson.getJsonObject(entityName);
-                JakartaEeHelper.getInstance().createDomain(mavenProject, entityName, entityDescription);
-                createManagedBean(mavenProject, log, pageName);
-                createForm(log, webAppPath, formName, pageName, formDescription, entityDescription);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        var jakartaEeHelper = JakartaEeHelper.getInstance();
+        formsJson.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().getValueType() == JsonValue.ValueType.OBJECT
+                        && entry.getValue().asJsonObject().containsKey("entity")
+                )
+                .forEach(entry -> {
+                    var formName = entry.getKey();
+                    var formDescription = entry.getValue().asJsonObject();
+                    try {
+                        var base = formDescription.getString("base", "/");
+                        var pageName = StringsUtil.removeCharacterRoot(base + formName);
+                        var entityName = formDescription.getString("entity");
+                        var entityDescription = entitiesJson.getJsonObject(entityName);
+                        jakartaEeHelper.createDomain(mavenProject, entityName, entityDescription);
+                        createManagedBean(mavenProject, log, pageName);
+                        createForm(log, webAppPath, formName, pageName, formDescription, entityDescription);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     private void createForm(Log log,
-                            Path webAppPath,
-                            String formName,
-                            String pageName, JsonObject formDescription,
-                            JsonObject entity) throws IOException {
+            Path webAppPath,
+            String formName,
+            String pageName, JsonObject formDescription,
+            JsonObject entity) throws IOException {
 
         var pagePath = webAppPath.resolve(pageName + ".xhtml");
         var title = formDescription.getString("title", formName);
@@ -83,21 +91,21 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         var formIdName = StringUtils.uncapitalize(entityName) + "Form";
 
         var pageXhtml = templateDesc == null
-            ? createFacePage(log, pagePath, entity, formIdName)
-            : createFacePageWithTemplate(log, pagePath, templateDesc, entity, formIdName);
+                ? createFacePage(log, pagePath, entity, formIdName)
+                : createFacePageWithTemplate(log, pagePath, templateDesc, entity, formIdName);
         XmlUtil.getInstance().saveDocument(pageXhtml, log, pagePath);
     }
 
     private Document createFacePage(Log log,
-                                    Path xhtml,
-                                    JsonObject entityDefinition, String formIdName) {
+            Path xhtml,
+            JsonObject entityDefinition, String formIdName) {
         return createFacePage(log, xhtml, (bodyElement) -> createForm(log, bodyElement, entityDefinition, formIdName));
     }
 
     private Document createFacePageWithTemplate(Log log,
-                                                Path xhtml,
-                                                JsonObject templateDesc,
-                                                JsonObject entityDefinition, String formIdName) {
+            Path xhtml,
+            JsonObject templateDesc,
+            JsonObject entityDefinition, String formIdName) {
         String templateFacelet = templateDesc.getString("facelet");
         String define = templateDesc.getString("define");
         return createFacePageWithTemplate(log, xhtml, templateFacelet, (defineTag) -> {
@@ -112,37 +120,42 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         log.debug("creating content form in element:" + defineTag);
         var xmlUtil = XmlUtil.getInstance();
         var formElement = xmlUtil.addElement(defineTag, "form", FACES_NS_HTML_NAMESPACE)
-                                 .addAttribute("id", formIdName);
+                .addAttribute("id", formIdName);
         var cardElement = xmlUtil.addElement(formElement, "card", PRIMEFACES_NS_P_NAMESPACE);
         entityDefinition.getJsonObject(FIELDS).forEach((fieldName, fieldDef) -> {
             var fieldDefinition = fieldDef.asJsonObject();
 
             var panelGroupElement = xmlUtil.addElement(cardElement, "panelGroup", FACES_NS_HTML_NAMESPACE)
-                                           .addAttribute("layout", "block")
-                                           .addAttribute("styleClass", "field");
+                    .addAttribute("layout", "block")
+                    .addAttribute("styleClass", "field");
 
             var textLabel = fieldDefinition.getString("label", fieldName);
             var outputLabel = xmlUtil.addElement(panelGroupElement, "outputLabel", PRIMEFACES_NS_P_NAMESPACE)
-                                     .addAttribute("for", fieldName)
-                                     .addAttribute("value", textLabel);
+                    .addAttribute("for", fieldName)
+                    .addAttribute("value", textLabel);
 
             var elementInput = getElementInputByType(fieldDefinition.getString(TYPE));
 
             var inputText = xmlUtil.addElement(panelGroupElement, elementInput, PRIMEFACES_NS_P_NAMESPACE)
-                                   .addAttribute("id", fieldName);
+                    .addAttribute("id", fieldName);
         });
     }
 
     private String getElementInputByType(String fieldType) {
         return switch (fieldType) {
-            case "String" -> "inputText";
-            case "Integer", "Long" -> "inputNumber";
-            case "LocalDate" -> "datePicker";
-            default -> "inputText";
+            case "String" ->
+                "inputText";
+            case "Integer", "Long" ->
+                "inputNumber";
+            case "LocalDate" ->
+                "datePicker";
+            default ->
+                "inputText";
         };
     }
 
     private static class PrimeFacesUtilHolder {
+
         private static final PrimeFacesHelper INSTANCE = new PrimeFacesHelper();
     }
 }

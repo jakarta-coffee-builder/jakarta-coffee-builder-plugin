@@ -55,6 +55,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
  * </p>
  */
 public class WebXmlUtil {
+    
+    private static final String WEB_APP_EXP_SEARCH = "//*[local-name()='web-app']";
 
     private WebXmlUtil() {
     }
@@ -119,14 +121,14 @@ public class WebXmlUtil {
         var xmlUtil = XmlUtil.getInstance();
 
         var nodeList = xmlUtil.findElements(document,
-            "//servlet-class[text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
+            "//*[local-name()='servlet-class' and text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
         if (nodeList == 0) {
-            xmlUtil.addElement(document, log, "//web-app", "servlet", servlet -> {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet", servlet -> {
                 xmlUtil.addElement(servlet, "description", description);
                 xmlUtil.addElement(servlet, "servlet-name", servletName);
                 xmlUtil.addElement(servlet, "servlet-class", JAKARTA_FACES_WEBAPP_FACES_SERVLET);
             });
-            xmlUtil.addElement(document, log, "//web-app", "servlet-mapping", servlet -> {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet-mapping", servlet -> {
                 xmlUtil.addElement(servlet, "servlet-name", servletName);
                 xmlUtil.addElement(servlet, "url-pattern", urlPattern);
             });
@@ -154,9 +156,9 @@ public class WebXmlUtil {
      */
     public void addWelcomePages(Document document, String welcomeFile, Log log) {
         var xmlUtil = XmlUtil.getInstance();
-        var nodeList = xmlUtil.findElements(document, "//welcome-file").count();
+        var nodeList = xmlUtil.findElements(document, "//*[local-name()='welcome-file']").count();
         if (nodeList == 0) {
-            xmlUtil.addElement(document, log, "//web-app", "welcome-file-list",
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "welcome-file-list",
                 (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
         }
     }
