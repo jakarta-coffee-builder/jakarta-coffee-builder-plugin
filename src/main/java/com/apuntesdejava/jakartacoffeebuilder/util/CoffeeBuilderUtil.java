@@ -17,11 +17,13 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
 
 /**
@@ -114,7 +116,7 @@ public class CoffeeBuilderUtil {
      * Retrieves the dialect from the project configuration.
      *
      * @param url@return an Optional containing the dialect string if present
-     * @return 
+     * @return  an Optional containing the dialect string if present
      * @throws IOException if an error occurs while reading the configuration
      */
     public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
@@ -122,5 +124,24 @@ public class CoffeeBuilderUtil {
         return getDialectConfiguration().map(
             dialectConfiguration -> dialectConfiguration.getJsonObject(dialectKey));
 
+    }
+
+    /**
+     * Retrieves the field marked as the identifier (ID) from the entity definition.
+     *
+     * @param entity the JSON object representing the entity
+     * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
+     */
+    public static Optional<JsonObject> getFieldId(JsonObject entity) {
+        return entity.getJsonObject("fields")
+                .values().stream()
+                .map(JsonValue::asJsonObject)
+                .filter(val -> val.containsKey("isId")
+                        && val.get("isId").getValueType() == JsonValue.ValueType.TRUE)
+                .findFirst();
+    }
+
+    public static String getFieldIdClass(JsonObject entity, String defaultValue){
+        return getFieldId(entity).map(f->f.getString(TYPE)).orElse(defaultValue);
     }
 }

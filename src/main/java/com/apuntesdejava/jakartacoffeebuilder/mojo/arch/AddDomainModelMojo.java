@@ -31,22 +31,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Mojo(
-    name = "add-domain-model"
+        name = "add-domain-model"
 )
 public class AddDomainModelMojo extends AbstractMojo {
 
     @Parameter(
-        required = true,
-        property = "entities-file"
+            required = true,
+            property = "entities-file"
     )
     private File entitiesFile;
 
     @Parameter(
-        defaultValue = "${project}",
-        readonly = true
+            defaultValue = "${project}",
+            readonly = true
     )
     private MavenProject mavenProject;
-
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -57,10 +56,10 @@ public class AddDomainModelMojo extends AbstractMojo {
             architectureHelper.checkDependency(mavenProject, log);
 
             var jsonContent = JsonUtil.readJsonValue(formsPath).asJsonObject();
-            var entitiesName = jsonContent.keySet();
 
-            architectureHelper.createDtos(mavenProject, log,jsonContent);
-            architectureHelper.createMappers(mavenProject, log,jsonContent);
+            architectureHelper.createDtos(mavenProject, log, jsonContent);
+            architectureHelper.createMappers(mavenProject, log, jsonContent);
+            architectureHelper.createServices(mavenProject, log, jsonContent);
 
             PomUtil.saveMavenProject(mavenProject, log);
         } catch (IOException e) {

@@ -88,6 +88,10 @@ public class MavenProjectUtil {
     public static String getMapperPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "mapper");
     }
+    
+    public static String getServicePackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "service");
+    }
 
     public static String getEnumsPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "enums");

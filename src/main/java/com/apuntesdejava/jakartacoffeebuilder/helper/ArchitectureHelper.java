@@ -15,23 +15,17 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
-import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.*;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 
@@ -52,41 +46,41 @@ public class ArchitectureHelper {
             PomUtil.addDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT, "${org.mapstruct.version}");
 
             CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
-                             .ifPresent(
-                                 mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
-                                     ORG_APACHE_MAVEN_PLUGINS,
-                                     MAVEN_COMPILER_PLUGIN,
-                                     mavenCompilerPlugin.getString("version"),
-                                     Json.createObjectBuilder()
-                                         .add("annotationProcessorPaths",
-                                             Json.createObjectBuilder()
-                                                 .add("path",
-                                                     Json.createArrayBuilder()
-                                                         .add(
-                                                             Json.createObjectBuilder()
-                                                                 .add(GROUP_ID, ORG_MAPSTRUCT)
-                                                                 .add(ARTIFACT_ID, "mapstruct-processor")
-                                                                 .add("version", "${org.mapstruct.version}")
-                                                         )
-                                                 )
-                                         )
-                                         .build()));
+                    .ifPresent(
+                            mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
+                                    ORG_APACHE_MAVEN_PLUGINS,
+                                    MAVEN_COMPILER_PLUGIN,
+                                    mavenCompilerPlugin.getString("version"),
+                                    Json.createObjectBuilder()
+                                            .add("annotationProcessorPaths",
+                                                    Json.createObjectBuilder()
+                                                            .add("path",
+                                                                    Json.createArrayBuilder()
+                                                                            .add(
+                                                                                    Json.createObjectBuilder()
+                                                                                            .add(GROUP_ID, ORG_MAPSTRUCT)
+                                                                                            .add(ARTIFACT_ID, "mapstruct-processor")
+                                                                                            .add("version", "${org.mapstruct.version}")
+                                                                            )
+                                                            )
+                                            )
+                                            .build()));
         }
     }
 
     public void createDtos(MavenProject mavenProject,
-                           Log log,
-                           JsonObject jsonContent) throws IOException {
+            Log log,
+            JsonObject jsonContent) throws IOException {
 
         jsonContent.forEach(
-            (entityName, entityDefinition) -> createDto(mavenProject, log, entityName, entityDefinition.asJsonObject()
-            ));
+                (entityName, entityDefinition) -> createDto(mavenProject, log, entityName, entityDefinition.asJsonObject()
+                ));
     }
 
     private void createDto(MavenProject mavenProject,
-                           Log log,
-                           String modelName,
-                           JsonObject modelDefinition) {
+            Log log,
+            String modelName,
+            JsonObject modelDefinition) {
         try {
             var packageDefinition = MavenProjectUtil.getModelPackage(mavenProject);
             log.debug("Model:" + modelName);
@@ -94,25 +88,25 @@ public class ArchitectureHelper {
             var classDefinitionHelper = ClassDefinitionHelper.getInstance();
             var fieldsJson = modelDefinition.getJsonObject(FIELDS);
             var fields = classDefinitionHelper.createFieldsDefinitions(fieldsJson,
-                (fieldName, field, annotations) -> {
-                    var type = field.getString(TYPE);
-                    if (field.getBoolean("list", false)) {
+                    (fieldName, field, annotations) -> {
+                        var type = field.getString(TYPE);
+                        if (field.getBoolean("list", false)) {
 
-                    }
-                    if (Strings.CS.equals(type, "enum")) {
+                        }
+                        if (Strings.CS.equals(type, "enum")) {
 
-                    }
+                        }
 
-                    return type;
-                });
+                        return type;
+                    });
             log.debug("fields:" + fields);
             Collection<String> importsList = new LinkedHashSet<>(
-                classDefinitionHelper.importsFromFieldsClassesType(fieldsJson));
+                    classDefinitionHelper.importsFromFieldsClassesType(fieldsJson));
             Map<String, Object> fieldsMap = Map.ofEntries(
-                Map.entry(PACKAGE_NAME, packageDefinition),
-                Map.entry(CLASS_NAME, modelName),
-                Map.entry(IMPORTS_LIST, importsList),
-                Map.entry(FIELDS, fields)
+                    Map.entry(PACKAGE_NAME, packageDefinition),
+                    Map.entry(CLASS_NAME, modelName),
+                    Map.entry(IMPORTS_LIST, importsList),
+                    Map.entry(FIELDS, fields)
             );
 
             TemplateUtil.getInstance().createPojoFile(log, fieldsMap, modelPath);
@@ -124,14 +118,14 @@ public class ArchitectureHelper {
     }
 
     public void createMappers(MavenProject mavenProject,
-                              Log log,
-                              JsonObject jsonContent) throws IOException {
+            Log log,
+            JsonObject jsonContent) throws IOException {
         jsonContent.forEach((entityName, entityDefinition) -> createMapper(mavenProject, log, entityName));
     }
 
     private void createMapper(MavenProject mavenProject,
-                              Log log,
-                              String modelName) {
+            Log log,
+            String modelName) {
         try {
             var mapperName = modelName + "Mapper";
             var packageDefinition = MavenProjectUtil.getMapperPackage(mavenProject);
@@ -139,20 +133,55 @@ public class ArchitectureHelper {
             var mapperPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, mapperName);
 
             Collection<String> importsList = List.of(
-                MavenProjectUtil.getEntityPackage(mavenProject) + "." + modelName + "Entity",
-                MavenProjectUtil.getModelPackage(mavenProject) + "." + modelName
+                    MavenProjectUtil.getEntityPackage(mavenProject) + "." + modelName + "Entity",
+                    MavenProjectUtil.getModelPackage(mavenProject) + "." + modelName
             );
             Map<String, Object> fieldsMap = Map.ofEntries(
-                Map.entry(PACKAGE_NAME, packageDefinition),
-                Map.entry(CLASS_NAME, mapperName),
-                Map.entry(IMPORTS_LIST, importsList),
-                Map.entry("modelName", modelName)
+                    Map.entry(PACKAGE_NAME, packageDefinition),
+                    Map.entry(CLASS_NAME, mapperName),
+                    Map.entry(IMPORTS_LIST, importsList),
+                    Map.entry("modelName", modelName)
             );
 
             TemplateUtil.getInstance().createMapperFile(log, fieldsMap, mapperPath);
 
         } catch (IOException ex) {
             log.error("Error creating Mapper " + modelName, ex);
+        }
+    }
+
+    public void createServices(MavenProject mavenProject, Log log, JsonObject jsonContent) {
+        jsonContent.forEach((entityName, entityDefinition) -> createService(mavenProject, log, entityName, entityDefinition));
+
+    }
+
+    private void createService(MavenProject mavenProject, Log log, String modelName, JsonValue entityDefinitionValue) {
+        try {
+            var serviceName = modelName + "Service";
+            var packageDefinition = MavenProjectUtil.getServicePackage(mavenProject);
+            var servicePath = PathsUtil.getJavaPath(mavenProject, packageDefinition, serviceName);
+            var entityDefinition = entityDefinitionValue.asJsonObject();
+
+            Collection<String> importsList = new ArrayList<>(
+                    ClassDefinitionHelper.getInstance().importsFromFieldsClassesType(entityDefinition.getJsonObject(FIELDS))
+            );
+
+            importsList.addAll(List.of(
+                    MavenProjectUtil.getMapperPackage(mavenProject) + "." + modelName + "Mapper",
+                    MavenProjectUtil.getModelPackage(mavenProject) + "." + modelName,
+                    MavenProjectUtil.getRepositoryPackage(mavenProject) + "." + modelName + "EntityRepository"
+            ));
+            String idClass = CoffeeBuilderUtil.getFieldIdClass(entityDefinition, "Long");
+
+            var fieldsMap = Map.ofEntries(
+                    Map.entry(PACKAGE_NAME, packageDefinition),
+                    Map.entry("idClass", idClass),
+                    Map.entry(IMPORTS_LIST, importsList),
+                    Map.entry("modelName", modelName)
+            );
+            TemplateUtil.getInstance().createServiceFile(log, fieldsMap, servicePath);
+        } catch (IOException ex) {
+            log.error("Error creating Service " + modelName, ex);
         }
     }
 

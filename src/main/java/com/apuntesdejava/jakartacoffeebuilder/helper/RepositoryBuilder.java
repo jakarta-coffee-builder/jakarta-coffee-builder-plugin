@@ -17,12 +17,10 @@ package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.jakarta11.Jakarta11RepositoryBuilderImpl;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonValue;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * Interface for building repository classes.
@@ -44,20 +42,6 @@ public interface RepositoryBuilder {
         return new Jakarta11RepositoryBuilderImpl();
     }
 
-    /**
-     * Retrieves the field marked as the identifier (ID) from the entity definition.
-     *
-     * @param entity the JSON object representing the entity
-     * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
-     */
-    default Optional<JsonObject> getFieldId(JsonObject entity) {
-        return entity.getJsonObject("fields")
-                     .values().stream()
-                     .map(JsonValue::asJsonObject)
-                     .filter(val -> val.containsKey("isId")
-                         && val.get("isId").getValueType() == JsonValue.ValueType.TRUE)
-                     .findFirst();
-    }
 
     /**
      * Builds the repository class for the specified entity.
