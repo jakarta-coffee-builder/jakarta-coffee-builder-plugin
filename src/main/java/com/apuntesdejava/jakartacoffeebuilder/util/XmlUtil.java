@@ -343,6 +343,7 @@ public class XmlUtil {
      * @param xmlPath  the path to save the transformed XML document
      */
     public void saveDocument(Document document, Log log, Path xmlPath) {
+        if (document==null)return;
         var format = OutputFormat.createPrettyPrint();
         format.setIndentSize(4);
         format.setSuppressDeclaration(false);
