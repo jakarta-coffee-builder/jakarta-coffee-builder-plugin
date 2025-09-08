@@ -127,6 +127,10 @@ public class TemplateUtil {
     public void createFacesCrudFile(Log log, Map<String, Object> fieldsMap, Path xhtmlPath) throws IOException {
         createJavaFile(log, fieldsMap, xhtmlPath, "xhtml/crud_prime.ftl");
     }
+    
+    public void createManagedBeanCrudFile(Log log, Map<String, Object> fieldsMap, Path javaPath) throws IOException {
+        createJavaFile(log, fieldsMap, javaPath, "java/ManagedBeanCrud.ftl");
+    }
 
     private static class TemplateUtilHolder {
 

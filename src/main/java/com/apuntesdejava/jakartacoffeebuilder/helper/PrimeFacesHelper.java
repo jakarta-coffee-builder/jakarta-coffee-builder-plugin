@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import java.util.List;
 
 public class PrimeFacesHelper extends JakartaFacesHelper {
 
@@ -49,19 +50,18 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
     }
 
     public void addFormsFromEntities(MavenProject mavenProject,
-                                     Log log,
-                                     Path formsPath,
-                                     Path entitiesPth) throws IOException {
+            Log log,
+            Path formsPath,
+            Path entitiesPth) throws IOException {
         var formsJson = JsonUtil.readJsonValue(formsPath).asJsonObject();
         var entitiesJson = JsonUtil.readJsonValue(entitiesPth).asJsonObject();
         var webAppPath = PathsUtil.getWebappPath(mavenProject);
         var jakartaEeHelper = JakartaEeHelper.getInstance();
 
-
         formsJson.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().getValueType() == JsonValue.ValueType.OBJECT
-                        && entry.getValue().asJsonObject().containsKey("entity")
+                && entry.getValue().asJsonObject().containsKey("entity")
                 )
                 .forEach(entry -> {
                     var formName = entry.getKey();
@@ -73,12 +73,31 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
                         var entityName = formDescription.getString("entity");
                         var entityDescription = entitiesJson.getJsonObject(entityName);
                         jakartaEeHelper.createDomain(mavenProject, entityName, entityDescription);
-                        createManagedBean(mavenProject, log, pageName);
+                        createManagedBean(mavenProject, log, pageName, entityName);
                         createForm(log, webAppPath, formName, pageName, formDescription, entityDescription);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 });
+    }
+
+    public void createManagedBean(MavenProject mavenProject, Log log, String pageName, String entityName) throws IOException {
+        var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject);
+        var className = StringsUtil.toPascalCase(pageName) + "Bean";
+        var managedBeanPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
+        List<String> importsList = List.of(
+                "%s.%sService".formatted(MavenProjectUtil.getServicePackage(mavenProject), entityName),
+                "%s.%s".formatted(MavenProjectUtil.getModelPackage(mavenProject), entityName)
+        );
+        Map<String, Object> fieldsMap = Map.ofEntries(
+                Map.entry(PACKAGE_NAME, packageDefinition),
+                Map.entry("modelName", entityName),
+                Map.entry("className", className),
+                Map.entry("instanceModelName", StringUtils.uncapitalize(entityName)),
+                Map.entry("importsList", importsList)
+        );
+
+        TemplateUtil.getInstance().createManagedBeanCrudFile(log, fieldsMap, managedBeanPath);
     }
 
     private void createMessagesBundle(MavenProject mavenProject, Log log, JsonObject formsJson) {
@@ -92,8 +111,8 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
             Properties properties = new Properties();
             if (Files.exists(messageProperties))
                 try (FileReader reader = new FileReader(messageProperties.toFile())) {
-                    properties.load(reader);
-                }
+                properties.load(reader);
+            }
             bundleMessages.forEach(properties::setProperty);
             log.debug("Saving messages bundle");
             try (FileWriter writer = new FileWriter(messageProperties.toFile())) {
@@ -105,10 +124,10 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
     }
 
     private void createForm(Log log,
-                            Path webAppPath,
-                            String formName,
-                            String pageName, JsonObject formDescription,
-                            JsonObject entity) throws IOException {
+            Path webAppPath,
+            String formName,
+            String pageName, JsonObject formDescription,
+            JsonObject entity) throws IOException {
 
         var pagePath = webAppPath.resolve(pageName + ".xhtml");
         var title = formDescription.getString("title", formName);
@@ -123,15 +142,15 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
     }
 
     private Document createFacePage(Log log,
-                                    Path xhtml,
-                                    JsonObject entityDefinition, String formIdName) {
+            Path xhtml,
+            JsonObject entityDefinition, String formIdName) {
         return createFacePage(log, xhtml, (bodyElement) -> createForm(log, bodyElement, entityDefinition, formIdName));
     }
 
     private Document createFacePageWithTemplate(Log log,
-                                                Path xhtml,
-                                                JsonObject templateDesc,
-                                                JsonObject entityDefinition, String entityName, String title) throws IOException {
+            Path xhtml,
+            JsonObject templateDesc,
+            JsonObject entityDefinition, String entityName, String title) throws IOException {
         String templateFacelet = templateDesc.getString("facelet");
         String define = templateDesc.getString("define");
         var fields = entityDefinition.getJsonObject(FIELDS).keySet();
@@ -174,10 +193,14 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
 
     private String getElementInputByType(String fieldType) {
         return switch (fieldType) {
-            case "String" -> "inputText";
-            case "Integer", "Long" -> "inputNumber";
-            case "LocalDate" -> "datePicker";
-            default -> "inputText";
+            case "String" ->
+                "inputText";
+            case "Integer", "Long" ->
+                "inputNumber";
+            case "LocalDate" ->
+                "datePicker";
+            default ->
+                "inputText";
         };
     }
 

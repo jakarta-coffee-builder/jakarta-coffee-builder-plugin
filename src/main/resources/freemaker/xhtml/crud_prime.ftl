@@ -2,7 +2,7 @@
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:ui="jakarta.faces.facelets"
-                template="#{template_name}"
+                template="${template_name}"
                 xmlns:h="jakarta.faces.html"
                 xmlns:p="primefaces"
                 xmlns:f="jakarta.faces.core">
@@ -11,10 +11,13 @@
     <ui:define name="${define}">
         <p:card>
             <h:form id="${variableBean}Form">
-                <p:dataTable var="${variableBean}" value="#{${variableBean}ListBean.${variableBean}sList}">
+                <#assign dataTableValue="{${variableBean}ListBean.${variableBean}sList}"/>
+                <p:dataTable var="${variableBean}" value="#${dataTableValue}">
                     <#list fields as field>
-                    <p:column headerText="#{bundle.Project_${field}}" >
-                        #{${variableBean}.${field}}
+                        <#assign headerText="{bundle.Project_${field}}"/>
+                        <#assign columnValue="{${variableBean}.${field}}" />
+                    <p:column headerText="#${headerText}" >
+                        #${columnValue}
                     </p:column>
                     </#list>
 
