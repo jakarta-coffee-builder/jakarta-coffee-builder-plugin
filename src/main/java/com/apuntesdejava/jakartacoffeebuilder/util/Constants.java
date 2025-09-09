@@ -288,6 +288,8 @@ public class Constants {
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
         "ElementCollection");
 
+    public static final String MODEL_NAME = "modelName";
+
     private Constants() {
     }
 }

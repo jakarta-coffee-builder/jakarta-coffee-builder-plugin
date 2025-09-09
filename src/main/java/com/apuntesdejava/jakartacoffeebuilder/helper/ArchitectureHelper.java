@@ -140,7 +140,7 @@ public class ArchitectureHelper {
                     Map.entry(PACKAGE_NAME, packageDefinition),
                     Map.entry(CLASS_NAME, mapperName),
                     Map.entry(IMPORTS_LIST, importsList),
-                    Map.entry("modelName", modelName)
+                    Map.entry(MODEL_NAME, modelName)
             );
 
             TemplateUtil.getInstance().createMapperFile(log, fieldsMap, mapperPath);
@@ -177,7 +177,7 @@ public class ArchitectureHelper {
                     Map.entry(PACKAGE_NAME, packageDefinition),
                     Map.entry("idClass", idClass),
                     Map.entry(IMPORTS_LIST, importsList),
-                    Map.entry("modelName", modelName)
+                    Map.entry(MODEL_NAME, modelName)
             );
             TemplateUtil.getInstance().createServiceFile(log, fieldsMap, servicePath);
         } catch (IOException ex) {

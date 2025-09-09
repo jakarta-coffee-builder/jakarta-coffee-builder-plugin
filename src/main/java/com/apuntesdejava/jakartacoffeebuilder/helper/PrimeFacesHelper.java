@@ -91,8 +91,8 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         );
         Map<String, Object> fieldsMap = Map.ofEntries(
                 Map.entry(PACKAGE_NAME, packageDefinition),
-                Map.entry("modelName", entityName),
-                Map.entry("className", className),
+                Map.entry(MODEL_NAME, entityName),
+                Map.entry(CLASS_NAME, className),
                 Map.entry("instanceModelName", StringUtils.uncapitalize(entityName)),
                 Map.entry("importsList", importsList)
         );
@@ -158,6 +158,7 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
                 "define", define,
                 "template_name", templateFacelet,
                 "variableBean", StringUtils.uncapitalize(entityName),
+                CLASS_NAME, entityName,
                 "fields", fields,
                 "title", title
         );

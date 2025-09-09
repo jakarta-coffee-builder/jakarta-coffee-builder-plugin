@@ -32,4 +32,10 @@ public class ${className} {
         return ${instanceModelName}Service.findAll();
     }
 
+    public void openNew(){
+        this.current${modelName} = new ${modelName}();
+    }
+
+    public void save${modelName}(){
+    }
 }
