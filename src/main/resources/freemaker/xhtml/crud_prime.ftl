@@ -123,7 +123,7 @@
                          <#assign saveButtonActionListener="{${variableBean}ListBean.save${className}}" />
                         <p:commandButton value="#${saveCommandButtonValue}" 
                                          icon="pi pi-check"
-                                         actionListener="#@{saveButtonActionListener=}"
+                                         actionListener="#${saveButtonActionListener}"
                                          update="manage-${variableBean}-content"
                                          process="manage-${variableBean}-content @this" />
                         <p:commandButton value="#${cancelCommandButtonValue}" 
