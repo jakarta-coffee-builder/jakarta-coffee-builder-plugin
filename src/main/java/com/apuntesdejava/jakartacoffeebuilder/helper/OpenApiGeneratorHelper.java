@@ -40,18 +40,18 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
 /**
  * Helper class for processing OpenAPI specifications and generating server-side code.
  * <p>
- * This class provides utility methods to integrate the OpenAPI Generator with Maven projects,
- * enabling the generation of server-side code based on OpenAPI specifications.
+ * This class provides utility methods to integrate the OpenAPI Generator with Maven projects, enabling the generation
+ * of server-side code based on OpenAPI specifications.
  * </p>
  * <p>
  * The generated code is configured to use the Helidon server framework with Jakarta EE and JSON-B serialization.
  * </p>
- *
+ * <p>
  * <p>
  * Usage:
  * <ul>
- *   <li>Obtain an instance of this helper using {@link #getInstance()}.</li>
- *   <li>Call {@link #processServer(MavenProject, File, Log)} to process an OpenAPI file.</li>
+ * <li>Obtain an instance of this helper using {@link #getInstance()}.</li>
+ * <li>Call {@link #processServer(MavenProject, File, Log)} to process an OpenAPI file.</li>
  * </ul>
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
@@ -83,15 +83,17 @@ public class OpenApiGeneratorHelper {
     /**
      * Processes the OpenAPI file to generate server-side code using the OpenAPI Generator Maven plugin.
      * <p>
-     * This method uses the OpenAPI Generator to create server-side code for a Maven project.
-     * The generated code includes models and APIs, and it is configured to use the Helidon server framework.
+     * This method uses the OpenAPI Generator to create server-side code for a Maven project. The generated code
+     * includes models and APIs, and it is configured to use the Helidon server framework.
      * </p>
      *
      * @param mavenProject the Maven project containing the POM file.
      * @param openApiFile  the OpenAPI specification file to be processed.
      * @param log          the logger to use for logging messages.
-     * @throws URISyntaxException if there is an error with the URI syntax.
-     * @throws IOException        if an I/O error occurs during processing.
+     *
+     * @throws URISyntaxException                             if there is an error with the URI syntax.
+     * @throws IOException                                    if an I/O error occurs during processing.
+     * @throws org.apache.maven.plugin.MojoExecutionException if an error occurs during the plugin execution.
      * @see <a href="https://github.com/OpenAPITools/openapi-generator/blob/master/docs/generators/jaxrs-spec.md" >
      * Documentation for the jaxrs-spec Generator</a>
      */
@@ -99,8 +101,9 @@ public class OpenApiGeneratorHelper {
                               File openApiFile,
                               Log log) throws URISyntaxException, IOException, MojoExecutionException {
 
-        if (!Files.exists(openApiFile.toPath()))
+        if (!Files.exists(openApiFile.toPath())) {
             throw new FileNotFoundException("File not found:" + openApiFile);
+        }
         Path openApiPath = copyToProjectPath(mavenProject.getBasedir(), openApiFile);
         var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
         var ignoreFilePath = createIgnoreFilePath(mavenProject.getBasedir());
@@ -109,37 +112,36 @@ public class OpenApiGeneratorHelper {
             .getOpenApiGeneratorConfiguration()
             .map(config -> {
                 var configOptionsBuilder = Json.createObjectBuilder(config.getJsonObject("configOptions"))
-                                               .add("modelPackage", apiResourcesPackage + ".model")
-                                               .add("invokerPackage", apiResourcesPackage + ".invoker")
-                                               .add("apiPackage", apiResourcesPackage);
+                    .add("modelPackage", apiResourcesPackage + ".model")
+                    .add("invokerPackage", apiResourcesPackage + ".invoker")
+                    .add("apiPackage", apiResourcesPackage);
                 return Json.createObjectBuilder()
-                           .add("generatorName", config.getString("generatorName"))
-                           .add("inputSpec", openApiPath.getFileName().toString())
-                           .add("configOptions", configOptionsBuilder)
-                           .build();
+                    .add("generatorName", config.getString("generatorName"))
+                    .add("inputSpec", openApiPath.getFileName().toString())
+                    .add("configOptions", configOptionsBuilder)
+                    .build();
             }).ifPresent(configuration -> {
-                try {
-                    var executions = Json
-                        .createArrayBuilder()
-                        .add(Json.createObjectBuilder()
-                                 .add(GOALS,
-                                     Json.createArrayBuilder()
-                                         .add(
-                                             Json.createObjectBuilder()
-                                                 .add(GOAL, "generate")
-                                         )
-                                 ).add(CONFIGURATION, configuration))
-                        .build();
-                    PomUtil.findLatestPluginVersion("org.openapitools", "openapi-generator-maven-plugin")
-                           .ifPresent(version ->
-                               PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.openapitools",
-                                   "openapi-generator-maven-plugin", version, null, executions)
-                           );
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
+            try {
+                var executions = Json
+                    .createArrayBuilder()
+                    .add(Json.createObjectBuilder()
+                        .add(GOALS,
+                             Json.createArrayBuilder()
+                                 .add(
+                                     Json.createObjectBuilder()
+                                         .add(GOAL, "generate")
+                                 )
+                        ).add(CONFIGURATION, configuration))
+                    .build();
+                PomUtil.findLatestPluginVersion("org.openapitools", "openapi-generator-maven-plugin")
+                    .ifPresent(version
+                        -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.openapitools",
+                                             "openapi-generator-maven-plugin", version, null, executions)
+                    );
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
     }
 

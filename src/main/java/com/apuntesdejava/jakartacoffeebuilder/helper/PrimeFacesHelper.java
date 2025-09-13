@@ -50,84 +50,104 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
     }
 
     public void addFormsFromEntities(MavenProject mavenProject,
-            Log log,
-            Path formsPath,
-            Path entitiesPth) throws IOException {
+                                     Log log,
+                                     Path formsPath,
+                                     Path entitiesPth) throws IOException {
         var formsJson = JsonUtil.readJsonValue(formsPath).asJsonObject();
         var entitiesJson = JsonUtil.readJsonValue(entitiesPth).asJsonObject();
         var webAppPath = PathsUtil.getWebappPath(mavenProject);
         var jakartaEeHelper = JakartaEeHelper.getInstance();
 
+        var properties = getMessagesBundle(mavenProject);
+
         formsJson.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().getValueType() == JsonValue.ValueType.OBJECT
-                && entry.getValue().asJsonObject().containsKey("entity")
-                )
-                .forEach(entry -> {
-                    var formName = entry.getKey();
-                    var formDescription = entry.getValue().asJsonObject();
-                    createMessagesBundle(mavenProject, log, formDescription);
-                    try {
-                        var base = formDescription.getString("base", "/");
-                        var pageName = StringsUtil.removeCharacterRoot(base + formName);
-                        var entityName = formDescription.getString("entity");
-                        var entityDescription = entitiesJson.getJsonObject(entityName);
-                        jakartaEeHelper.createDomain(mavenProject, entityName, entityDescription);
-                        createManagedBean(mavenProject, log, pageName, entityName);
-                        createForm(log, webAppPath, formName, pageName, formDescription, entityDescription);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            .stream()
+            .filter(entry -> entry.getValue().getValueType() == JsonValue.ValueType.OBJECT
+            && entry.getValue().asJsonObject().containsKey("entity")
+            )
+            .forEach(entry -> createFormFromEntity(mavenProject, log, entry, properties, entitiesJson, jakartaEeHelper, webAppPath));
+
+        saveMessagesBundle(mavenProject, log, properties);
+
     }
 
-    public void createManagedBean(MavenProject mavenProject, Log log, String pageName, String entityName) throws IOException {
+    private void createFormFromEntity(MavenProject mavenProject, Log log, Map.Entry<String, JsonValue> entry,
+                                      Properties properties, JsonObject entitiesJson, JakartaEeHelper jakartaEeHelper,
+                                      Path webAppPath) {
+        var formName = entry.getKey();
+        var formDescription = entry.getValue().asJsonObject();
+        createMessagesBundle(log, formDescription, properties);
+        try {
+            var base = formDescription.getString("base", "/");
+            var pageName = StringsUtil.removeCharacterRoot(base + formName);
+            var entityName = formDescription.getString("entity");
+            var entityDescription = entitiesJson.getJsonObject(entityName);
+            jakartaEeHelper.createDomain(mavenProject, entityName, entityDescription);
+            createManagedBean(mavenProject, log, pageName, entityName);
+            createForm(log, webAppPath, formName, pageName, formDescription, entityDescription);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void saveMessagesBundle(MavenProject mavenProject, Log log, Properties properties) throws IOException {
+        log.debug("Saving messages bundle");
+        var messagesBundlePath = PathsUtil.getResourcePath(mavenProject).resolve("messages.properties");
+        try (FileWriter writer = new FileWriter(messagesBundlePath.toFile())) {
+            properties.store(writer, null);
+        }
+    }
+
+    private Properties getMessagesBundle(MavenProject mavenProject) throws IOException {
+        var messagesBundlePath = PathsUtil.getResourcePath(mavenProject).resolve("messages.properties");
+        Properties properties = new Properties();
+        if (Files.exists(messagesBundlePath))
+            try (FileReader reader = new FileReader(messagesBundlePath.toFile())) {
+            properties.load(reader);
+        }
+        properties.putIfAbsent("app_save", "Save");
+        properties.putIfAbsent("app_cancel", "Cancel");
+        properties.putIfAbsent("app_new", "New");
+        return properties;
+    }
+
+    public void createManagedBean(MavenProject mavenProject, Log log, String pageName, String entityName) throws
+        IOException {
         var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject);
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
         var managedBeanPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         List<String> importsList = List.of(
-                "%s.%sService".formatted(MavenProjectUtil.getServicePackage(mavenProject), entityName),
-                "%s.%s".formatted(MavenProjectUtil.getModelPackage(mavenProject), entityName)
+            "%s.%sService".formatted(MavenProjectUtil.getServicePackage(mavenProject), entityName),
+            "%s.%s".formatted(MavenProjectUtil.getModelPackage(mavenProject), entityName)
         );
         Map<String, Object> fieldsMap = Map.ofEntries(
-                Map.entry(PACKAGE_NAME, packageDefinition),
-                Map.entry(MODEL_NAME, entityName),
-                Map.entry(CLASS_NAME, className),
-                Map.entry("instanceModelName", StringUtils.uncapitalize(entityName)),
-                Map.entry("importsList", importsList)
+            Map.entry(PACKAGE_NAME, packageDefinition),
+            Map.entry(MODEL_NAME, entityName),
+            Map.entry(CLASS_NAME, className),
+            Map.entry("instanceModelName", StringUtils.uncapitalize(entityName)),
+            Map.entry("importsList", importsList)
         );
 
         TemplateUtil.getInstance().createManagedBeanCrudFile(log, fieldsMap, managedBeanPath);
     }
 
-    private void createMessagesBundle(MavenProject mavenProject, Log log, JsonObject formsJson) {
-        try {
-            var formEntityName = formsJson.getString("entity");
-            log.debug("Creating messages bundle for " + formEntityName);
-            var bundleMessages = formsJson.getJsonObject(FIELDS)
-                    .entrySet().stream().map(entry -> Map.entry(formEntityName + "_" + entry.getKey(), entry.getValue().asJsonObject().getString("label", entry.getKey())))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            var messageProperties = PathsUtil.getResourcePath(mavenProject).resolve("messages.properties");
-            Properties properties = new Properties();
-            if (Files.exists(messageProperties))
-                try (FileReader reader = new FileReader(messageProperties.toFile())) {
-                properties.load(reader);
-            }
-            bundleMessages.forEach(properties::setProperty);
-            log.debug("Saving messages bundle");
-            try (FileWriter writer = new FileWriter(messageProperties.toFile())) {
-                properties.store(writer, null);
-            }
-        } catch (IOException ex) {
-            log.error(ex.getMessage(), ex);
-        }
+    private void createMessagesBundle(Log log, JsonObject formsJson, Properties properties) {
+        var formEntityName = formsJson.getString("entity");
+        log.debug("Creating messages bundle for " + formEntityName);
+        var bundleMessages = formsJson.getJsonObject(FIELDS)
+            .entrySet().stream().map(entry -> Map.entry(formEntityName + "_" + entry.getKey(), entry.getValue()
+                                                        .asJsonObject().getString("label", entry.getKey())))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        bundleMessages.forEach(properties::setProperty);
+
     }
 
     private void createForm(Log log,
-            Path webAppPath,
-            String formName,
-            String pageName, JsonObject formDescription,
-            JsonObject entity) throws IOException {
+                            Path webAppPath,
+                            String formName,
+                            String pageName, JsonObject formDescription,
+                            JsonObject entity) throws IOException {
 
         var pagePath = webAppPath.resolve(pageName + ".xhtml");
         var title = formDescription.getString("title", formName);
@@ -136,31 +156,32 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         var formIdName = StringUtils.uncapitalize(entityName) + "Form";
 
         var pageXhtml = templateDesc == null
-                ? createFacePage(log, pagePath, entity, formIdName)
-                : createFacePageWithTemplate(log, pagePath, templateDesc, entity, entityName, title);
+            ? createFacePage(log, pagePath, entity, formIdName)
+            : createFacePageWithTemplate(log, pagePath, templateDesc, entity, entityName, title);
         XmlUtil.getInstance().saveDocument(pageXhtml, log, pagePath);
     }
 
     private Document createFacePage(Log log,
-            Path xhtml,
-            JsonObject entityDefinition, String formIdName) {
+                                    Path xhtml,
+                                    JsonObject entityDefinition, String formIdName) {
         return createFacePage(log, xhtml, (bodyElement) -> createForm(log, bodyElement, entityDefinition, formIdName));
     }
 
     private Document createFacePageWithTemplate(Log log,
-            Path xhtml,
-            JsonObject templateDesc,
-            JsonObject entityDefinition, String entityName, String title) throws IOException {
+                                                Path xhtml,
+                                                JsonObject templateDesc,
+                                                JsonObject entityDefinition, String entityName, String title)
+        throws IOException {
         String templateFacelet = templateDesc.getString("facelet");
         String define = templateDesc.getString("define");
         var fields = entityDefinition.getJsonObject(FIELDS).keySet();
         Map<String, Object> fieldsMap = Map.of(
-                "define", define,
-                "template_name", templateFacelet,
-                "variableBean", StringUtils.uncapitalize(entityName),
-                CLASS_NAME, entityName,
-                "fields", fields,
-                "title", title
+            "define", define,
+            "template_name", templateFacelet,
+            "variableBean", StringUtils.uncapitalize(entityName),
+            CLASS_NAME, entityName,
+            "fields", fields,
+            "title", title
         );
         TemplateUtil.getInstance().createFacesCrudFile(log, fieldsMap, xhtml);
 
@@ -171,24 +192,24 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         log.debug("creating content form in element:" + defineTag);
         var xmlUtil = XmlUtil.getInstance();
         var formElement = xmlUtil.addElement(defineTag, "form", FACES_NS_HTML_NAMESPACE)
-                .addAttribute("id", formIdName);
+            .addAttribute("id", formIdName);
         var cardElement = xmlUtil.addElement(formElement, "card", PRIMEFACES_NS_P_NAMESPACE);
         entityDefinition.getJsonObject(FIELDS).forEach((fieldName, fieldDef) -> {
             var fieldDefinition = fieldDef.asJsonObject();
 
             var panelGroupElement = xmlUtil.addElement(cardElement, "panelGroup", FACES_NS_HTML_NAMESPACE)
-                    .addAttribute("layout", "block")
-                    .addAttribute("styleClass", "field");
+                .addAttribute("layout", "block")
+                .addAttribute("styleClass", "field");
 
             var textLabel = fieldDefinition.getString("label", fieldName);
             var outputLabel = xmlUtil.addElement(panelGroupElement, "outputLabel", PRIMEFACES_NS_P_NAMESPACE)
-                    .addAttribute("for", fieldName)
-                    .addAttribute("value", textLabel);
+                .addAttribute("for", fieldName)
+                .addAttribute("value", textLabel);
 
             var elementInput = getElementInputByType(fieldDefinition.getString(TYPE));
 
             var inputText = xmlUtil.addElement(panelGroupElement, elementInput, PRIMEFACES_NS_P_NAMESPACE)
-                    .addAttribute("id", fieldName);
+                .addAttribute("id", fieldName);
         });
     }
 

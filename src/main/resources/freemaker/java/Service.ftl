@@ -40,4 +40,8 @@ public class ${modelName}Service {
         entityRepository.deleteById(id);
     }
 
+    @Transactional
+    public void deleteBy(${modelName} model){
+        entityRepository.delete(mapper.modelToEntity(model));
+    }
 }

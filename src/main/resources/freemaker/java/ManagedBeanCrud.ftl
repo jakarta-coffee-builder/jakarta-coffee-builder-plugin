@@ -6,10 +6,16 @@ import ${importItem};
     </#list>
 </#if>
 
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import org.primefaces.PrimeFaces;
+
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import java.util.List;
+import java.util.ArrayList;
 
 @Named
 @RequestScoped
@@ -19,6 +25,13 @@ public class ${className} {
     private ${modelName}Service ${instanceModelName}Service;
 
     private ${modelName} current${modelName};
+
+    private List<${modelName}> selected${modelName}s;
+
+    @PostConstruct
+    public void init() {
+        this.selected${modelName}s = new ArrayList<${modelName}>();
+    }
 
     public ${modelName} getCurrent${modelName}() {
         return current${modelName};
@@ -37,5 +50,33 @@ public class ${className} {
     }
 
     public void save${modelName}(){
+    }
+
+    public List<${modelName}> getSelected${modelName}s() {
+        return selected${modelName}s;
+    }
+
+    public void setSelected${modelName}s(List<${modelName}> selected${modelName}s) {
+        this.selected${modelName}s = selected${modelName}s;
+    }
+
+    public String getDeleteButtonMessage() {
+        if (hasSelected${modelName}s()) {
+            int size = this.selected${modelName}s.size();
+            return size > 1 ? size + " ${instanceModelName}s selected" : "1 ${instanceModelName} selected";
+        }
+        return "Delete";
+    }
+
+    public void delete${modelName}() {
+        ${instanceModelName}Service.delete(this.current${modelName});
+        this.selected${modelName}s.remove(this.current${modelName});
+        this.current${modelName} = null;
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName} Removed"));
+        PrimeFaces.current().ajax().update("form:messages", "form:dt-${instanceModelName}s");
+    }
+
+    public boolean hasSelected${modelName}s() {
+        return this.selected${modelName}s != null && !this.selected${modelName}s.isEmpty();
     }
 }
