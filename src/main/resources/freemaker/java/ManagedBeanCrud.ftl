@@ -5,7 +5,7 @@ package ${packageName};
 import ${importItem};
     </#list>
 </#if>
-
+<#assign formId="${instanceModelName}Form" />
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import org.primefaces.PrimeFaces;
@@ -30,7 +30,7 @@ public class ${className} {
 
     @PostConstruct
     public void init() {
-        this.selected${modelName}s = new ArrayList<${modelName}>();
+        this.selected${modelName}s = new ArrayList<>();
     }
 
     public ${modelName} getCurrent${modelName}() {
@@ -73,10 +73,18 @@ public class ${className} {
         this.selected${modelName}s.remove(this.current${modelName});
         this.current${modelName} = null;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName} Removed"));
-        PrimeFaces.current().ajax().update("form:messages", "form:dt-${instanceModelName}s");
+        PrimeFaces.current().ajax().update("${formId}:messages", "${formId}:dt-${instanceModelName}s");
     }
 
     public boolean hasSelected${modelName}s() {
         return this.selected${modelName}s != null && !this.selected${modelName}s.isEmpty();
+    }
+
+    public void deleteSelected${modelName}s() {
+        ${instanceModelName}Service.deleteAll(selected${modelName}s);
+        this.selected${modelName}s = null;
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName}s Removed"));
+        PrimeFaces.current().ajax().update("${formId}:messages", "${formId}:dt-${instanceModelName}s");
+        PrimeFaces.current().executeScript("PF('dt${modelName}s').clearFilters()");
     }
 }

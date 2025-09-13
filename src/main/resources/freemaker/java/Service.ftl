@@ -41,7 +41,12 @@ public class ${modelName}Service {
     }
 
     @Transactional
-    public void deleteBy(${modelName} model){
+    public void delete(${modelName} model){
         entityRepository.delete(mapper.modelToEntity(model));
+    }
+
+    @Transactional
+    public void deleteAll(List<${modelName}> models){
+        entityRepository.deleteAll(models.stream().map(mapper::modelToEntity).toList());
     }
 }

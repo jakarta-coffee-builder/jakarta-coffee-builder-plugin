@@ -14,8 +14,9 @@
         <#assign bundleYes="{bundle.yes}"/>
         <#assign bundleNo="{bundle.no}"/>
         <#assign bundleCancel="{bundle.cancel}"/>
+        <#assign formId="${variableBean}Form" />
         <p:card>
-            <h:form id="${variableBean}Form">
+            <h:form id="${formId}">
                 <p:toolbar>
                     <p:toolbarGroup>
                         <#assign actionListenerValue="{${variableBean}ListBean.openNew}"/>
@@ -32,20 +33,37 @@
 
                         <#assign deleteButtonMessage="{${variableBean}ListBean.deleteButtonMessage}" />
                         <#assign deleteSelectedListener="{${variableBean}ListBean.deleteSelected${className}s}" />
-                        <#assign buttonDisabled="{!${variableBean}ListBean.hasSelected${className}s}" />
+                        <#assign buttonDisabled="{!${variableBean}ListBean.hasSelected${className}s()}" />
                         <#assign deleteBeansMessage="{bundle.delete_confirm_${variableBean}s}" />
 
-                        <p:commandButton id="delete-${variableBean}s-button" value="#${deleteButtonMessage}"
-                                         icon="pi pi-trash" actionListener="#${deleteSelectedListener}"
-                                         styleClass="ui-button-danger" disabled="#${buttonDisabled}" update="@this">
-                            <p:confirm header="#${bundleConfirm}" message="#${deleteBeansMessage}"
+                        <p:commandButton id="delete-${variableBean}s-button" 
+                                         value="#${deleteButtonMessage}"
+                                         icon="pi pi-trash" 
+                                         actionListener="#${deleteSelectedListener}"
+                                         styleClass="ui-button-danger" 
+                                         disabled="#${buttonDisabled}" 
+                                         update="@this">
+                            <p:confirm header="#${bundleConfirm}" 
+                                       message="#${deleteBeansMessage}"
                                        icon="pi pi-exclamation-triangle" />
                         </p:commandButton>
                     </p:toolbarGroup>
                 </p:toolbar>
                 
                 <#assign dataTableValue="{${variableBean}ListBean.${variableBean}sList}"/>
-                <p:dataTable var="${variableBean}" value="#${dataTableValue}">
+                <#assign selectionValue="{${variableBean}ListBean.selected${className}s}"/>
+                <p:dataTable var="${variableBean}" 
+                             value="#${dataTableValue}" 
+                             selectionMode="multiple" 
+                             selection="#${selectionValue}">
+                    
+
+                    <p:ajax event="rowSelect" update=":${formId}:delete-${variableBean}s-button" />
+                    <p:ajax event="rowUnselect" update=":${formId}:delete-${variableBean}s-button" />
+                    <p:ajax event="rowSelectCheckbox" update=":${formId}:delete-${variableBean}s-button" />
+                    <p:ajax event="rowUnselectCheckbox" update=":${formId}:delete-${variableBean}s-button" />
+                    <p:ajax event="toggleSelect" update=":${formId}:delete-${variableBean}s-button" />                    
+                    
                     <#list fields as field>
                         <#assign headerText="{bundle.Project_${field}}"/>
                         <#assign columnValue="{${variableBean}.${field}}" />
@@ -56,16 +74,21 @@
                     
                     <p:column exportable="false" ariaHeaderText="Actions">
                         <#assign valueBean="{${variableBean}}"/>
-                        <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-${variableBean}-content"
+                        <p:commandButton icon="pi pi-pencil" 
+                                         update=":dialogs:manage-${variableBean}-content"
                                          oncomplete="PF('manage${className}Dialog').show()"
-                                         styleClass="edit-button rounded-button ui-button-success" process="@this">
-                            <f:setPropertyActionListener value="#${valueBean}" target="#${currentBean}" />
+                                         styleClass="edit-button rounded-button ui-button-success" 
+                                         process="@this">
+                            <f:setPropertyActionListener value="#${valueBean}" 
+                                                         target="#${currentBean}" />
                             <p:resetInput target=":dialogs:manage-${variableBean}-content" />
                         </p:commandButton>
-                        <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                        <p:commandButton class="ui-button-warning rounded-button" 
+                                         icon="pi pi-trash"
                                          process="@this"
                                          oncomplete="PF('delete${className}Dialog').show()">
-                            <f:setPropertyActionListener value="#${valueBean}" target="#${currentBean}" />
+                            <f:setPropertyActionListener value="#${valueBean}" 
+                                                         target="#${currentBean}" />
                         </p:commandButton>
                     </p:column>
 
@@ -79,7 +102,8 @@
                           modal="true" 
                           widgetVar="manage${className}Dialog"
                           responsive="true">
-                    <p:outputPanel id="manage-${variableBean}-content" class="ui-fluid">
+                    <p:outputPanel id="manage-${variableBean}-content" 
+                                   class="ui-fluid">
                         <#assign selectedValue = "{not empty ${variableBean}ListBean.current${className}}" />
                         <p:outputPanel rendered="#${selectedValue}">
                             <#list fields as field>
@@ -113,18 +137,35 @@
                 <#assign deleteBeanMessage="{bundle.delete_confirm_${variableBean}}" />
                 <#assign deleteMethod="{${variableBean}ListBean.delete${className}}" />
 
-                <p:confirmDialog widgetVar="delete${className}Dialog" showEffect="fade" width="300"
-                                 message="#${deleteBeanMessage}" header="#${bundleConfirm}" severity="warn">
-                    <p:commandButton value="#${bundleYes}" icon="pi pi-check" actionListener="#${deleteMethod}"
-                                     process="@this" update=":form:delete-${variableBean}-button"
+                <p:confirmDialog widgetVar="delete${className}Dialog" 
+                                 showEffect="fade" 
+                                 width="300"
+                                 message="#${deleteBeanMessage}" 
+                                 header="#${bundleConfirm}" 
+                                 severity="warn">
+                    <p:commandButton value="#${bundleYes}" 
+                                     icon="pi pi-check" 
+                                     actionListener="#${deleteMethod}"
+                                     process="@this" 
+                                     update=":${formId}:delete-${variableBean}s-button"
                                      oncomplete="PF('delete${className}Dialog').hide()" />
-                    <p:commandButton value="#${bundleNo}" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                    <p:commandButton value="#${bundleNo}" 
+                                     type="button" 
+                                     styleClass="ui-button-secondary" 
+                                     icon="pi pi-times"
                                      onclick="PF('delete${className}Dialog').hide()" />
                 </p:confirmDialog>
 
-                <p:confirmDialog global="true" showEffect="fade" width="300">
-                    <p:commandButton value="#${bundleYes}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
-                    <p:commandButton value="#${bundleNo}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                <p:confirmDialog global="true" 
+                                 showEffect="fade"
+                                 width="300">
+                    <p:commandButton value="#${bundleYes}" 
+                                     type="button" 
+                                     styleClass="ui-confirmdialog-yes" 
+                                     icon="pi pi-check" />
+                    <p:commandButton value="#${bundleNo}" 
+                                     type="button" 
+                                     styleClass="ui-confirmdialog-no ui-button-secondary"
                                      icon="pi pi-times" />
                 </p:confirmDialog>
             </h:form>
