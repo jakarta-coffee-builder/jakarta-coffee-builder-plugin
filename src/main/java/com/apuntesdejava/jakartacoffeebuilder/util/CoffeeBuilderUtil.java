@@ -21,8 +21,10 @@ import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IS_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
 
@@ -113,11 +115,11 @@ public class CoffeeBuilderUtil {
 
 
     /**
-     * Retrieves the dialect from the project configuration.
+     * Retrieves the JDBC configuration for the given database URL.
      *
-     * @param url@return an Optional containing the dialect string if present
-     * @return  an Optional containing the dialect string if present
-     * @throws IOException if an error occurs while reading the configuration
+     * @param url the JDBC URL from which the dialect key will be extracted
+     * @return an Optional containing the JsonObject of the JDBC configuration if present
+     * @throws IOException if an error occurs while obtaining the dialect configuration
      */
     public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
         final String dialectKey = StringUtils.substringBetween(url, "jdbc:", ":");
@@ -132,16 +134,26 @@ public class CoffeeBuilderUtil {
      * @param entity the JSON object representing the entity
      * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
      */
-    public static Optional<JsonObject> getFieldId(JsonObject entity) {
+    public static Optional<Map.Entry<String, JsonValue>> getFieldId(JsonObject entity) {
         return entity.getJsonObject("fields")
-                .values().stream()
-                .map(JsonValue::asJsonObject)
-                .filter(val -> val.containsKey("isId")
-                        && val.get("isId").getValueType() == JsonValue.ValueType.TRUE)
-                .findFirst();
+            .entrySet().stream()
+            .filter(entry -> {
+
+                var val = entry.getValue().asJsonObject();
+                return val.containsKey(IS_ID) && val.get(IS_ID).getValueType() == JsonValue.ValueType.TRUE;
+            })
+            .findFirst();
     }
 
-    public static String getFieldIdClass(JsonObject entity, String defaultValue){
-        return getFieldId(entity).map(f->f.getString(TYPE)).orElse(defaultValue);
+    /**
+     * Retrieves the class type associated with the field marked as the identifier (ID) from the entity definition.
+     * If no ID field is found, the provided default value is returned.
+     *
+     * @param entity       the JSON object representing the entity
+     * @param defaultValue the default value to return if no ID field or class type is found
+     * @return the class type as a string, or the default value if no ID field or class type is found
+     */
+    public static String getFieldIdClass(JsonObject entity, String defaultValue) {
+        return getFieldId(entity).map(f -> f.getValue().asJsonObject().getString(TYPE)).orElse(defaultValue);
     }
 }

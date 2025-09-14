@@ -29,6 +29,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ENTITY;
+
 /**
  * Helper class for Maven project operations.
  * Provides methods to retrieve full Maven projects with resolved dependencies
@@ -78,7 +80,7 @@ public class MavenProjectUtil {
      * @return the generated package name for the "entity" layer
      */
     public static String getEntityPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
+        return "%s.%s".formatted(getProjectPackage(mavenProject), ENTITY);
     }
 
     public static String getModelPackage(MavenProject mavenProject) {
