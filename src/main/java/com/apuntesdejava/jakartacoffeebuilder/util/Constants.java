@@ -285,8 +285,11 @@ public class Constants {
     public static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
     public static final String ORG_MAPSTRUCT = "org.mapstruct";
     public static final String MAPSTRUCT = "mapstruct";
+    public static final String ENTITY = "entity";
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
         "ElementCollection");
+
+    public static final String MODEL_NAME = "modelName";
 
     private Constants() {
     }

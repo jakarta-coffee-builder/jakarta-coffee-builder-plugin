@@ -83,7 +83,7 @@ public class AddFormsFromEntitiesMojo extends AbstractMojo {
             checkDependency(log, fullProject);
             PrimeFacesHelper.getInstance().addFormsFromEntities(fullProject, log, formsPath, entitiesFile.toPath());
 
-            PomUtil.saveMavenProject(fullProject, log);
+            PomUtil.saveMavenProject(mavenProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }

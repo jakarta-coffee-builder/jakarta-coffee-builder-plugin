@@ -33,6 +33,14 @@ import java.util.Map;
  * The templates are loaded from a predefined location on the classpath, and the default encoding is set to UTF-8.
  */
 public class TemplateUtil {
+    /**
+     * Provides access to the singleton instance of the `TemplateUtil` class.
+     *
+     * @return the singleton instance of `TemplateUtil`
+     */
+    public static TemplateUtil getInstance() {
+        return TemplateUtilHolder.INSTANCE;
+    }
 
     private final Configuration configuration;
 
@@ -42,14 +50,6 @@ public class TemplateUtil {
         configuration.setDefaultEncoding("UTF-8");
     }
 
-    /**
-     * Provides access to the singleton instance of the `TemplateUtil` class.
-     *
-     * @return the singleton instance of `TemplateUtil`
-     */
-    public static TemplateUtil getInstance() {
-        return TemplateUtilHolder.INSTANCE;
-    }
 
     /**
      * Generates a Java Bean file using a template and writes it to the specified file path.
@@ -60,7 +60,7 @@ public class TemplateUtil {
      * @throws IOException if an I/O error occurs during file writing
      */
     public void createJavaBeanFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
-        createJavaFile(log, data, javaPath, "JavaBean.ftl");
+        createJavaFile(log, data, javaPath, "java/JavaBean.ftl");
     }
 
     /**
@@ -72,7 +72,7 @@ public class TemplateUtil {
      * @throws IOException if an I/O error occurs during file writing
      */
     public void createEntityFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
-        createJavaFile(log, data, javaPath, "Entity.ftl");
+        createJavaFile(log, data, javaPath, "java/Entity.ftl");
     }
 
     /**
@@ -84,7 +84,7 @@ public class TemplateUtil {
      * @throws IOException if an I/O error occurs during file writing
      */
     public void createRepositoryFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
-        createJavaFile(log, data, javaPath, "Repository.ftl");
+        createJavaFile(log, data, javaPath, "java/Repository.ftl");
 
     }
 
@@ -101,15 +101,35 @@ public class TemplateUtil {
     }
 
     public void createEnumFile(Log log, Map<String, Object> data, Path enumPath) throws IOException {
-        createJavaFile(log, data, enumPath, "Enum.ftl");
+        createJavaFile(log, data, enumPath, "java/Enum.ftl");
     }
 
     public void createRecordFile(Log log, Map<String, Object> fieldsMap, Path modelPath) throws IOException {
-        createJavaFile(log, fieldsMap, modelPath, "Record.ftl");
+        createJavaFile(log, fieldsMap, modelPath, "java/Record.ftl");
     }
 
     public void createMapperFile(Log log, Map<String, Object> fieldsMap, Path mapperPath) throws IOException {
-        createJavaFile(log, fieldsMap, mapperPath, "Mapper.ftl");
+        createJavaFile(log, fieldsMap, mapperPath, "java/Mapper.ftl");
+    }
+
+    public void createServiceFile(Log log, Map<String, Object> fieldsMap, Path mapperPath) throws IOException {
+        createJavaFile(log, fieldsMap, mapperPath, "java/Service.ftl");
+    }
+
+    public void createPojoFile(Log log, Map<String, Object> fieldsMap, Path modelPath) throws IOException {
+        createJavaFile(log, fieldsMap, modelPath, "java/Pojo.ftl");
+    }
+
+    public void createFacesTemplateFile(Log log, Map<String, Object> fieldsMap, Path xhtmlPath) throws IOException {
+        createJavaFile(log, fieldsMap, xhtmlPath, "xhtml/template.ftl");
+    }
+
+    public void createFacesCrudFile(Log log, Map<String, Object> fieldsMap, Path xhtmlPath) throws IOException {
+        createJavaFile(log, fieldsMap, xhtmlPath, "xhtml/crud_prime.ftl");
+    }
+    
+    public void createManagedBeanCrudFile(Log log, Map<String, Object> fieldsMap, Path javaPath) throws IOException {
+        createJavaFile(log, fieldsMap, javaPath, "java/ManagedBeanCrud.ftl");
     }
 
     private static class TemplateUtilHolder {

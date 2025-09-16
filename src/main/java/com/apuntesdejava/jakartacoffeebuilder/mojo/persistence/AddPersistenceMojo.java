@@ -74,12 +74,12 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
             init();
             var log = getLog();
             log.debug("Project name:%s".formatted(mavenProject.getName()));
-            checkDependency(log);
             createPersistenceXml(log);
             var json = getDataSourceParameters();
             createPersistenceUnit(json);
 
             addDataSourceConfiguration(log, json);
+            checkDependency(log);
             PomUtil.saveMavenProject(fullProject, log);
         } catch (ProjectBuildingException | IOException e) {
             throw new MojoExecutionException(e);

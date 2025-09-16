@@ -18,6 +18,7 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.PersistenceXmlHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -49,7 +50,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         readonly = true)
     protected MavenProject mavenProject;
     @Parameter(
-        property = "datasourceName",
+        property = "datasource-name",
         required = true,
         defaultValue = "defaultDatasource"
     )
@@ -161,7 +162,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
 
     private JsonObject getDataSourceProperties(JsonObject json, String className) {
         var newValues = Json.createObjectBuilder(json)
-            .add("className", className).build();
+            .add(CLASS_NAME, className).build();
         var dataSourceProps = Json.createObjectBuilder();
 
         List<String> datasourceProperties = Arrays.asList(

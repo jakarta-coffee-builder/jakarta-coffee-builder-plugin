@@ -28,9 +28,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil.getFieldIdClass;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 
 /**
  * Implementation of the {@link RepositoryBuilder} interface for Jakarta 11.
@@ -63,7 +63,6 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
             var packageEntity = MavenProjectUtil.getEntityPackage(mavenProject);
             var className = entityName + "Repository";
             log.debug("entity:" + entity);
-            var fieldId = getFieldId(entity);
             var repositoryPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
             var classRepository = StringUtils.capitalize(entity.getString("repository", "crud"));
 
@@ -75,7 +74,7 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
                             "classRepository", classRepository,
                             "packageEntity", packageEntity,
                             "importsList", additionalImports,
-                            "idType", fieldId.map(f -> f.getString(TYPE)).orElse("Long")
+                            "idType", getFieldIdClass(entity,"Long")
                         ), repositoryPath);
         } catch (IOException e) {
             log.error("Error building Jakarta 11 Repository for entity: " + entityName, e);

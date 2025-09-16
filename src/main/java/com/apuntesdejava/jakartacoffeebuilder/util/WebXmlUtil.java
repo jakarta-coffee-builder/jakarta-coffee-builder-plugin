@@ -55,6 +55,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
  * </p>
  */
 public class WebXmlUtil {
+    
+    private static final String WEB_APP_EXP_SEARCH = "//*[local-name()='web-app']";
 
     private WebXmlUtil() {
     }
@@ -90,9 +92,8 @@ public class WebXmlUtil {
                 JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
                     "web-app").orElseThrow();
 
-                var webAppElement = document.addElement("web-app");
+                var webAppElement = document.addElement("web-app", "https://jakarta.ee/xml/ns/jakartaee");
                 webAppElement.addAttribute("version", schemaDescription.getString("version"));
-                webAppElement.addAttribute("xmlns", "https://jakarta.ee/xml/ns/jakartaee");
                 webAppElement.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
                 webAppElement.addAttribute("xsi:schemaLocation",
                     "https://jakarta.ee/xml/ns/jakartaee " + schemaDescription.getString("url"));
@@ -120,14 +121,14 @@ public class WebXmlUtil {
         var xmlUtil = XmlUtil.getInstance();
 
         var nodeList = xmlUtil.findElements(document,
-            "//servlet-class[text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
+            "//*[local-name()='servlet-class' and text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
         if (nodeList == 0) {
-            xmlUtil.addElement(document, log, "//web-app", "servlet", servlet -> {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet", servlet -> {
                 xmlUtil.addElement(servlet, "description", description);
                 xmlUtil.addElement(servlet, "servlet-name", servletName);
                 xmlUtil.addElement(servlet, "servlet-class", JAKARTA_FACES_WEBAPP_FACES_SERVLET);
             });
-            xmlUtil.addElement(document, log, "//web-app", "servlet-mapping", servlet -> {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet-mapping", servlet -> {
                 xmlUtil.addElement(servlet, "servlet-name", servletName);
                 xmlUtil.addElement(servlet, "url-pattern", urlPattern);
             });
@@ -155,9 +156,9 @@ public class WebXmlUtil {
      */
     public void addWelcomePages(Document document, String welcomeFile, Log log) {
         var xmlUtil = XmlUtil.getInstance();
-        var nodeList = xmlUtil.findElements(document, "//welcome-file").count();
+        var nodeList = xmlUtil.findElements(document, "//*[local-name()='welcome-file']").count();
         if (nodeList == 0) {
-            xmlUtil.addElement(document, log, "//web-app", "welcome-file-list",
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "welcome-file-list",
                 (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
         }
     }
@@ -173,7 +174,7 @@ public class WebXmlUtil {
     public void addDataSource(Document document, Log log, Map<String, Object> properties) {
         var xmlUtil = XmlUtil.getInstance();
         if (xmlUtil.findElementsStream(document,
-            "//data-source/name[text()='%s']".formatted(properties.get(NAME))).findFirst().isEmpty()) {
+            "//*[local-name()='data-source'][*[local-name()='name' and text()='%s']]".formatted(properties.get(NAME))).findFirst().isEmpty()) {
             var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
             properties.forEach((key, value) -> {
                 if (value instanceof Collection<?> collection) {
