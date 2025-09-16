@@ -144,6 +144,9 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         properties.putIfAbsent("app_save", "Save");
         properties.putIfAbsent("app_cancel", "Cancel");
         properties.putIfAbsent("app_new", "New");
+        properties.putIfAbsent("yes", "Yes");
+        properties.putIfAbsent("no", "No");
+        properties.putIfAbsent("confirm", "Confirm");
         return properties;
     }
 
@@ -176,13 +179,17 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         ));
         fieldsMap.putAll(fieldIdDefinition);
 
-
         TemplateUtil.getInstance().createManagedBeanCrudFile(log, fieldsMap, managedBeanPath);
     }
 
     private void createMessagesBundle(Log log, JsonObject formsJson, Properties properties) {
         var formEntityName = formsJson.getString(ENTITY);
+        var formEntityNameLowerCase = StringUtils.lowerCase(formEntityName);
         log.debug("Creating messages bundle for " + formEntityName);
+        properties.putIfAbsent("delete_confirm_%s".formatted(formEntityNameLowerCase),
+            "Confirm delete %s ?".formatted(formEntityName));
+        properties.putIfAbsent("delete_confirm_%ss".formatted(formEntityNameLowerCase),
+            "Confirm delete %ss ?".formatted(formEntityName));
         var bundleMessages = formsJson.getJsonObject(FIELDS)
             .entrySet().stream().map(entry -> Map.entry(formEntityName + "_" + entry.getKey(), entry.getValue()
                 .asJsonObject().getString("label", entry.getKey())))
@@ -231,12 +238,23 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         throws IOException {
         String templateFacelet = templateDesc.getString("facelet");
         String define = templateDesc.getString("define");
-        var fields = entityDefinition.getJsonObject(FIELDS).keySet();
+
+        var fields = entityDefinition.getJsonObject(FIELDS)
+            .entrySet()
+            .stream()
+            .map(entry -> {
+                var fieldDefinition = entry.getValue().asJsonObject();
+                return Map.ofEntries(
+                    Map.entry("name", entry.getKey()),
+                    Map.entry("type", fieldDefinition.getString(TYPE))
+                );
+            }).toList();
+
         Map<String, Object> fieldsMap = new LinkedHashMap<>(Map.of(
             "define", define,
             "template_name", templateFacelet,
-            "variableBean", StringUtils.uncapitalize(entityName),
-            CLASS_NAME, entityName,
+            "instanceModelName", StringUtils.uncapitalize(entityName),
+            MODEL_NAME, entityName,
             "fields", fields,
             "title", title
         ));

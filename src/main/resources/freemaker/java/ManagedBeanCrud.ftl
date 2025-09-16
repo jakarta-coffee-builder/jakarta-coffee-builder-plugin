@@ -6,83 +6,98 @@ import ${importItem};
     </#list>
 </#if>
 <#assign formId="${instanceModelName}Form" />
+<#assign serviceClassName="${modelName}Service" />
+<#assign serviceInstanceName="${instanceModelName}Service" />
+<#assign currentModel="current${modelName}" />
+<#assign selectedModels="selected${modelName}s" />
+<#assign idNameCap=idName?cap_first />
+
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import org.primefaces.PrimeFaces;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Named;
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 
 @Named
-@RequestScoped
-public class ${className} {
+@ViewScoped
+public class ${className} implements Serializable{
 
     @Inject
-    private ${modelName}Service ${instanceModelName}Service;
+    private ${serviceClassName} ${serviceInstanceName};
 
-    private ${modelName} current${modelName};
+    private ${modelName} ${currentModel};
 
-    private List<${modelName}> selected${modelName}s;
+    private List<${modelName}> ${selectedModels};
 
     @PostConstruct
     public void init() {
-        this.selected${modelName}s = new ArrayList<>();
+        this.${selectedModels} = new ArrayList<>();
     }
 
     public ${modelName} getCurrent${modelName}() {
-        return current${modelName};
+        return ${currentModel};
     }
 
-    public void setCurrent${modelName}(${modelName} current${modelName}) {
-        this.current${modelName} = current${modelName};
+    public void setCurrent${modelName}(${modelName} ${currentModel}) {
+        this.${currentModel} = ${currentModel};
     }
 
     public List<${modelName}> get${modelName}sList() {
-        return ${instanceModelName}Service.findAll();
+        return ${serviceInstanceName}.findAll();
     }
 
     public void openNew(){
-        this.current${modelName} = new ${modelName}();
+        this.${currentModel} = new ${modelName}();
     }
 
     public void save${modelName}(){
+        if (${currentModel}.get${idNameCap}() == null){
+            ${serviceInstanceName}.save(${currentModel});
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName} Added"));
+        }else{
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName} Updated"));
+        }
+        PrimeFaces.current().executeScript("PF('manage${modelName}Dialog').hide()");
+        PrimeFaces.current().ajax().update("${formId}:messages", "${formId}:dt-${instanceModelName}s");
     }
 
     public List<${modelName}> getSelected${modelName}s() {
-        return selected${modelName}s;
+        return ${selectedModels};
     }
 
-    public void setSelected${modelName}s(List<${modelName}> selected${modelName}s) {
-        this.selected${modelName}s = selected${modelName}s;
+    public void setSelected${modelName}s(List<${modelName}> ${selectedModels}) {
+        this.${selectedModels} = ${selectedModels};
     }
 
     public String getDeleteButtonMessage() {
         if (hasSelected${modelName}s()) {
-            int size = this.selected${modelName}s.size();
+            int size = this.${selectedModels}.size();
             return size > 1 ? size + " ${instanceModelName}s selected" : "1 ${instanceModelName} selected";
         }
         return "Delete";
     }
 
     public void delete${modelName}() {
-        ${instanceModelName}Service.delete(this.current${modelName});
-        this.selected${modelName}s.remove(this.current${modelName});
-        this.current${modelName} = null;
+        ${serviceInstanceName}.delete(this.${currentModel});
+        this.${selectedModels}.remove(this.${currentModel});
+        this.${currentModel} = null;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName} Removed"));
         PrimeFaces.current().ajax().update("${formId}:messages", "${formId}:dt-${instanceModelName}s");
     }
 
     public boolean hasSelected${modelName}s() {
-        return this.selected${modelName}s != null && !this.selected${modelName}s.isEmpty();
+        return this.${selectedModels} != null && !this.${selectedModels}.isEmpty();
     }
 
     public void deleteSelected${modelName}s() {
-        ${instanceModelName}Service.deleteAll(selected${modelName}s);
-        this.selected${modelName}s = null;
+        ${serviceInstanceName}.deleteAll(${selectedModels});
+        this.${selectedModels} = null;
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("${modelName}s Removed"));
         PrimeFaces.current().ajax().update("${formId}:messages", "${formId}:dt-${instanceModelName}s");
         PrimeFaces.current().executeScript("PF('dt${modelName}s').clearFilters()");
