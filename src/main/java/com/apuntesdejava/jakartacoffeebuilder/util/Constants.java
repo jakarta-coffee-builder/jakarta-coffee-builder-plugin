@@ -129,7 +129,7 @@ public class Constants {
      * Key to identify if a field is an ID.
      */
     public static final String IS_ID = "isId";
-    public static final String GENERATED_VALUED = "generatedValue";
+    public static final String GENERATED_VALUE = "generatedValue";
     /**
      * Key for the package name.
      */
@@ -285,9 +285,11 @@ public class Constants {
     public static final String ENTITY = "entity";
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
         "ElementCollection");
-    public static final Set<String> GENERATION_TYPES = Set.of("AUTO", "IDENTITY", "SEQUENCE", "TABLE");
+    public static final Set<String> GENERATION_TYPES = Set.of("AUTO", "IDENTITY", "SEQUENCE", "TABLE","UUID");
 
     public static final String MODEL_NAME = "modelName";
+    public static final String DESCRIPTION = "description";
+    public static final String FULL_NAME = "fullName";
 
     private Constants() {
     }

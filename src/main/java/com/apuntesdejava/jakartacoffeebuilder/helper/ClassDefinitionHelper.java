@@ -33,11 +33,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATED_VALUED;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATION_TYPES;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IS_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATED_VALUE;
 
 /**
  *
@@ -80,7 +80,7 @@ public class ClassDefinitionHelper {
             if (field.containsKey(IS_ID)) {
                 item.put(IS_ID, field.getBoolean(IS_ID, false));
             }
-            if (field.containsKey(GENERATED_VALUED)) {
+            if (field.containsKey(GENERATED_VALUE)) {
                 insertGeneratedValue(field, annotations);
             }
             if (!annotations.isEmpty()) {
@@ -91,13 +91,13 @@ public class ClassDefinitionHelper {
     }
 
     private void insertGeneratedValue(JsonObject field, List<Map<String, Object>> annotations) {
-        StringsUtil.findIgnoreCaseOptional(GENERATION_TYPES, field.getString("generatedValue"))
+        StringsUtil.findIgnoreCaseOptional(GENERATION_TYPES, field.getString(GENERATED_VALUE))
             .ifPresent(generatedValue -> annotations.add(
-                Map.of(
-                    NAME, "jakarta.persistence.GeneratedValue",
-                    "strategy", generatedValue
-                )
-            ));
+            Map.of(
+                NAME, "GeneratedValue",
+                Constants.DESCRIPTION, Map.of("strategy", "+GenerationType." + generatedValue)
+            )
+        ));
     }
 
     private static void insertSearchAnnotation(Set<String> keys,
@@ -109,7 +109,7 @@ public class ClassDefinitionHelper {
             annotationMap.put(NAME, annotationName);
             var aField = field.get(getKeyName(keys, annotationName));
             if (aField.getValueType() == JsonValue.ValueType.OBJECT) {
-                annotationMap.put("description", getMapFromJsonObject(aField.asJsonObject()));
+                annotationMap.put(Constants.DESCRIPTION, getMapFromJsonObject(aField.asJsonObject()));
             }
             return annotationMap;
         }).toList();
@@ -122,7 +122,7 @@ public class ClassDefinitionHelper {
             .map(JsonValue::asJsonObject)
             .map(field -> field.getString(TYPE))
             .filter(classesDefinitions::containsKey)
-            .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
+            .map(type -> classesDefinitions.getJsonObject(type).getString(Constants.FULL_NAME))
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
