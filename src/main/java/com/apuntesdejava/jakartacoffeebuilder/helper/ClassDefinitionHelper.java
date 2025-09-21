@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATED_VALUED;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATION_TYPES;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IS_ID;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
@@ -52,11 +54,11 @@ public class ClassDefinitionHelper {
             throw new RuntimeException(e);
         }
     }
-    
+
     public static ClassDefinitionHelper getInstance() {
         return ClassDefinitionHelperHolder.INSTANCE;
     }
-    
+
     private static class ClassDefinitionHelperHolder {
 
         private static final ClassDefinitionHelper INSTANCE = new ClassDefinitionHelper();
@@ -73,20 +75,13 @@ public class ClassDefinitionHelper {
             item.put(TYPE, type);
             var keys = field.keySet();
             if (StringsUtil.containsAnyIgnoreCase(Constants.SEARCH_ANNOTATIONS_FIELD_KEYS, keys)) {
-                var annotationsList = StringsUtil.findIgnoreCase(Constants.SEARCH_ANNOTATIONS_FIELD_KEYS, keys);
-                List<Map<String, Object>> annot = annotationsList.stream().map(annotationName -> {
-                    Map<String, Object> annotationMap = new LinkedHashMap<>();
-                    annotationMap.put(NAME, annotationName);
-                    var aField = field.get(getKeyName(keys, annotationName));
-                    if (aField.getValueType() == JsonValue.ValueType.OBJECT) {
-                        annotationMap.put("description", getMapFromJsonObject(aField.asJsonObject()));
-                    }
-                    return annotationMap;
-                }).toList();
-                annotations.addAll(annot);
+                insertSearchAnnotation(keys, field, annotations);
             }
             if (field.containsKey(IS_ID)) {
                 item.put(IS_ID, field.getBoolean(IS_ID, false));
+            }
+            if (field.containsKey(GENERATED_VALUED)) {
+                insertGeneratedValue(field, annotations);
             }
             if (!annotations.isEmpty()) {
                 item.put("annotations", annotations);
@@ -95,21 +90,47 @@ public class ClassDefinitionHelper {
         }).toList();
     }
 
+    private void insertGeneratedValue(JsonObject field, List<Map<String, Object>> annotations) {
+        StringsUtil.findIgnoreCaseOptional(GENERATION_TYPES, field.getString("generatedValue"))
+            .ifPresent(generatedValue -> annotations.add(
+                Map.of(
+                    NAME, "jakarta.persistence.GeneratedValue",
+                    "strategy", generatedValue
+                )
+            ));
+    }
+
+    private static void insertSearchAnnotation(Set<String> keys,
+                                               JsonObject field,
+                                               List<Map<String, Object>> annotations) {
+        var annotationsList = StringsUtil.findIgnoreCase(Constants.SEARCH_ANNOTATIONS_FIELD_KEYS, keys);
+        List<Map<String, Object>> annot = annotationsList.stream().map(annotationName -> {
+            Map<String, Object> annotationMap = new LinkedHashMap<>();
+            annotationMap.put(NAME, annotationName);
+            var aField = field.get(getKeyName(keys, annotationName));
+            if (aField.getValueType() == JsonValue.ValueType.OBJECT) {
+                annotationMap.put("description", getMapFromJsonObject(aField.asJsonObject()));
+            }
+            return annotationMap;
+        }).toList();
+        annotations.addAll(annot);
+    }
+
     public Collection<String> importsFromFieldsClassesType(JsonObject fields) {
 
         return fields.values().stream()
-                     .map(JsonValue::asJsonObject)
-                     .map(field -> field.getString(TYPE))
-                     .filter(classesDefinitions::containsKey)
-                     .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
-                     .collect(Collectors.toCollection(LinkedHashSet::new));
+            .map(JsonValue::asJsonObject)
+            .map(field -> field.getString(TYPE))
+            .filter(classesDefinitions::containsKey)
+            .map(type -> classesDefinitions.getJsonObject(type).getString("fullName"))
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private static Map<String, Object> getMapFromJsonObject(JsonObject column) {
         return column.entrySet()
-                     .stream()
-                     .collect(LinkedHashMap::new,
-                         (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
+            .stream()
+            .collect(LinkedHashMap::new,
+                     (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
     }
 
     private static String getKeyName(Set<String> keys, String otherName) {

@@ -18,22 +18,18 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import java.util.Set;
 
 /**
- * The Constants class serves as a centralized repository for constant values
- * used throughout the application. These constants include string identifiers,
- * version numbers, servlet definitions, namespace identifiers, and other fixed
+ * The Constants class serves as a centralized repository for constant values used throughout the application. These
+ * constants include string identifiers, version numbers, servlet definitions, namespace identifiers, and other fixed
  * values that are shared among various components.
  * <p>
- * The purpose of this class is to provide a consistent and reusable set of
- * values that can be referenced across the application, minimizing hardcoding
- * and potential duplication. Many constants are related to Jakarta EE
- * specifications and versions.
+ * The purpose of this class is to provide a consistent and reusable set of values that can be referenced across the
+ * application, minimizing hardcoding and potential duplication. Many constants are related to Jakarta EE specifications
+ * and versions.
  * <p>
- * Key constant groups include: - Jakarta EE specifications and APIs, such as
- * Jakarta Faces and CDI specifications. - Supported Jakarta EE versions. -
- * Servlet and namespace definitions. - XSLT file names for formatting.
+ * Key constant groups include: - Jakarta EE specifications and APIs, such as Jakarta Faces and CDI specifications. -
+ * Supported Jakarta EE versions. - Servlet and namespace definitions. - XSLT file names for formatting.
  * <p>
- * Developers should use this class to retrieve any predefined constant values
- * referenced in the application.
+ * Developers should use this class to retrieve any predefined constant values referenced in the application.
  */
 public class Constants {
 
@@ -133,6 +129,7 @@ public class Constants {
      * Key to identify if a field is an ID.
      */
     public static final String IS_ID = "isId";
+    public static final String GENERATED_VALUED = "generatedValue";
     /**
      * Key for the package name.
      */
@@ -288,6 +285,7 @@ public class Constants {
     public static final String ENTITY = "entity";
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
         "ElementCollection");
+    public static final Set<String> GENERATION_TYPES = Set.of("AUTO", "IDENTITY", "SEQUENCE", "TABLE");
 
     public static final String MODEL_NAME = "modelName";
 
