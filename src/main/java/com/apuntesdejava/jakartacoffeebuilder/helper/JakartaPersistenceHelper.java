@@ -92,6 +92,7 @@ public class JakartaPersistenceHelper {
      * @param log                the logger used for logging debug and error messages
      * @param jsonPath           the path to the JSON file containing entity definitions
      * @param persistenceXmlPath the path to the persistence.xml file
+     *
      * @throws IOException if an I/O error occurs while reading the JSON file
      */
     public void addEntities(MavenProject mavenProject,
@@ -152,9 +153,9 @@ public class JakartaPersistenceHelper {
         var repositoryBuilder = RepositoryBuilder.getInstance();
         repositoryBuilder
             .buildRepository(mavenProject, log, entityName + suffix, entity,
-                ClassDefinitionHelper.getInstance()
-                    .importsFromFieldsClassesType(entity
-                        .getJsonObject(FIELDS)));
+                             ClassDefinitionHelper.getInstance()
+                                 .importsFromFieldsClassesType(entity
+                                     .getJsonObject(FIELDS)));
 
     }
 
@@ -172,23 +173,26 @@ public class JakartaPersistenceHelper {
             var fieldsJson = entity.getJsonObject(FIELDS);
             Collection<String> importsList = new LinkedHashSet<>();
             var classDefinitionHelper = ClassDefinitionHelper.getInstance();
-            var fields = classDefinitionHelper.createFieldsDefinitions(fieldsJson,
-                (fieldName, field, annotations) -> getFieldType(mavenProject,
-                    log,
-                    entityName,
-                    entitiesName,
-                    fieldName,
-                    field,
-                    annotations,
-                    importsList));
-            importsList.addAll(createImportsCollection(fieldsJson));
+            var fields = classDefinitionHelper
+                .createFieldsDefinitions(fieldsJson,
+                                         (fieldName, field, annotations) -> getFieldType(
+                                             mavenProject,
+                                             log,
+                                             entityName,
+                                             entitiesName,
+                                             fieldName,
+                                             field,
+                                             annotations,
+                                             importsList));
+            importsList.addAll(createImportsCollectionFromSearchAnnotation(fieldsJson));
+            importsList.addAll(createImportsCollectionFromGeneratedValue(fieldsJson));
             importsList.addAll(classDefinitionHelper.importsFromFieldsClassesType(fieldsJson));
 
             Map<String, Object> fieldsMap = new LinkedHashMap<>(
                 Map.of(PACKAGE_NAME, packageDefinition,
-                    CLASS_NAME, entityName,
-                    IMPORTS_LIST, importsList,
-                    FIELDS, fields));
+                       CLASS_NAME, entityName,
+                       IMPORTS_LIST, importsList,
+                       FIELDS, fields));
             if (StringUtils.isNotBlank(tableName)) {
                 fieldsMap.put("tableName", tableName);
             }
@@ -199,6 +203,17 @@ public class JakartaPersistenceHelper {
         } catch (IOException ex) {
             log.error("Error adding entity: " + entity.getString(NAME), ex);
         }
+    }
+
+    private Collection<String> createImportsCollectionFromGeneratedValue(JsonObject fieldsJson) {
+        return fieldsJson.values().stream()
+            .map(JsonValue::asJsonObject)
+            .filter(field -> field.containsKey(GENERATED_VALUE)
+            && StringsUtil
+                .findIgnoreCaseOptional(GENERATION_TYPES, field.getString(GENERATED_VALUE)).isPresent())
+            .findFirst()
+            .map(generatedValue -> Set.of("jakarta.persistence.GeneratedValue", "jakarta.persistence.GenerationType"))
+            .orElse(Collections.emptySet());
     }
 
     private String getFieldType(MavenProject mavenProject,
@@ -215,7 +230,7 @@ public class JakartaPersistenceHelper {
         }
         if (Strings.CS.equals(type, "enum")) {
             return evaluateFieldEnumType(mavenProject, log, entityName, fieldName, field, importsList,
-                annotations);
+                                         annotations);
         }
         if (entitiesName.contains(type + suffix)) {
             return type + suffix;
@@ -236,7 +251,7 @@ public class JakartaPersistenceHelper {
             .map(JsonString::getString)
             .toList();
         var fullName = createEnum(mavenProject, log, entityName + StringUtils.capitalize(fieldName),
-            enumValues);
+                              enumValues);
         importsList.add(fullName);
         importsList.add("jakarta.persistence.Enumerated");
         /*   importsList.add("jakarta.persistence.EnumType");
@@ -253,7 +268,7 @@ public class JakartaPersistenceHelper {
                                        Predicate<String> typeIsEntity) {
         var type = field.getString(TYPE);
         if (classesDefinitions.containsKey(type)) {
-            var fullName = classesDefinitions.getJsonObject(type).getString("fullName");
+            var fullName = classesDefinitions.getJsonObject(type).getString(FULL_NAME);
             importsList.add(fullName);
         }
         if (typeIsEntity.test(type)) {
@@ -289,7 +304,7 @@ public class JakartaPersistenceHelper {
 
     }
 
-    private Collection<String> createImportsCollection(JsonObject fieldsJson) {
+    private Collection<String> createImportsCollectionFromSearchAnnotation(JsonObject fieldsJson) {
         return fieldsJson.values().stream()
             .map(JsonValue::asJsonObject)
             .map(JsonObject::keySet)

@@ -26,6 +26,7 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Mojo for adding JPA entities to a Jakarta EE project.
@@ -111,7 +112,7 @@ public class AddEntitiesMojo extends AbstractMojo {
                     .orElseThrow( ()-> new FileNotFoundException("persistence.xml file not found"));
             JakartaPersistenceHelper.getInstance()
                                     .addEntities(mavenProject, log, entitiesFile.toPath(), persistenceXmlPath);
-        } catch (Exception ex) {
+        } catch (IOException | MojoFailureException ex) {
             throw new MojoExecutionException("Error adding entities", ex);
         }
     }

@@ -31,7 +31,11 @@ public class ${className} {
     @${annotation.name}<#if annotation.description??> (
                 <#list annotation.description as key,value>
                     <#if value?is_string>
+        <#if value?starts_with("+")>
+        ${key} = ${value?substring(1)}<#if key_has_next>,</#if>
+        <#else>
         ${key} = "${value}"<#if key_has_next>,</#if>
+        </#if>
                     <#elseif value?is_number>
         ${key} = ${value?string("0")}<#if key_has_next>,</#if>
                     <#elseif value?is_boolean>
