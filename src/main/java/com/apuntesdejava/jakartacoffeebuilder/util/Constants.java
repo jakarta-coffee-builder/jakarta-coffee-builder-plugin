@@ -290,6 +290,8 @@ public class Constants {
     public static final String MODEL_NAME = "modelName";
     public static final String DESCRIPTION = "description";
     public static final String FULL_NAME = "fullName";
+    public static final String ORG_OPENAPITOOLS = "org.openapitools";
+    public static final String OPENAPI_GENERATOR_MAVEN_PLUGIN = "openapi-generator-maven-plugin";
 
     private Constants() {
     }

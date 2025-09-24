@@ -16,6 +16,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.Constants;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import jakarta.json.Json;
@@ -58,6 +59,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
  */
 public class OpenApiGeneratorHelper {
 
+    public static final String OPENAPI_GENERATOR_IGNORE_FILENAME = ".openapi-generator-ignore";
+
     /**
      * Retrieves the singleton instance of the {@code OpenApiGeneratorHelper}.
      *
@@ -70,14 +73,13 @@ public class OpenApiGeneratorHelper {
     private OpenApiGeneratorHelper() {
     }
 
-    private Path createIgnoreFilePath(File baseDir) throws IOException {
-        var ignoreFilePath = baseDir.toPath().resolve(".openapi-generator-ignore");
-        List<String> ignoreList = List.of(
-            "**/invoker/RestApplication.java",
-            "**/invoker/RestResourceRoot.java"
+    private void createIgnoreFilePath(File baseDir) throws IOException {
+        var ignoreFilePath = baseDir.toPath().resolve(OPENAPI_GENERATOR_IGNORE_FILENAME);
+        var ignoreList = List.of(
+            "**/RestApplication.java",
+            "**/RestResourceRoot.java"
         );
         Files.write(ignoreFilePath, ignoreList);
-        return ignoreFilePath;
     }
 
     /**
@@ -90,7 +92,6 @@ public class OpenApiGeneratorHelper {
      * @param mavenProject the Maven project containing the POM file.
      * @param openApiFile  the OpenAPI specification file to be processed.
      * @param log          the logger to use for logging messages.
-     *
      * @throws URISyntaxException                             if there is an error with the URI syntax.
      * @throws IOException                                    if an I/O error occurs during processing.
      * @throws org.apache.maven.plugin.MojoExecutionException if an error occurs during the plugin execution.
@@ -106,42 +107,43 @@ public class OpenApiGeneratorHelper {
         }
         Path openApiPath = copyToProjectPath(mavenProject.getBasedir(), openApiFile);
         var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
-        var ignoreFilePath = createIgnoreFilePath(mavenProject.getBasedir());
+        createIgnoreFilePath(mavenProject.getBasedir());
 
         CoffeeBuilderUtil
             .getOpenApiGeneratorConfiguration()
             .map(config -> {
                 var configOptionsBuilder = Json.createObjectBuilder(config.getJsonObject("configOptions"))
                     .add("modelPackage", apiResourcesPackage + ".model")
-                    .add("invokerPackage", apiResourcesPackage + ".invoker")
                     .add("apiPackage", apiResourcesPackage);
                 return Json.createObjectBuilder()
                     .add("generatorName", config.getString("generatorName"))
                     .add("inputSpec", openApiPath.getFileName().toString())
+                    .add("ignoreFileOverride", "${project.basedir}/" + OPENAPI_GENERATOR_IGNORE_FILENAME)
                     .add("configOptions", configOptionsBuilder)
                     .build();
             }).ifPresent(configuration -> {
-            try {
-                var executions = Json
-                    .createArrayBuilder()
-                    .add(Json.createObjectBuilder()
-                        .add(GOALS,
-                             Json.createArrayBuilder()
-                                 .add(
-                                     Json.createObjectBuilder()
-                                         .add(GOAL, "generate")
-                                 )
-                        ).add(CONFIGURATION, configuration))
-                    .build();
-                PomUtil.findLatestPluginVersion("org.openapitools", "openapi-generator-maven-plugin")
-                    .ifPresent(version
-                        -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.openapitools",
-                                             "openapi-generator-maven-plugin", version, null, executions)
-                    );
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+                try {
+                    var executions = Json
+                        .createArrayBuilder()
+                        .add(Json.createObjectBuilder()
+                            .add(GOALS,
+                                Json.createArrayBuilder()
+                                    .add(
+                                        Json.createObjectBuilder()
+                                            .add(GOAL, "generate")
+                                    )
+                            ).add(CONFIGURATION, configuration))
+                        .build();
+                    PomUtil.findLatestPluginVersion(Constants.ORG_OPENAPITOOLS, Constants.OPENAPI_GENERATOR_MAVEN_PLUGIN)
+                        .ifPresent(version
+                            -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log,
+                            Constants.ORG_OPENAPITOOLS,
+                            Constants.OPENAPI_GENERATOR_MAVEN_PLUGIN, version, null, executions)
+                        );
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
     }
 

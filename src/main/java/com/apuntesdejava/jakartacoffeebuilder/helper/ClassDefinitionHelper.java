@@ -66,6 +66,7 @@ public class ClassDefinitionHelper {
 
     public List<Map<String, Object>> createFieldsDefinitions(JsonObject fieldsJson,
                                                              TriFunction<String, JsonObject, List<Map<String, Object>>, String> evaluateField) {
+        if (fieldsJson == null) return List.of();
         return fieldsJson.entrySet().stream().map(fieldEntry -> {
             var field = fieldEntry.getValue().asJsonObject();
             Map<String, Object> item = new LinkedHashMap<>();
@@ -93,11 +94,11 @@ public class ClassDefinitionHelper {
     private void insertGeneratedValue(JsonObject field, List<Map<String, Object>> annotations) {
         StringsUtil.findIgnoreCaseOptional(GENERATION_TYPES, field.getString(GENERATED_VALUE))
             .ifPresent(generatedValue -> annotations.add(
-            Map.of(
-                NAME, "GeneratedValue",
-                Constants.DESCRIPTION, Map.of("strategy", "+GenerationType." + generatedValue)
-            )
-        ));
+                Map.of(
+                    NAME, "GeneratedValue",
+                    Constants.DESCRIPTION, Map.of("strategy", "+GenerationType." + generatedValue)
+                )
+            ));
     }
 
     private static void insertSearchAnnotation(Set<String> keys,
@@ -130,7 +131,7 @@ public class ClassDefinitionHelper {
         return column.entrySet()
             .stream()
             .collect(LinkedHashMap::new,
-                     (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
+                (map, entry) -> map.put(entry.getKey(), JsonUtil.getJsonValue(entry.getValue())), Map::putAll);
     }
 
     private static String getKeyName(Set<String> keys, String otherName) {
