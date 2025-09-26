@@ -31,9 +31,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Mojo(
-        name = "add-domain-model"
+        name = "add-domain-models"
 )
-public class AddDomainModelMojo extends AbstractMojo {
+public class AddDomainModelsMojo extends AbstractMojo {
 
     @Parameter(
             required = true,

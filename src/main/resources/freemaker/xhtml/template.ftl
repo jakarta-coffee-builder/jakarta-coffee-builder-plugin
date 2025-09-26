@@ -7,6 +7,7 @@
     <f:view contentType="text/html;charset=UTF-8" encoding="UTF-8">
         <h:head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css"/>
             <title>
                 <ui:insert name="title">title</ui:insert> 
             </title>
