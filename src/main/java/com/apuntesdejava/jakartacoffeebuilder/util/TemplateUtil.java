@@ -21,6 +21,7 @@ import org.apache.maven.plugin.logging.Log;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -93,6 +94,7 @@ public class TemplateUtil {
                                 Path javaPath,
                                 String templateName) throws IOException {
         var template = configuration.getTemplate(templateName);
+        Files.createDirectories(javaPath.getParent());
         try (var writer = new FileWriter(javaPath.toFile())) {
             template.process(data, writer);
         } catch (TemplateException e) {
@@ -104,9 +106,6 @@ public class TemplateUtil {
         createJavaFile(log, data, enumPath, "java/Enum.ftl");
     }
 
-    public void createRecordFile(Log log, Map<String, Object> fieldsMap, Path modelPath) throws IOException {
-        createJavaFile(log, fieldsMap, modelPath, "java/Record.ftl");
-    }
 
     public void createMapperFile(Log log, Map<String, Object> fieldsMap, Path mapperPath) throws IOException {
         createJavaFile(log, fieldsMap, mapperPath, "java/Mapper.ftl");

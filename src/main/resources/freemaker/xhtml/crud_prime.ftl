@@ -78,7 +78,7 @@
                     <p:ajax event="toggleSelect" update=":${formId}:delete-${instanceModelName}s-button" />
                     
                     <#list fields as field>
-                        <#assign headerText="{bundle.Project_${field.name}}"/>
+                        <#assign headerText="{bundle.${modelName}_${field.name}}"/>
                         <#assign columnValue="{${instanceModelName}.${field.name}}" />
                     <p:column headerText="#${headerText}" >
                         #${columnValue}
@@ -124,7 +124,7 @@
                                 <#if field.name == '${idName}'>
                                     <#assign readOnlyValue = " readonly='true' " />  
                                 </#if>
-                            <#assign headerText="{bundle.Project_${field.name}}"/>
+                            <#assign headerText="{bundle.${modelName}_${field.name}}"/>
                             <#assign columnValue="{${managedBeanName}.${currentModel}.${field.name}}" />
                             <div class="field">
                                 <p:outputLabel for="${field.name}">#${headerText}</p:outputLabel>
