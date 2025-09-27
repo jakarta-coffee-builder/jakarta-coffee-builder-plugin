@@ -15,7 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import java.util.Map;
+import java.util.Set;
 
 /**
  * The Constants class serves as a centralized repository for constant values used throughout the application. These
@@ -32,127 +32,266 @@ import java.util.Map;
  * Developers should use this class to retrieve any predefined constant values referenced in the application.
  */
 public class Constants {
-    /** Identifier for the Jakarta platform. */
+
+    /**
+     * Identifier for the Jakarta platform.
+     */
     public static final String JAKARTA_PLATFORM = "jakarta.platform";
 
-    /** Identifier for the Jakarta EE Web API. */
+    /**
+     * Identifier for the Jakarta EE Web API.
+     */
     public static final String JAKARTA_JAKARTAEE_WEB_API = "jakarta.jakartaee-web-api";
 
-    /** Identifier for the full Jakarta EE API. */
+    /**
+     * Identifier for the full Jakarta EE API.
+     */
     public static final String JAKARTA_JAKARTAEE_API = "jakarta.jakartaee-api";
 
-    /** Identifier for Jakarta Faces. */
+    /**
+     * Identifier for the Jakarta EE Core API.
+     */
+    public static final String JAKARTA_JAKARTAEE_CORE_API = "jakarta.jakartaee-core-api";
+
+    /**
+     * Identifier for Jakarta Faces.
+     */
     public static final String JAKARTA_FACES = "jakarta.faces";
 
-    /** Identifier for the Jakarta Faces API. */
+    /**
+     * Identifier for the Jakarta Faces API.
+     */
     public static final String JAKARTA_FACES_API = "jakarta.faces-api";
 
-    /** Identifier for Jakarta Persistence. */
+    /**
+     * Identifier for Jakarta Persistence.
+     */
     public static final String JAKARTA_PERSISTENCE = "jakarta.persistence";
-    /** Identifier for the Jakarta Persistence API. */
+    /**
+     * Identifier for the Jakarta Persistence API.
+     */
     public static final String JAKARTA_PERSISTENCE_API = "jakarta.persistence-api";
 
-    /** Identifier for Jakarta Enterprise. */
+    /**
+     * Identifier for Jakarta Enterprise.
+     */
     public static final String JAKARTA_ENTERPRISE = "jakarta.enterprise";
-    /** Identifier for the Jakarta Enterprise CDI API. */
+    /**
+     * Identifier for the Jakarta Enterprise CDI API.
+     */
     public static final String JAKARTA_ENTERPRISE_CDI_API = "jakarta.enterprise.cdi-api";
 
-    /** Identifier for Jakarta Data. */
+    /**
+     * Identifier for Jakarta Data.
+     */
     public static final String JAKARTA_DATA = "jakarta.data";
-    /** Identifier for the Jakarta Data API. */
+    /**
+     * Identifier for the Jakarta Data API.
+     */
     public static final String JAKARTA_DATA_API = "jakarta.data-api";
 
-    /** Identifier for Jakarta MVC. */
+    /**
+     * Identifier for Jakarta MVC.
+     */
     public static final String JAKARTA_MVC = "jakarta.mvc";
-    /** Identifier for the Jakarta MVC API. */
+    /**
+     * Identifier for the Jakarta MVC API.
+     */
     public static final String JAKARTA_MVC_API = "jakarta.mvc-api";
 
-    /** Jakarta EE version 10. */
+    /**
+     * Jakarta EE version 10.
+     */
     public static final String JAKARTAEE_VERSION_10 = "10.0.0";
-    /** Jakarta EE version 11. */
+    /**
+     * Jakarta EE version 11.
+     */
     public static final String JAKARTAEE_VERSION_11 = "11.0.0";
 
-    /** Dependency scope "provided". */
+    /**
+     * Dependency scope "provided".
+     */
     public static final String PROVIDED_SCOPE = "provided";
 
-    /** Key for the name of an entity. */
+    /**
+     * Key for the name of an entity.
+     */
     public static final String NAME = "name";
-    /** Key for the table name of an entity. */
+    /**
+     * Key for the type of an entity or field.
+     */
+    public static final String TYPE = "type";
+    /**
+     * Key for the table name of an entity.
+     */
     public static final String TABLE_NAME = "table";
-    /** Key to identify if a field is an ID. */
+    /**
+     * Key to identify if a field is an ID.
+     */
     public static final String IS_ID = "isId";
-    /** Key for the package name. */
+    public static final String GENERATED_VALUE = "generatedValue";
+    /**
+     * Key for the package name.
+     */
     public static final String PACKAGE_NAME = "packageName";
-    /** Key for the class name. */
+    /**
+     * Key for the class name.
+     */
     public static final String CLASS_NAME = "className";
-    /** Key for the fields of an entity. */
+    /**
+     * Key for the fields of an entity.
+     */
     public static final String FIELDS = "fields";
-    /** Key for the list of imports. */
+    /**
+     * Key for the list of imports.
+     */
     public static final String IMPORTS_LIST = "importsList";
 
-    /** URL to retrieve configured dependencies. */
-    public static final String DEPENDENCIES_URL = "https://jakarta-coffee-builder.github.io/configuration/dependencies.json";
-    /** URL to retrieve Hibernate dialect configurations. */
-    public static final String DIALECT_URL = "https://jakarta-coffee-builder.github.io/configuration/hibernate-dialect.json";
-    /** URL to retrieve configured properties. */
-    public static final String PROPERTIES_URL = "https://jakarta-coffee-builder.github.io/configuration/properties.json";
+    /**
+     * URL to retrieve configured dependencies.
+     */
+    public static final String DEV_BASE_URL = "https://raw.githubusercontent.com/jakarta-coffee-builder/configuration/refs/heads/develop";
+    /**
+     * Production base URL for retrieving configured dependencies.
+     */
+    public static final String PRD_BASE_URL = "https://jakarta-coffee-builder.github.io/configuration";
+    /**
+     * URL path for retrieving dependency configurations.
+     */
+    public static final String DEPENDENCIES_URL = "/dependencies.json";
 
-    /** Hibernate persistence provider. */
+    /**
+     * URL path for retrieving server configurations.
+     */
+    public static final String SERVERS_URL = "/servers.json";
+    /**
+     * URL path for retrieving specification configurations.
+     */
+    public static final String SPECIFICATIONS_URL = "/specifications.json";
+
+    /**
+     * URL path for retrieving class definitions.
+     */
+    public static final String CLASSES_DEFINITIONS = "/classes-definitions.json";
+
+    /**
+     * URL to retrieve Hibernate dialect configurations.
+     */
+    public static final String DIALECT_URL = "/hibernate-dialect.json";
+    /**
+     * URL to retrieve configured properties.
+     */
+    public static final String PROPERTIES_URL = "/properties.json";
+
+    /**
+     * Hibernate persistence provider.
+     */
     public static final String HIBERNATE_PROVIDER = "org.hibernate.jpa.HibernatePersistenceProvider";
 
     /**
-     * Map of supported Jakarta EE specification versions.
-     * <p>
-     * This map associates Jakarta EE versions with their corresponding API versions for various specifications.
-     * </p>
+     * Jakarta Faces servlet class.
      */
-    public static final Map<String, Map<String, String>> SPECS_VERSIONS = Map.
-        of(
-            JAKARTAEE_VERSION_10, Map.of(
-                JAKARTA_FACES_API, "4.0.1",
-                JAKARTA_PERSISTENCE_API, "3.1.0",
-                JAKARTA_ENTERPRISE_CDI_API, "4.0.1"
-            ),
-            JAKARTAEE_VERSION_11, Map.of(
-                JAKARTA_FACES_API, "4.1.2",
-                JAKARTA_PERSISTENCE_API, "3.2.0",
-                JAKARTA_ENTERPRISE_CDI_API, "4.1.0",
-                JAKARTA_DATA_API, "1.0.1",
-                JAKARTA_MVC_API, "3.0.0"
-            )
-        );
-
-    /** Jakarta Faces servlet class. */
     public static final String JAKARTA_FACES_WEBAPP_FACES_SERVLET = "jakarta.faces.webapp.FacesServlet";
 
-    /** Name of the Jakarta Faces servlet. */
+    /**
+     * Name of the Jakarta Faces servlet.
+     */
     public static final String JAKARTA_FACES_SERVLET = "JakartaServlet";
-    /** Definition of the Jakarta Faces servlet. */
+    /**
+     * Definition of the Jakarta Faces servlet.
+     */
     public static final String JAKARTA_FACES_SERVLET_DEFINITION = "Jakarta Faces Servlet Definition";
 
-    /** Namespace for Jakarta Faces core. */
+    /**
+     * Namespace for Jakarta Faces core.
+     */
     public static final String FACES_NS_CORE = "jakarta.faces.core";
-    /** Namespace for Jakarta Faces HTML. */
+    /**
+     * Namespace for Jakarta Faces HTML.
+     */
     public static final String FACES_NS_HTML = "jakarta.faces.html";
-    /** Namespace for Jakarta Faces Facelets. */
+    /**
+     * Namespace for Jakarta Faces Facelets.
+     */
     public static final String FACES_NS_UI = "jakarta.faces.facelets";
 
-    /** Constant for the forward slash "/". */
+    /**
+     * Constant for the forward slash "/".
+     */
     public static final String SLASH = "/";
 
-    /** Name of the XSLT file for XML formatting. */
-    public static final String XML_XSLT = "format-xml.xslt";
-    /** Name of the XSLT file for XHTML formatting. */
-    public static final String XHTML_XSLT = "format-xhtml.xslt";
-    /** Name of the XSLT file for XHTML composition formatting. */
-    public static final String XHTML_COMPOSITION_XSLT = "format-xhtml-composition.xslt";
-
-    /** Datasource declaration in `web.xml`. */
+    /**
+     * Datasource declaration in `web.xml`.
+     */
     public static final String DATASOURCE_DECLARE_WEB = "web.xml";
-    /** Datasource declaration in a class. */
+    /**
+     * Datasource declaration in a class.
+     */
     public static final String DATASOURCE_DECLARE_CLASS = "class";
-    /** Datasource declaration for Payara. */
+    /**
+     * Datasource declaration for Payara.
+     */
     public static final String DATASOURCE_PAYARA = "payara";
+
+    /**
+     * Generic key for a value.
+     */
+    public static final String VALUE = "value";
+    /**
+     * URL to retrieve schema definitions.
+     */
+    public static final String SCHEMAS_URL = "/schemas.json";
+    /**
+     * URL to retrieve OpenAPI Generator configurations.
+     */
+    public static final String OPEN_API_GENERATOR_CONFIGURATION = "/openapi-generator-config.json";
+
+    /**
+     * Key for the Maven groupId.
+     */
+    public static final String GROUP_ID = "groupId";
+    /**
+     * Key for the Maven artifactId.
+     */
+    public static final String ARTIFACT_ID = "artifactId";
+
+    /**
+     * Group ID for PrimeFaces.
+     */
+    public static final String ORG_PRIMEFACES = "org.primefaces";
+    /**
+     * Artifact ID for PrimeFaces.
+     */
+    public static final String PRIMEFACES = "primefaces";
+
+    /**
+     * Key for configuration settings.
+     */
+    public static final String CONFIGURATION = "configuration";
+
+    /**
+     * Key for a list of goals.
+     */
+    public static final String GOALS = "goals";
+    /**
+     * Key for a single goal.
+     */
+    public static final String GOAL = "goal";
+
+    public static final String ORG_APACHE_MAVEN_PLUGINS = "org.apache.maven.plugins";
+    public static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
+    public static final String ORG_MAPSTRUCT = "org.mapstruct";
+    public static final String MAPSTRUCT = "mapstruct";
+    public static final String ENTITY = "entity";
+    public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
+        "ElementCollection");
+    public static final Set<String> GENERATION_TYPES = Set.of("AUTO", "IDENTITY", "SEQUENCE", "TABLE","UUID");
+
+    public static final String MODEL_NAME = "modelName";
+    public static final String DESCRIPTION = "description";
+    public static final String FULL_NAME = "fullName";
+    public static final String ORG_OPENAPITOOLS = "org.openapitools";
+    public static final String OPENAPI_GENERATOR_MAVEN_PLUGIN = "openapi-generator-maven-plugin";
 
     private Constants() {
     }

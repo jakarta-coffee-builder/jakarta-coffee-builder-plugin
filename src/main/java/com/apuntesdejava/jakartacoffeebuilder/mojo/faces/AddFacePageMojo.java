@@ -26,6 +26,8 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+
 /**
  * Add a new JSF page to the project.
  * The plugin creates a new JSF page in the specified location.
@@ -40,7 +42,7 @@ public class AddFacePageMojo extends AbstractMojo {
 
     @Parameter(
         required = true,
-        property = "name"
+        property = NAME
     )
     private String pageName;
 

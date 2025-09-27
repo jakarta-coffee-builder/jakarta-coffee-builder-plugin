@@ -1,0 +1,26 @@
+{
+  "ProjectList": {
+    "entity": "Project",
+    "title": "Projects List",
+    "base": "/",
+    "template": {
+      "facelet": "/WEB-INF/templates/template1.xhtml",
+      "define": "body"
+    },
+    "fields": {
+      "id": {
+        "label": "Project Id"
+      },
+      "name": {
+        "label": "Project Name"
+      },
+      "startDate": {
+        "label": "Start Date"
+      },
+      "endDate": {
+        "label": "End Date"
+      }
+    }
+  },
+  "indexTo": "/index.xhtml"
+}

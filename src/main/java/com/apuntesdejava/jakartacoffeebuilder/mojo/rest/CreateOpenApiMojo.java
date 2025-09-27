@@ -15,13 +15,20 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.rest;
 
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.OpenApiGeneratorHelper;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +84,16 @@ public class CreateOpenApiMojo extends AbstractMojo {
     )
     private File openApiFileServer;
 
+    @Component
+    private ProjectBuilder projectBuilder;
+
+    @Parameter(
+        defaultValue = "${session}",
+        readonly = true,
+        required = true
+    )
+    private MavenSession mavenSession;
+
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
@@ -103,14 +120,31 @@ public class CreateOpenApiMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();
-        Optional.ofNullable(openApiFileServer).ifPresent(openApiFile -> {
-            log.info("Creating open api server side with %s".formatted(openApiFile));
-            try {
-                OpenApiGeneratorHelper.getInstance().processServer(mavenProject, openApiFile);
-            } catch (URISyntaxException | IOException e) {
-                throw new RuntimeException(new MojoFailureException(e));
-            }
+        var jakartaEeHelper = JakartaEeHelper.getInstance();
+        try {
+            MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
-        });
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+
+            jakartaEeHelper.addJacksonDependency(mavenProject, log);
+            jakartaEeHelper.addMicroprofileOpenApiApiDependency(mavenProject, log);
+            jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log, jakartaEeVersion);
+            jakartaEeHelper.addHelperGenerateSource(mavenProject, log);
+
+            Optional.ofNullable(openApiFileServer).ifPresent(openApiFile -> {
+                log.info("Creating open api server side with %s".formatted(openApiFile));
+                try {
+                    OpenApiGeneratorHelper.getInstance().processServer(mavenProject, openApiFile, log);
+                } catch (URISyntaxException | IOException | MojoExecutionException e) {
+                    throw new RuntimeException(new MojoFailureException(e));
+                }
+
+            });
+            PomUtil.saveMavenProject(mavenProject, log);
+
+        } catch (IOException | ProjectBuildingException e) {
+            log.error("Error while adding Jackson dependency: %s".formatted(e.getMessage()));
+            throw new MojoFailureException(e);
+        }
     }
 }

@@ -16,11 +16,14 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.w3c.dom.Document;
+import org.apache.maven.project.MavenProject;
+import org.dom4j.Document;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,22 +31,27 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.HIBERNATE_PROVIDER;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
+
+import org.dom4j.Namespace;
 
 /**
- * Helper class for managing `persistence.xml` files.
- * Provides methods to create and save `persistence.xml` documents.
+ * Helper class for managing `persistence.xml` files. Provides methods to create and save `persistence.xml` documents.
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class PersistenceXmlHelper {
 
+    private final Namespace persistenceNS;
+
     private PersistenceXmlHelper() {
+        this.persistenceNS = new Namespace("", "https://jakarta.ee/xml/ns/persistence");
     }
 
     /**
-     * Returns the singleton instance of the `PersistenceXmlHelper` class.
-     * This method ensures that only one instance of the class is created
-     * (Singleton pattern).
+     * Returns the singleton instance of the `PersistenceXmlHelper` class. This method ensures that only one instance of
+     * the class is created (Singleton pattern).
      *
      * @return the singleton instance of `PersistenceXmlHelper`
      */
@@ -52,29 +60,47 @@ public class PersistenceXmlHelper {
     }
 
     /**
-     * Creates a new `persistence.xml` document.
+     * Creates or loads a {@code persistence.xml} document.
+     * <p>
+     * If the file does not exist, this method initializes it with a standard {@code <persistence>} root element,
+     * including the appropriate XML namespaces and schema locations based on the project's detected Jakarta EE version.
+     * It also adds a new {@code <persistence-unit>} with the specified name. If the file already exists, it will be
+     * loaded.
      *
-     * @param currentPath         the current path where the `persistence.xml` will be created
-     * @param log                 the logger to use for logging messages
-     * @param persistenceUnitName the name of the persistence unit
-     * @return an `Optional` containing the created `Document`, or an empty `Optional` if the document could not be created
+     * @param mavenProject        the current Maven project, used to resolve paths and the Jakarta EE version.
+     * @param log                 the Maven logger for outputting messages.
+     * @param persistenceUnitName the name to be assigned to the new persistence unit.
+     *
+     * @return an {@link Optional} containing the created or loaded {@link Document}, or an empty {@code Optional} if an
+     *         error occurs during file access.
+     *
+     * @throws RuntimeException if an {@link IOException} occurs while fetching schema information.
      */
-    public Optional<Document> createPersistenceXml(Path currentPath, Log log, String persistenceUnitName) {
+    public Optional<Document> createPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnitName) {
+        var currentPath = mavenProject.getBasedir().toPath();
         var xmlUtil = XmlUtil.getInstance();
         var xmlPath = getPersistencePath(currentPath);
         return xmlUtil.getDocument(log, xmlPath, document -> {
+                                   try {
+                                       var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log)
+                                           .orElseThrow();
+                                       JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                                                                                                  "persistence")
+                                           .orElseThrow();
 
-            var persistenceElem = document.createElement("persistence");
-            persistenceElem.setAttribute("xmlns", "https://jakarta.ee/xml/ns/persistence");
-            persistenceElem.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            persistenceElem.setAttribute("xsi:schemaLocation",
-                "https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd");
-            persistenceElem.setAttribute("version", "3.0");
+                                       var persistenceElem = document.addElement("persistence",
+                                                                             "https://jakarta.ee/xml/ns/persistence");
+//                persistenceElem.add(new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"));
+//                persistenceElem.add(new Namespace("schemaLocation",
+//                    "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url")));
+                                       persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
-            var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
-            persistenceUnitElem.setAttribute("name", persistenceUnitName);
-            document.appendChild(persistenceElem);
-        });
+                                       var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
+                                       persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
+                                   } catch (IOException e) {
+                                       throw new RuntimeException(e);
+                                   }
+                               });
     }
 
     /**
@@ -89,42 +115,44 @@ public class PersistenceXmlHelper {
     }
 
     /**
-     * Resolves the path to the `persistence.xml` file.
-     * This method constructs the path by appending the standard directory structure
-     * (`src/main/resources/META-INF`) to the provided base path.
+     * Resolves the path to the `persistence.xml` file. This method constructs the path by appending the standard
+     * directory structure (`src/main/resources/META-INF`) to the provided base path.
      *
      * @param currentPath the base path from which the `persistence.xml` path will be resolved
+     *
      * @return the resolved `Path` to the `persistence.xml` file
      */
     protected Path getPersistencePath(Path currentPath) {
         return currentPath.resolve("src")
-                          .resolve("main")
-                          .resolve("resources")
-                          .resolve("META-INF")
-                          .resolve("persistence.xml");
+            .resolve("main")
+            .resolve("resources")
+            .resolve("META-INF")
+            .resolve("persistence.xml");
     }
 
     /**
-     * Adds a data source to the `persistence.xml` file.
+     * Adds a data source to the specified persistence unit within the `persistence.xml` file. If the `persistence.xml`
+     * file does not exist, it will be created.
      *
-     * @param currentPath     the current path where the `persistence.xml` is located
-     * @param log             the logger to use for logging messages
-     * @param persistenceUnit the name of the persistence unit to which the data source will be added
-     * @param name            the name of the data source to be added
+     * @param mavenProject    the current Maven project, used to resolve paths.
+     * @param log             the Maven logger for outputting messages.
+     * @param persistenceUnit the name of the persistence unit to modify.
+     * @param name            the JTA data source name to be added or updated.
      */
-    public void addDataSourceToPersistenceXml(Path currentPath, Log log, String persistenceUnit, String name) {
-        createPersistenceXml(currentPath, log, persistenceUnit)
+    public void addDataSourceToPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnit, String name) {
+        createPersistenceXml(mavenProject, log, persistenceUnit)
             .ifPresent(document -> {
                 var xmlUtil = XmlUtil.getInstance();
-                xmlUtil.findElementsStream(document, log,
-                           "//persistence-unit[@name='%s' and not(jta-data-source/text()='%s')]"
-                               .formatted(persistenceUnit, name))
-                       .findFirst()
-                       .ifPresent(element -> {
-                           xmlUtil.removeElement(element,"jta-data-source");
-                           xmlUtil.addElement(element, "jta-data-source").setTextContent(name);
-                           savePersistenceXml(currentPath, log, document);
-                       });
+                xmlUtil.findElementsStream(document,
+                                           "//*[local-name()='persistence-unit'][@name='%s'][not(*[local-name()='jta-data-source' and text()='%s'])]"
+                                               .formatted(persistenceUnit, name))
+                    .findFirst()
+                    .ifPresent(element -> {
+                        xmlUtil.removeElement(element, "jta-data-source");
+                        xmlUtil.addElement(element, "jta-data-source").setText(name);
+                        var currentPath = mavenProject.getBasedir().toPath();
+                        savePersistenceXml(currentPath, log, document);
+                    });
             });
     }
 
@@ -139,36 +167,39 @@ public class PersistenceXmlHelper {
         var persistencePath = getPersistencePath(currentPath);
         var xmlUtil = XmlUtil.getInstance();
         xmlUtil.getDocument(log, persistencePath).ifPresent(persistenceXml -> {
-            xmlUtil.findElementsStream(persistenceXml, log, "//persistence-unit")
-                   .findFirst()
-                   .ifPresent(elem -> {
-                       if (xmlUtil.findElementsStream(persistenceXml, log,
-                                      "//persistence-unit/provider[text()='%s']".formatted(HIBERNATE_PROVIDER))
-                                  .findFirst().isEmpty())
-                           xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
-                       xmlUtil.getElement(elem, "properties").ifPresent(properties -> {
-                           if (StringUtils.isNotBlank(dialectClass))
-                               xmlUtil.addElement(properties, "property",
-                                   Map.of("name", "hibernate.dialect", "value", dialectClass));
-                           try {
-                               CoffeeBuilderUtil.getPropertiesConfiguration("hibernate")
-                                                .ifPresent(propertiesConfig -> propertiesConfig
-                                                    .stream()
-                                                    .map(JsonValue::asJsonObject)
-                                                    .forEach(property -> {
-                                                        var name = property.getString("name");
-                                                        var value = property.getString("value");
-                                                        xmlUtil.addElement(
-                                                            properties, "property",
-                                                            Map.of("name", name, "value", value)
-                                                        );
-                                                    }));
-                           } catch (IOException e) {
-                               log.error(e.getMessage(), e);
-                           }
-                       });
+            xmlUtil.findElementsStream(persistenceXml, "//*[local-name()='persistence-unit']")
+                .findFirst()
+                .ifPresent(elem -> {
+                    if (xmlUtil.findElementsStream(persistenceXml,
+                                                   "//*[local-name()='persistence-unit']/*[local-name()='provider' and text()='%s']"
+                                                       .formatted(HIBERNATE_PROVIDER))
+                        .findFirst().isEmpty()) {
+                        xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
+                    }
+                    xmlUtil.getElement(elem, "properties", persistenceNS).ifPresent(properties -> {
+                        if (StringUtils.isNotBlank(dialectClass)) {
+                            xmlUtil.addElement(properties, "property",
+                                               Map.of(NAME, "hibernate.dialect", VALUE, dialectClass));
+                        }
+                        try {
+                            CoffeeBuilderUtil.getPropertiesConfiguration("jpa-hibernate")
+                                .ifPresent(propertiesConfig -> propertiesConfig
+                                .stream()
+                                .map(JsonValue::asJsonObject)
+                                .forEach(property -> {
+                                    var name = property.getString(NAME);
+                                    var value = property.getString(VALUE);
+                                    xmlUtil.addElement(
+                                        properties, "property",
+                                        Map.of(NAME, name, VALUE, value)
+                                    );
+                                }));
+                        } catch (IOException e) {
+                            log.error(e.getMessage(), e);
+                        }
+                    });
 
-                   });
+                });
             xmlUtil.saveDocument(persistenceXml, log, persistencePath);
         });
 

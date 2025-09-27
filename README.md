@@ -1,4 +1,9 @@
 # Jakarta Coffee Builder Plugin
+![Maven Central Version](https://img.shields.io/maven-central/v/com.apuntesdejava/jakarta-coffee-builder-plugin)  ![GitHub last commit](https://img.shields.io/github/last-commit/jakarta-coffee-builder/jakarta-coffee-builder-plugin)  [![GitHub](https://img.shields.io/badge/maven-plugin-darkgreen?logo=github)](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin) 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/jakarta-coffee-builder/jakarta-coffee-builder-plugin/maven-ci-cd.yml)
+
+`develop`: ![GitHub branch check runs](https://img.shields.io/github/check-runs/jakarta-coffee-builder/jakarta-coffee-builder-plugin/develop) ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/jakarta-coffee-builder/jakarta-coffee-builder-plugin/develop)
+
 
 Maven plugin for adding and modifying Jakarta EE functionality to a project.
 
@@ -43,6 +48,35 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-faces
 
 ```
 
+**Showing**
+[![asciicast](https://asciinema.org/a/30Zyd628az3toF03XtZ5eSLRc.svg)](https://asciinema.org/a/30Zyd628az3toF03XtZ5eSLRc)
+
+### Add Jakarta Facelet Page (Template)
+
+Add a Facelet page
+
+```shell
+mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.2-SNAPSHOT:add-face-template" 
+```
+
+**Parameters**
+
+| Parameter | Definition                     | Example                        |
+|-----------|--------------------------------|--------------------------------|
+| `name`    | Name of the Template to create | `/WEB-INF/templates/template1` |
+| `inserts` | Names of inserts block names   | `section1,section2,section3`   |
+
+
+
+**Example**
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-template \
+    -Dname=/WEB-INF/template/main.xhtml \
+    -Dinserts=header,body,footer
+```
+**Showing**
+[![asciicast](https://asciinema.org/a/tD2VpNkH5EHSQaTYRu9pasArc.svg)](https://asciinema.org/a/tD2VpNkH5EHSQaTYRu9pasArc)
+
 ### Add Jakarta Faces Page
 
 Add a Face page, associating it with a Managed Bean. It can also be done by using a specified Facelet template
@@ -53,11 +87,30 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
 
 **Parameters**
 
-| Parameter      | Definition                                                                                            | Default value |
-|----------------|-------------------------------------------------------------------------------------------------------|---------------|
-| `name`         | Name of the Face page to create                                                                       |               |
-| `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |
-| `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               |
+| Parameter      | Definition                                                                                            | Default value | Example                        |
+|----------------|-------------------------------------------------------------------------------------------------------|---------------|--------------------------------|
+| `name`         | Name of the Face page to create                                                                       |               |                                |
+| `managed-bean` | Boolean value indicating whether or not the Managed Bean class associated with the Face is created.   | `true`        |                                |
+| `template`     | Path of the Facelet template to be implemented for the Face to be created. This parameter is optional |               | `/WEB-INF/templates/template1` |
+
+
+
+**Example**
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page \
+    -Dname=hello-world \
+    -Dmanaged-bean=false
+
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page \
+    -Dname=persons \
+    -Dmanaged-bean=true
+
+```
+
+**Showing**
+
+Creating page with / without Managed Bean:
+[![asciicast](https://asciinema.org/a/And0N0LueNSaMCKV9VnyKm1gr.svg)](https://asciinema.org/a/And0N0LueNSaMCKV9VnyKm1gr)
 
 
 ## Jakarta Persistence
@@ -72,9 +125,18 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
 
 **Parameters**
 
-| Parameter               | Definition                                                                                                             | Default value |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------|
-| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. | `defaultPU`   |
+| Parameter               | Definition                                                                                                             | Default value       |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------------|
+| `datasource-name`       | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.   | `defaultDatasource` |
+| `url`                   | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.         |                     |
+| `username`              | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `password`              | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `declare`               | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`               | `class`             |
+| `server-name`           | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `port-number`           | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `properties`            | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.  |                     |
+| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. |                     | 
+
 
 ### Add DataSource configuration
 
@@ -86,17 +148,140 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
 
 **Parameters**
 
-| Parameter          | Definition                                                                                                              | Default value                 |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------|-------------------------------|
-| `name`             | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.    |                               |
-| `class-name`       | This parameter defines the driver class of the DataSource. This value will be included in the DataSource configuration. | `org.h2.jdbcx.JdbcDataSource` |
-| `url`              | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.          |                               |
-| `username`         | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.     |                               |
-| `password`         | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.     |                               |
-| `coordinates-jdbc` | This parameter defines the coordinates of the JDBC driver. This value will be included in the DataSource configuration. | `com.h2database:h2:1.4.200`   |
-| `declare`          | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`                | `class`                       |
-| `server-name`      | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration.  |                               |
-| `port-number`      | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration.  |                               |
-| `properties`       | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.   |                               |
-| `persistence-unit` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration.  |                               | 
+| Parameter               | Definition                                                                                                             | Default value       |
+|-------------------------|------------------------------------------------------------------------------------------------------------------------|---------------------|
+| `datasource-name`       | This parameter defines the JNDI name of the DataSource. This value will be included in the DataSource configuration.   | `defaultDatasource` |
+| `url`                   | This parameter defines the URL of the DataSource. This value will be included in the DataSource configuration.         |                     |
+| `username`              | This parameter defines the username of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `password`              | This parameter defines the password of the DataSource. This value will be included in the DataSource configuration.    |                     |
+| `declare`               | Indicates how the DataSource is to be declared in the application. Possible values are `web.xml` `class`               | `class`             |
+| `server-name`           | This parameter defines the server name of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `port-number`           | This parameter defines the port number of the DataSource. This value will be included in the DataSource configuration. |                     |
+| `properties`            | This parameter defines the properties of the DataSource. This value will be included in the DataSource configuration.  |                     |
+| `persistence-unit-name` | This parameter defines the name of the persistence unit. This value will be included in the persistence configuration. |                     | 
 
+
+### Add Jakarta Persistence Entity
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-entities
+
+```
+
+**Parameters**
+
+| Parameter       | Definition                                                                                        | Example                                 |
+|-----------------|---------------------------------------------------------------------------------------------------|-----------------------------------------|
+| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](examples/entities.json) |
+
+**Example JSON File**
+```json
+``
+
+
+## Jakarta RESTful Web Services
+
+### Create REST services with OpenAPI specifications
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:create-openapi
+```
+
+**Parameters**
+
+| Parameter        | Definition                                                                        | Example                               |
+|------------------|-----------------------------------------------------------------------------------|---------------------------------------|
+| `openapi-server` | The name of the yml file is specified with the server-side OpenAPI specification. | [openapi.yaml](examples/openapi.yaml) |
+
+**Note**
+- Each endpoint must be identified by a label
+
+### Add Glassfish Embedded Plugin
+
+Add Glassfish Embedded Plugin
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-glassfish-embedded
+```
+
+
+**Parameters**
+
+| Parameter     | Definition                                                      | Default value                |
+|---------------|-----------------------------------------------------------------|------------------------------|
+| `profile`     | This parameter defines the ID of the Maven profile to be added. | `glassfish`                  |
+| `port`        | This parameter defines the GlassFish port                       | `8080`                       |
+| `contextRoot` | Application Web Context Root                                    | `${project.build.finalName}` |
+
+### Add PayaraMicro Plugin
+
+Add PayaraMicro Plugin
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
+```
+
+### Add Domain Model
+
+The domain model is based using the definition of entities
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model
+```
+
+**Parameters**
+
+| Parameter       | Definition                                                                                        | Example                                 |
+|-----------------|---------------------------------------------------------------------------------------------------|-----------------------------------------|
+| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](examples/entities.json) |
+
+**Example**
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model \
+    -Dentities-file=entities.json
+```
+
+### Add Forms (Primefaces) from Entities
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-forms-from-entities
+```
+
+**Parameters**
+
+| Parameter       | Definition                                                                                         | Example                                 |
+|-----------------|----------------------------------------------------------------------------------------------------|-----------------------------------------|
+| `entities-file` | The name  of the json file that contains the list of entities and their definitions to be created. | [entities.json](examples/entities.json) |
+| `forms-file`    | The name of the json file that contains the list of forms and columns to Faces Pages               | [forms.json](examples/forms.json)       |
+
+
+# Additional settings
+
+To avoid the whole long plugin coordinate, like this:
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model ...
+```
+
+Edit the `~/.m2/settings.xml` file by adding the following content:
+
+```xml
+  <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+    
+    <!--- other configurations... -->
+    <pluginGroups>
+      <pluginGroup>com.apuntesdejava</pluginGroup>
+    </pluginGroups>
+    <!--- other configurations... -->
+  </settings>
+
+```
+
+After that, you can now call the plugin as follows:
+
+
+```shell
+mvn jakarta-coffee-builder:add-domain-model ...
+```

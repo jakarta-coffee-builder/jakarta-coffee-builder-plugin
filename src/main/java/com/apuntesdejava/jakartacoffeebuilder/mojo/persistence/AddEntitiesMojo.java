@@ -15,6 +15,7 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 
+import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaPersistenceHelper;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -24,6 +25,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Mojo for adding JPA entities to a Jakarta EE project.
@@ -104,8 +107,12 @@ public class AddEntitiesMojo extends AbstractMojo {
                 log.error("Entities file not found: " + entitiesFile.getAbsolutePath());
                 throw new MojoFailureException("Entities file not found: " + entitiesFile.getAbsolutePath());
             }
-            JakartaPersistenceHelper.getInstance().addEntities(mavenProject, log, entitiesFile.toPath());
-        } catch (Exception ex) {
+            var persistenceXmlPath = JakartaEeHelper.getInstance()
+                    .getPersistenceXmlPath(mavenProject)
+                    .orElseThrow( ()-> new FileNotFoundException("persistence.xml file not found"));
+            JakartaPersistenceHelper.getInstance()
+                                    .addEntities(mavenProject, log, entitiesFile.toPath(), persistenceXmlPath);
+        } catch (IOException | MojoFailureException ex) {
             throw new MojoExecutionException("Error adding entities", ex);
         }
     }

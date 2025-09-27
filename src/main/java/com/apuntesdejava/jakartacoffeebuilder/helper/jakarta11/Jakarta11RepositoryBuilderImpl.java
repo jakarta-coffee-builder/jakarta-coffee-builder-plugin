@@ -15,8 +15,8 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper.jakarta11;
 
-import com.apuntesdejava.jakartacoffeebuilder.helper.MavenProjectHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.RepositoryBuilder;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import jakarta.json.JsonObject;
@@ -25,8 +25,10 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil.getFieldIdClass;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
 
@@ -46,19 +48,21 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
     /**
      * Builds a repository class for a specific entity in a Jakarta 11 project.
      *
-     * @param mavenProject the Maven project where the repository will be created
-     * @param log the logger to log messages during the repository creation process
-     * @param entity a {@link JsonObject} representing the entity for which the repository is being created
+     * @param mavenProject      the Maven project where the repository will be created
+     * @param log               the logger to log messages during the repository creation process
+     * @param entityName        the name of the entity for which the repository is being created
+     * @param entity            a {@link JsonObject} representing the entity for which the repository is being created
+     * @param additionalImports a collection of additional imports to be added to the repository class
      */
     @Override
-    public void buildRepository(MavenProject mavenProject, Log log, JsonObject entity) {
-        var entityName = getEntityName(entity);
+    public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity, Collection<String> additionalImports) {
+
         try {
             log.info("Building Jakarta 11 Repository for entity: " + entityName);
-            var packageDefinition = MavenProjectHelper.getRepositoryPackage(mavenProject);
-            var packageEntity = MavenProjectHelper.getEntityPackage(mavenProject);
+            var packageDefinition = MavenProjectUtil.getRepositoryPackage(mavenProject);
+            var packageEntity = MavenProjectUtil.getEntityPackage(mavenProject);
             var className = entityName + "Repository";
-            var fieldId = getFieldId(entity);
+            log.debug("entity:" + entity);
             var repositoryPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
             var classRepository = StringUtils.capitalize(entity.getString("repository", "crud"));
 
@@ -69,7 +73,8 @@ public class Jakarta11RepositoryBuilderImpl implements RepositoryBuilder {
                             "entityName", entityName,
                             "classRepository", classRepository,
                             "packageEntity", packageEntity,
-                            "idType", fieldId.map(f -> f.getString("type")).orElse("Long")
+                            "importsList", additionalImports,
+                            "idType", getFieldIdClass(entity,"Long")
                         ), repositoryPath);
         } catch (IOException e) {
             log.error("Error building Jakarta 11 Repository for entity: " + entityName, e);

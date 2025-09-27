@@ -15,16 +15,20 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
+import jakarta.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.w3c.dom.Document;
+import org.apache.maven.project.MavenProject;
+import org.dom4j.Document;
 
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_WEBAPP_FACES_SERVLET;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
 
 /**
  * Utility class for handling operations related to the `web.xml` file in a Jakarta EE Maven project.
@@ -51,6 +55,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACE
  * </p>
  */
 public class WebXmlUtil {
+    
+    private static final String WEB_APP_EXP_SEARCH = "//*[local-name()='web-app']";
 
     private WebXmlUtil() {
     }
@@ -72,20 +78,28 @@ public class WebXmlUtil {
      * Checks if the `web.xml` file exists in the given Maven project path.
      * If the file does not exist, it creates a new `web.xml` file with a basic `web-app` element.
      *
-     * @param log         the logger to use for logging messages
-     * @param currentPath the path to the Maven project
+     * @param mavenProject the Maven project to check for the `web.xml` file
+     * @param log          the logger to use for logging messages
      * @return an Optional containing the XML Document if the file exists or was created successfully, otherwise an empty Optional
      */
-    public Optional<Document> checkExistsFile(Log log, Path currentPath) {
+    public Optional<Document> checkExistsFile(MavenProject mavenProject, Log log) {
+
+        var currentPath = mavenProject.getBasedir().toPath();
         var webXmlPath = currentPath.resolve("src/main/webapp/WEB-INF/web.xml");
         return XmlUtil.getInstance().getDocument(log, webXmlPath, document -> {
-            var webAppElement = document.createElement("web-app");
-            webAppElement.setAttribute("version", "6.0");
-            webAppElement.setAttribute("xmlns", "https://jakarta.ee/xml/ns/jakartaee");
-            webAppElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            webAppElement.setAttribute("xsi:schemaLocation",
-                "https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd");
-            document.appendChild(webAppElement);
+            try {
+                var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log).orElseThrow();
+                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                    "web-app").orElseThrow();
+
+                var webAppElement = document.addElement("web-app", "https://jakarta.ee/xml/ns/jakartaee");
+                webAppElement.addAttribute("version", schemaDescription.getString("version"));
+                webAppElement.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                webAppElement.addAttribute("xsi:schemaLocation",
+                    "https://jakarta.ee/xml/ns/jakartaee " + schemaDescription.getString("url"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
 
     }
@@ -106,16 +120,15 @@ public class WebXmlUtil {
                                       String description) {
         var xmlUtil = XmlUtil.getInstance();
 
-
-        var nodeList = xmlUtil.findElements(document, log,
-            "//servlet-class[text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET));
-        if (nodeList.getLength() == 0) {
-            xmlUtil.addElement(document, log, "//web-app", "servlet", servlet -> {
+        var nodeList = xmlUtil.findElements(document,
+            "//*[local-name()='servlet-class' and text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
+        if (nodeList == 0) {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet", servlet -> {
                 xmlUtil.addElement(servlet, "description", description);
                 xmlUtil.addElement(servlet, "servlet-name", servletName);
                 xmlUtil.addElement(servlet, "servlet-class", JAKARTA_FACES_WEBAPP_FACES_SERVLET);
             });
-            xmlUtil.addElement(document, log, "//web-app", "servlet-mapping", servlet -> {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet-mapping", servlet -> {
                 xmlUtil.addElement(servlet, "servlet-name", servletName);
                 xmlUtil.addElement(servlet, "url-pattern", urlPattern);
             });
@@ -125,11 +138,12 @@ public class WebXmlUtil {
     /**
      * Saves the given XML document to the `web.xml` file located in the specified Maven project's path.
      *
-     * @param document    the XML document to save
-     * @param log         the logger to use for logging messages
-     * @param currentPath the path to the Maven project
+     * @param mavenProject the Maven project to save the `web.xml` file
+     * @param document     the XML document to save
+     * @param log          the logger to use for logging messages
      */
-    public void saveDocument(Document document, Log log, Path currentPath) {
+    public void saveDocument(MavenProject mavenProject, Document document, Log log) {
+        var currentPath = mavenProject.getBasedir().toPath();
         XmlUtil.getInstance().saveDocument(document, log, currentPath.resolve("src/main/webapp/WEB-INF/web.xml"));
     }
 
@@ -142,9 +156,9 @@ public class WebXmlUtil {
      */
     public void addWelcomePages(Document document, String welcomeFile, Log log) {
         var xmlUtil = XmlUtil.getInstance();
-        var nodeList = xmlUtil.findElements(document, log, "//welcome-file");
-        if (nodeList.getLength() == 0) {
-            xmlUtil.addElement(document, log, "//web-app", "welcome-file-list",
+        var nodeList = xmlUtil.findElements(document, "//*[local-name()='welcome-file']").count();
+        if (nodeList == 0) {
+            xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "welcome-file-list",
                 (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
         }
     }
@@ -159,16 +173,16 @@ public class WebXmlUtil {
      */
     public void addDataSource(Document document, Log log, Map<String, Object> properties) {
         var xmlUtil = XmlUtil.getInstance();
-        if (xmlUtil.findElementsStream(document, log,
-            "//data-source/name[text()='%s']".formatted(properties.get("name"))).findFirst().isEmpty()) {
+        if (xmlUtil.findElementsStream(document,
+            "//*[local-name()='data-source'][*[local-name()='name' and text()='%s']]".formatted(properties.get(NAME))).findFirst().isEmpty()) {
             var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
             properties.forEach((key, value) -> {
                 if (value instanceof Collection<?> collection) {
                     collection.forEach(item -> {
                         var propertyElem = xmlUtil.addElement(datasourceElem, "property");
                         var values = StringUtils.split(item.toString(), "=");
-                        xmlUtil.addElement(propertyElem, "name", values[0]);
-                        xmlUtil.addElement(propertyElem, "value", values[1]);
+                        xmlUtil.addElement(propertyElem, NAME, values[0]);
+                        xmlUtil.addElement(propertyElem, VALUE, values[1]);
                     });
                 } else {
                     var newKey = StringsUtil.camelCaseToParamCase(key);

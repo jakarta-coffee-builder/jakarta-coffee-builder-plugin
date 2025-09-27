@@ -17,17 +17,21 @@ package com.apuntesdejava.jakartacoffeebuilder.helper.jakarta10;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.RepositoryBuilder;
 import jakarta.json.JsonObject;
+
+import java.util.Collection;
+
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Jakarta 10 Repository Builder implementation.
- * This class provides the logic to build a repository based on an entity
+ * Jakarta 10 Repository Builder implementation. This class provides the logic to build a repository based on an entity
  * defined in a JSON object.
- *
- * <p>Implements the {@link RepositoryBuilder} interface.</p>
- *
- * <p>Usage example:</p>
+ * <p>
+ * <p>
+ * Implements the {@link RepositoryBuilder} interface.</p>
+ * <p>
+ * <p>
+ * Usage example:</p>
  * <pre>
  * {@code
  * Jakarta10RepositoryBuilderImpl builder = new Jakarta10RepositoryBuilderImpl();
@@ -51,11 +55,12 @@ public class Jakarta10RepositoryBuilderImpl implements RepositoryBuilder {
      *
      * @param mavenProject The Maven project being worked on.
      * @param log          The logger object to log messages during the build process.
+     * @param entityName
      * @param entity       The JSON object representing the entity for which the repository will be built.
+     * @param imports
      */
     @Override
-    public void buildRepository(MavenProject mavenProject, Log log, JsonObject entity) {
-        var entityName = getEntityName(entity);
+    public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity, Collection<String> imports) {
 
         log.info("Building Jakarta 10 Repository for entity: " + entityName);
     }

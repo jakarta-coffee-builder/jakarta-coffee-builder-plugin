@@ -15,18 +15,18 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IS_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * Utility class for handling CoffeeBuilder operations.
@@ -38,7 +38,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  */
 public class CoffeeBuilderUtil {
 
-    private CoffeeBuilderUtil(){
+    private CoffeeBuilderUtil() {
 
     }
 
@@ -50,8 +50,36 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonObject> getDependencyConfiguration(String name) throws IOException {
-        var response = HttpUtil.getContent(Constants.DEPENDENCIES_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DEPENDENCIES_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonObject(name));
+    }
+
+    public static Optional<JsonObject> getServerDefinition(String name) throws IOException {
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SERVERS_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        return Optional.ofNullable(response.getJsonObject(name));
+    }
+
+    public static Optional<JsonObject> getSpecificationsDefinitions() throws IOException {
+        return Optional.ofNullable(
+            HttpUtil.getContent(HttpUtil.getUrl(Constants.SPECIFICATIONS_URL),
+                STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
+        );
+    }
+
+    public static Optional<JsonObject> getClassesDefinitions() throws IOException {
+        return Optional.ofNullable(
+            HttpUtil.getContent(HttpUtil.getUrl(Constants.CLASSES_DEFINITIONS),
+                STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
+        );
+    }
+
+    public static Optional<JsonObject> getOpenApiGeneratorConfiguration() throws IOException {
+        return Optional.ofNullable(
+            HttpUtil.getContent(HttpUtil.getUrl(Constants.OPEN_API_GENERATOR_CONFIGURATION),
+                STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
+        );
     }
 
     /**
@@ -62,7 +90,8 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonArray> getPropertiesConfiguration(String name) throws IOException {
-        var response = HttpUtil.getContent(Constants.PROPERTIES_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.PROPERTIES_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonArray(name));
     }
 
@@ -73,50 +102,58 @@ public class CoffeeBuilderUtil {
      * @throws IOException if an error occurs while obtaining the content
      */
     public static Optional<JsonObject> getDialectConfiguration() throws IOException {
-        var response = HttpUtil.getContent(Constants.DIALECT_URL, STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DIALECT_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response);
     }
 
+    public static Optional<JsonObject> getSchema(String jakartaEeVersion, String name) throws IOException {
+        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SCHEMAS_URL),
+            STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
+        return Optional.ofNullable(response.getJsonObject(jakartaEeVersion).getJsonObject(name));
+    }
+
+
     /**
-     * Updates the project configuration with the given configuration name and JSON object.
+     * Retrieves the JDBC configuration for the given database URL.
      *
-     * @param currentDirectoryPath the path to the current directory
-     * @param configurationName    the name of the configuration to update
-     * @param configuration        the JSON object containing the configuration data
-     * @throws IOException if an error occurs while updating the configuration
+     * @param url the JDBC URL from which the dialect key will be extracted
+     * @return an Optional containing the JsonObject of the JDBC configuration if present
+     * @throws IOException if an error occurs while obtaining the dialect configuration
      */
-    public static void updateProjectConfiguration(Path currentDirectoryPath,
-                                                  String configurationName,
-                                                  JsonObject configuration) throws IOException {
-        var configurationJson = currentDirectoryPath.resolve("project.json");
-        var configurationObject = Files.exists(configurationJson)
-            ? JsonUtil.readJsonValue(configurationJson).asJsonObject()
-            : Json.createObjectBuilder().build();
-        var json = Json.createObjectBuilder(configurationObject)
-                       .add(configurationName, configuration)
-                       .build();
-        JsonUtil.saveJsonValue(configurationJson, json);
+    public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
+        final String dialectKey = StringUtils.substringBetween(url, "jdbc:", ":");
+        return getDialectConfiguration().map(
+            dialectConfiguration -> dialectConfiguration.getJsonObject(dialectKey));
 
     }
 
     /**
-     * Retrieves the dialect from the project configuration.
+     * Retrieves the field marked as the identifier (ID) from the entity definition.
      *
-     * @param currentDirectoryPath the path to the current directory
-     * @return an Optional containing the dialect string if present
-     * @throws IOException if an error occurs while reading the configuration
+     * @param entity the JSON object representing the entity
+     * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
      */
-    public static Optional<String> getDialectFromConfiguration(Path currentDirectoryPath) throws IOException {
-        var configurationJson = currentDirectoryPath.resolve("project.json");
-        var configurationObject = JsonUtil.readJsonValue(configurationJson).asJsonObject();
-        var jdbcConfiguration = configurationObject.getJsonObject("jdbc");
-        var dialect = jdbcConfiguration.getString("dialect", EMPTY);
-        if (StringUtils.isEmpty(dialect)) {
-            var url = jdbcConfiguration.getString("url");
-            dialect = StringUtils.substringBetween(url, "jdbc:", ":");
-        }
-        final String dialectKey = "jdbc:" + dialect;
-        return getDialectConfiguration().map(dialectConfiguration -> dialectConfiguration.getString(dialectKey));
+    public static Optional<Map.Entry<String, JsonValue>> getFieldId(JsonObject entity) {
+        return entity.getJsonObject("fields")
+            .entrySet().stream()
+            .filter(entry -> {
 
+                var val = entry.getValue().asJsonObject();
+                return val.containsKey(IS_ID) && val.get(IS_ID).getValueType() == JsonValue.ValueType.TRUE;
+            })
+            .findFirst();
+    }
+
+    /**
+     * Retrieves the class type associated with the field marked as the identifier (ID) from the entity definition.
+     * If no ID field is found, the provided default value is returned.
+     *
+     * @param entity       the JSON object representing the entity
+     * @param defaultValue the default value to return if no ID field or class type is found
+     * @return the class type as a string, or the default value if no ID field or class type is found
+     */
+    public static String getFieldIdClass(JsonObject entity, String defaultValue) {
+        return getFieldId(entity).map(f -> f.getValue().asJsonObject().getString(TYPE)).orElse(defaultValue);
     }
 }

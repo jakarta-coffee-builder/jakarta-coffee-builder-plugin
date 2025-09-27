@@ -15,36 +15,29 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
-import com.apuntesdejava.jakartacoffeebuilder.model.NamespaceContextMap;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Element;
+import org.dom4j.Namespace;
+import org.dom4j.Node;
+import org.dom4j.QName;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.IntStream;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.XML_XSLT;
 
 /**
  * Utility class for XML operations.
@@ -85,26 +78,10 @@ public class XmlUtil {
         return XmlUtilHolder.INSTANCE;
     }
 
-    private final DocumentBuilder dBuilder;
 
     private XmlUtil() {
-        try {
-            var dbFactory = DocumentBuilderFactory.newInstance();
-            this.dBuilder = dbFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    private File createXsltTemp(String xsltName) throws IOException {
-        var classLoader = XmlUtil.class.getClassLoader();
-        var resourceUrl = classLoader.getResource(xsltName);
-        if (resourceUrl == null) throw new RuntimeException("Resource not found: " + xsltName);
-        var tempFile = File.createTempFile("resource-temp", ".xslt");
-        tempFile.deleteOnExit();
-        FileUtils.copyURLToFile(resourceUrl, tempFile);
-        return tempFile;
-    }
 
     /**
      * Adds a new element with the specified tag name and content to the given parent element.
@@ -114,28 +91,22 @@ public class XmlUtil {
      * @param content the text content of the new element
      */
     public void addElement(Element parent, String tagName, String content) {
-        var element = parent.getOwnerDocument().createElement(tagName);
-        element.setTextContent(content);
-        parent.appendChild(element);
+        var element = parent.addElement(tagName);
+        element.setText(content);
     }
 
-    private static boolean existsChildElement(Element parent, String tagName, Map<String, String> attributes) {
-        var childNodes = parent.getChildNodes();
-        if (childNodes.getLength() == 0) return false;
-        Map<String, String> attrMap = new LinkedHashMap<>();
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            var node = childNodes.item(i);
-            if (node instanceof Element element) {
-                if (element.getTagName().equals(tagName)) {
-                    var elementAttributes = element.getAttributes();
-                    for (int j = 0; j < elementAttributes.getLength(); j++) {
-                        var elementAttr = (Attr) elementAttributes.item(j);
-                        attrMap.put(elementAttr.getName(), elementAttr.getValue());
-                    }
-                    if (CollectionsUtil.areEqual(attrMap, attributes)) {
-                        return true;
-                    }
-                }
+    private boolean existsChildElement(Element parent, String tagName, Map<String, String> attributes) {
+        List<Element> childElements = parent.elements(tagName);
+        if (childElements.isEmpty()) {
+            return false;
+        }
+
+        for (Element child : childElements) {
+            Map<String, String> childAttributes = new LinkedHashMap<>();
+            child.attributes().forEach(attr -> childAttributes.put(attr.getName(), attr.getValue()));
+
+            if (CollectionsUtil.areEqual(childAttributes, attributes)) {
+                return true;
             }
         }
         return false;
@@ -147,16 +118,15 @@ public class XmlUtil {
      * If a child element with the same tag name and attributes already exists, this method does nothing.
      * </p>
      *
-     * @param parent    the parent element to which the new element will be added
-     * @param tagName   the tag name of the new element
+     * @param parent     the parent element to which the new element will be added
+     * @param tagName    the tag name of the new element
      * @param attributes a map of attributes to set on the new element
      */
     public void addElement(Element parent, String tagName, Map<String, String> attributes) {
         if (existsChildElement(parent, tagName, attributes)) return;
 
-        var element = parent.getOwnerDocument().createElement(tagName);
-        attributes.forEach(element::setAttribute);
-        parent.appendChild(element);
+        var element = parent.addElement(tagName);
+        attributes.forEach(element::addAttribute);
     }
 
     /**
@@ -167,9 +137,7 @@ public class XmlUtil {
      * @return the newly created element
      */
     public Element addElement(Element parent, String tagName) {
-        var element = parent.getOwnerDocument().createElement(tagName);
-        parent.appendChild(element);
-        return element;
+        return parent.addElement(tagName);
     }
 
     /**
@@ -184,53 +152,48 @@ public class XmlUtil {
      * @param textContent the text content of the new element
      */
     public void addElementAtStart(Element parent, Log log, String tagName, String textContent) {
-        if (findElementsStream(parent.getOwnerDocument(), log, tagName).findFirst().isPresent()) return;
-        var element = parent.getOwnerDocument().createElement(tagName);
-        element.setTextContent(textContent);
-        if (parent.getFirstChild() != null) {
-            parent.insertBefore(element, parent.getFirstChild());
-        } else {
-            parent.appendChild(element);
-        }
+        if (findElementsStream(parent.getDocument(), tagName).findFirst().isPresent()) return;
+
+        QName qName = new QName(tagName, parent.getNamespace());
+        var element = DocumentHelper.createElement(qName);
+
+        element.setText(textContent);
+        parent.content().addFirst(element);
     }
 
     /**
-     * Adds a new element with the specified namespace and tag name to the given parent element.
+     * Adds a new element with the specified tag name and namespace to the given parent element.
      *
-     * @param parent    the parent element to which the new element will be added
-     * @param namespace the namespace URI of the new element
+     * @param element   the parent element to which the new element will be added
      * @param tagName   the tag name of the new element
+     * @param namespace the namespace of the new element
      * @return the newly created element
      */
-    public Element addElementNS(Element parent, String namespace, String tagName) {
-        var element = parent.getOwnerDocument().createElementNS(namespace, tagName);
-        parent.appendChild(element);
-        return element;
+    public Element addElement(Element element, String tagName, Namespace namespace) {
+        return element.addElement(new QName(tagName, namespace));
     }
 
     /**
-     * Adds a new element to the specified parent node in the given XML document.
+     * Adds a new element to the specified document node in the given XML document.
      *
-     * @param parent     the XML document to which the new element will be added
+     * @param document   the XML document to which the new element will be added
      * @param log        the logger to use for logging messages
-     * @param parentNode the XPath expression to locate the parent node
+     * @param parentNode the XPath expression to locate the document node
      * @param nodeName   the name of the new element to be added
      * @param postCreate a consumer to perform additional operations on the new element after creation
-     * @return  the newly created element
+     * @return the newly created element
      */
-    public Element addElement(Document parent, Log log, String parentNode,
+    public Element addElement(Document document, Log log, String parentNode,
                               String nodeName, Consumer<Element> postCreate) {
-        var nodeList = findElements(parent, log, parentNode);
-        if (nodeList.getLength() == 0) {
+        var nodeList = findElements(document, parentNode).toList();
+        if (nodeList.isEmpty()) {
             log.error("Parent node not found: " + parentNode);
             return null;
         }
-        var node = nodeList.item(0);
-        var element = parent.createElement(nodeName);
+        var element = nodeList.getFirst().addElement(nodeName);
         if (postCreate != null) {
             postCreate.accept(element);
         }
-        node.appendChild(element);
         return element;
     }
 
@@ -259,25 +222,26 @@ public class XmlUtil {
      */
     public Optional<Document> getDocument(Log log,
                                           Path path,
-                                          Function<DocumentBuilder, Document> createDocumentType,
+                                          Supplier<Document> createDocumentType,
                                           Consumer<Document> postCreate) {
         try {
-
             if (Files.exists(path)) {
-                var doc = dBuilder.parse(path.toFile());
-                doc.getDocumentElement().normalize();
-                return Optional.of(doc);
+                return Optional.of(getDocument(path));
             }
             Files.createDirectories(path.getParent());
-            var doc = Optional.ofNullable(createDocumentType)
-                              .map(p -> p.apply(dBuilder))
-                              .orElseGet(dBuilder::newDocument);
+            var doc = createDocumentType == null
+                    ? DocumentHelper.createDocument()
+                    : createDocumentType.get();
             Optional.ofNullable(postCreate).ifPresent(p -> p.accept(doc));
             return Optional.of(doc);
-        } catch (IOException | SAXException e) {
+        } catch (IOException | DocumentException e) {
             log.error(e.getMessage(), e);
             return Optional.empty();
         }
+    }
+
+    private Document getDocument(Path path) throws IOException, DocumentException {
+        return DocumentHelper.parseText(Files.readString(path));
     }
 
     /**
@@ -293,13 +257,11 @@ public class XmlUtil {
     public Optional<Document> getDocument(Log log, Path path) {
         if (!Files.exists(path)) return Optional.empty();
         try {
-            var doc = dBuilder.parse(path.toFile());
-            doc.getDocumentElement().normalize();
-            return Optional.of(doc);
-        } catch (SAXException | IOException e) {
+            return Optional.of(getDocument(path));
+        } catch (IOException | DocumentException e) {
             log.error(e.getMessage(), e);
         }
-        return Optional.empty();
+        return getDocument(log, path, null, null);
     }
 
     /**
@@ -318,13 +280,12 @@ public class XmlUtil {
      * Finds elements in the given XML document that match the specified XPath expression.
      *
      * @param doc        the XML document to search
-     * @param log        the logger to use for logging messages
      * @param expression the XPath expression to evaluate
      * @return a NodeList containing the matching elements
      * @throws RuntimeException if an error occurs while evaluating the XPath expression
      */
-    public NodeList findElements(Document doc, Log log, String expression) {
-        return findElements(doc, log, expression, Map.of());
+    public Stream<Element> findElements(Document doc, String expression) {
+        return findElements(doc, expression, Map.of());
     }
 
     /**
@@ -332,39 +293,30 @@ public class XmlUtil {
      * returns them as a stream of {@code Element} objects.
      *
      * @param doc        the XML document to search
-     * @param log        the logger to use for logging messages
      * @param expression the XPath expression used to evaluate and find matching elements
      * @return a {@code Stream} containing the matching {@code Element} objects
      */
-    public Stream<Element> findElementsStream(Document doc, Log log, String expression) {
-        var nodeList = findElements(doc, log, expression, Map.of());
-        return IntStream.range(0, nodeList.getLength())
-                        .mapToObj(nodeList::item)
-                        .map(node -> (Element) node);
+    public Stream<Element> findElementsStream(Document doc, String expression) {
+        return findElements(doc, expression, Map.of());
     }
 
     /**
      * Finds elements in the given XML document using the specified XPath expression and optional namespace mappings.
      *
      * @param doc        the XML document to search
-     * @param log        the logger to use for logging messages
      * @param expression the XPath expression to evaluate
      * @param namespaces a map of namespace prefixes to namespace URIs for resolving namespaces in the XPath expression
      * @return a NodeList containing the elements matching the XPath expression
      * @throws RuntimeException if an error occurs while evaluating the XPath expression
      */
-    public NodeList findElements(Node doc, Log log, String expression, Map<String, String> namespaces) {
-        try {
-            var xPathFactory = XPathFactory.newInstance();
-            var xPath = xPathFactory.newXPath();
-            if (namespaces != null && !namespaces.isEmpty())
-                namespaces.forEach((key, value) -> xPath.setNamespaceContext(new NamespaceContextMap(key, value)));
-            var xPathExpression = xPath.compile(expression);
-            return (NodeList) xPathExpression.evaluate(doc, XPathConstants.NODESET);
-        } catch (XPathExpressionException ex) {
-            log.error(ex.getMessage(), ex);
-            throw new RuntimeException(ex);
-        }
+    public Stream<Element> findElements(Node doc,
+                                        String expression,
+                                        Map<String, String> namespaces) {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        var xPath = doc.createXPath(expression);
+        if (namespaces != null && !namespaces.isEmpty())
+            xPath.setNamespaceURIs(namespaces);
+        return xPath.selectNodes(doc).stream().map(Element.class::cast);
     }
 
     /**
@@ -372,31 +324,16 @@ public class XmlUtil {
      * returns them as a stream of {@code Element} objects.
      *
      * @param doc        the XML document to search
-     * @param log        the logger to use for logging messages
      * @param expression the XPath expression used to evaluate and find matching elements
      * @param namespaces a map of namespace prefixes to namespace URIs for resolving namespaces in the XPath expression
      * @return a {@code Stream} containing the matching {@code Element} objects
      */
     public Stream<Element> findElementsStream(Node doc,
-                                              Log log,
                                               String expression,
                                               Map<String, String> namespaces) {
-        var nodeList = findElements(doc, log, expression, namespaces);
-        return IntStream.range(0, nodeList.getLength())
-                        .mapToObj(nodeList::item)
-                        .map(node -> (Element) node);
+        return findElements(doc, expression, namespaces);
     }
 
-    /**
-     * Saves the given XML document to the specified path.
-     *
-     * @param document the XML document to save
-     * @param log      the logger to use for logging messages
-     * @param xmlPath  the path to save the XML document
-     */
-    public void saveDocument(Document document, Log log, Path xmlPath) {
-        saveDocument(document, log, xmlPath, XML_XSLT);
-    }
 
     /**
      * Saves the specified XML document to the given path, applying an XSLT transformation.
@@ -404,19 +341,20 @@ public class XmlUtil {
      * @param document the XML document to save
      * @param log      the logger to use for logging messages
      * @param xmlPath  the path to save the transformed XML document
-     * @param xsltName the name of the XSLT file to apply for the transformation
      */
-    public void saveDocument(Document document, Log log, Path xmlPath, String xsltName) {
-        try {
-            var xlstFile = createXsltTemp(xsltName);
-            var transformerFactory = TransformerFactory.newInstance();
-            var styleSource = new StreamSource(xlstFile);
-            var transformer = transformerFactory.newTransformer(styleSource);
-            var source = new DOMSource(document);
-            var result = new StreamResult(xmlPath.toFile());
-            transformer.transform(source, result);
+    public void saveDocument(Document document, Log log, Path xmlPath) {
+        if (document==null)return;
+        var format = OutputFormat.createPrettyPrint();
+        format.setIndentSize(4);
+        format.setSuppressDeclaration(false);
+        format.setEncoding("UTF-8");
+
+        try (StringWriter sw = new StringWriter(); XMLWriter writer = new XMLWriter(sw, format)) {
+            writer.write(document);
+            var contents = sw.toString();
+            Files.writeString(xmlPath, contents);
             log.debug("Saved document to: " + xmlPath);
-        } catch (TransformerException | IOException ex) {
+        } catch (IOException ex) {
             log.error(ex.getMessage(), ex);
         }
     }
@@ -429,24 +367,50 @@ public class XmlUtil {
      * @return the first child element with the specified tag name, or a new element if not found
      */
     public Optional<Element> getElement(Element parentElement, String elementName) {
-        NodeList nodeList = parentElement.getElementsByTagName(elementName);
-        if (nodeList.getLength() > 0) {
-            return Optional.of((Element) nodeList.item(0));
+        var element = Optional.ofNullable((Element) parentElement.selectSingleNode(elementName));
+        if (element.isEmpty())
+            return Optional.of(addElement(parentElement, elementName));
+        return element;
+    }
+
+    /**
+     * Retrieves the first child element with the specified tag name and namespace from the given parent element.
+     * If the element does not exist, it is created.
+     *
+     * @param parentElement the parent element to search within
+     * @param elementName   the tag name of the child element to retrieve
+     * @param namespace     the namespace of the element
+     * @return the first child element with the specified tag name, or a new element if not found
+     */
+    public Optional<Element> getElement(Element parentElement, String elementName, Namespace namespace) {
+        QName qName = new QName(elementName, namespace);
+        Element element = parentElement.element(qName);
+        if (element == null) {
+            return Optional.of(parentElement.addElement(qName));
         }
-        return Optional.of(addElement(parentElement, elementName));
+        return Optional.of(element);
     }
 
     /**
      * Removes the first child element with the specified tag name from the given parent element.
      *
-     * @param element        the parent element from which the child element will be removed
+     * @param element         the parent element from which the child element will be removed
      * @param tagNameToRemove the tag name of the child element to be removed
      */
     public void removeElement(Element element, String tagNameToRemove) {
-        var nodeList = element.getElementsByTagName(tagNameToRemove);
-        if (nodeList.getLength() > 0) {
-            element.removeChild(nodeList.item(0));
-        }
+        Optional.ofNullable((Element) element.selectSingleNode(tagNameToRemove)).ifPresent(element::remove);
+    }
+
+    /**
+     * Removes the first child element with the specified tag name and namespace from the given parent element.
+     *
+     * @param element         the parent element from which the child element will be removed
+     * @param tagNameToRemove the tag name of the child element to be removed
+     * @param namespace       the namespace of the element
+     */
+    public void removeElement(Element element, String tagNameToRemove, Namespace namespace) {
+        QName qName = new QName(tagNameToRemove, namespace);
+        Optional.ofNullable(element.element(qName)).ifPresent(element::remove);
     }
 
     private static class XmlUtilHolder {

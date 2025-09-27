@@ -54,6 +54,14 @@ public class PathsUtil {
         return javaDir;
     }
 
+    public static Path getResourcePath(MavenProject mavenProject) throws IOException {
+        var resourcesDir = mavenProject.getBasedir().toPath().resolve("src").resolve("main").resolve("resources");
+        if (!Files.exists(resourcesDir)) {
+            Files.createDirectories(resourcesDir);
+        }
+        return resourcesDir;
+    }
+
     /**
      * Returns the path to the 'src/main/webapp' directory within the Maven project. Creates the directory if it doesn't
      * exist.

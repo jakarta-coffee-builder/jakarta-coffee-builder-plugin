@@ -1,0 +1,22 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.test</groupId>
+    <artifactId>test-project</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.apuntesdejava</groupId>
+                <artifactId>jakarta-coffee-builder-plugin</artifactId>
+                <version>0.0.2-SNAPSHOT</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>

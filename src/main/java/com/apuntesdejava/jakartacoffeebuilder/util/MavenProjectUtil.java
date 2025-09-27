@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.apuntesdejava.jakartacoffeebuilder.helper;
+package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Build;
+import org.apache.maven.model.BuildBase;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ENTITY;
 
 /**
  * Helper class for Maven project operations.
@@ -28,9 +38,9 @@ import org.apache.maven.project.ProjectBuildingException;
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
-public class MavenProjectHelper {
+public class MavenProjectUtil {
 
-    private MavenProjectHelper() {
+    private MavenProjectUtil() {
     }
 
     /**
@@ -43,8 +53,8 @@ public class MavenProjectHelper {
      * @throws ProjectBuildingException if an error occurs during project building
      */
     public static MavenProject getFullProject(MavenSession mavenSession,
-                                       ProjectBuilder projectBuilder,
-                                       MavenProject mavenProject) throws ProjectBuildingException {
+                                              ProjectBuilder projectBuilder,
+                                              MavenProject mavenProject) throws ProjectBuildingException {
         var buildingRequest = mavenSession.getProjectBuildingRequest();
         buildingRequest.setResolveDependencies(true);
         var result = projectBuilder.build(mavenProject.getFile(), buildingRequest);
@@ -68,8 +78,25 @@ public class MavenProjectHelper {
      *
      * @param mavenProject the Maven project containing the group ID and artifact ID
      * @return the generated package name for the "entity" layer
-     */    public static String getEntityPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "entity");
+     */
+    public static String getEntityPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), ENTITY);
+    }
+
+    public static String getModelPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
+    }
+
+    public static String getMapperPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "mapper");
+    }
+    
+    public static String getServicePackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "service");
+    }
+
+    public static String getEnumsPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "enums");
     }
 
     /**
@@ -91,6 +118,7 @@ public class MavenProjectHelper {
     public static String getProviderPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
     }
+
     /**
      * Constructs a package name for the "faces" layer based on the Maven project details.
      *
@@ -109,5 +137,59 @@ public class MavenProjectHelper {
      */
     public static String getApiResourcesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
+    }
+
+    public static String getDomainModelPackage(MavenProject mavenProject) {
+        return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
+    }
+
+    /**
+     * Retrieves an active profile from the Maven project by its ID.
+     * If the profile does not exist, a new one is created, added to the active profiles, and returned.
+     *
+     * @param mavenProject The Maven project.
+     * @param profileId    The ID of the profile to retrieve or create.
+     * @return The found or newly created {@link Profile}.
+     */
+    public static Profile getProfile(MavenProject mavenProject, String profileId) {
+        var model = getOriginalModel(mavenProject);
+        return model.getProfiles()
+                    .stream()
+                    .filter(profile -> profile.getId().equals(profileId))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        var profile = new Profile();
+                        profile.setId(profileId);
+                        model.addProfile(profile);
+                        return profile;
+                    });
+
+    }
+
+    private static Model getOriginalModel(MavenProject mavenProject) {
+        return Optional.ofNullable(mavenProject.getOriginalModel()).orElse(mavenProject.getModel());
+    }
+
+    /**
+     * Retrieves the parent directory of the Maven project's POM file.
+     *
+     * @param mavenProject The Maven project.
+     * @return The {@link Path} to the parent directory of the POM file.
+     */
+    public static Path getParent(MavenProject mavenProject) {
+        return mavenProject.getFile().toPath().getParent();
+    }
+
+
+    public static BuildBase getBuild(MavenProject mavenProject,String profileId){
+        var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
+
+        return Optional.ofNullable(profile.getBuild())
+                       .orElseGet(() -> {
+                                Build bld = new Build();
+                                profile.setBuild(bld);
+                                bld.setPlugins(new ArrayList<>());
+                                return bld;
+                            });
     }
 }
