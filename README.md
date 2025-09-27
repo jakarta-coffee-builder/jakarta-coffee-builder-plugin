@@ -169,9 +169,9 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-entities
 
 **Parameters**
 
-| Parameter       | Definition                                                                                        | Example                                                                                                                   |
-|-----------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/blob/main/examples/entities.json) |
+| Parameter       | Definition                                                                                        | Example                                 |
+|-----------------|---------------------------------------------------------------------------------------------------|-----------------------------------------|
+| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](examples/entities.json) |
 
 **Example JSON File**
 ```json
@@ -188,9 +188,9 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:create-openapi
 
 **Parameters**
 
-| Parameter        | Definition                                                                        | Example                                                                                                                 |
-|------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `openapi-server` | The name of the yml file is specified with the server-side OpenAPI specification. | [openapi.yaml](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/blob/main/examples/openapi.yaml) |
+| Parameter        | Definition                                                                        | Example                               |
+|------------------|-----------------------------------------------------------------------------------|---------------------------------------|
+| `openapi-server` | The name of the yml file is specified with the server-side OpenAPI specification. | [openapi.yaml](examples/openapi.yaml) |
 
 **Note**
 - Each endpoint must be identified by a label
@@ -230,13 +230,58 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model
 
 **Parameters**
 
-| Parameter       | Definition                                                                                        | Example                                                                                                                   |
-|-----------------|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin/blob/main/examples/entities.json) |
+| Parameter       | Definition                                                                                        | Example                                 |
+|-----------------|---------------------------------------------------------------------------------------------------|-----------------------------------------|
+| `entities-file` | The name of the json file that contains the list of entities and their definitions to be created. | [entities.json](examples/entities.json) |
 
 **Example**
 
 ```shell
 mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model \
     -Dentities-file=entities.json
+```
+
+### Add Forms (Primefaces) from Entities
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-forms-from-entities
+```
+
+**Parameters**
+
+| Parameter       | Definition                                                                                         | Example                                 |
+|-----------------|----------------------------------------------------------------------------------------------------|-----------------------------------------|
+| `entities-file` | The name  of the json file that contains the list of entities and their definitions to be created. | [entities.json](examples/entities.json) |
+| `forms-file`    | The name of the json file that contains the list of forms and columns to Faces Pages               | [forms.json](examples/forms.json)       |
+
+
+# Additional settings
+
+To avoid the whole long plugin coordinate, like this:
+
+```shell
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model ...
+```
+
+Edit the `~/.m2/settings.xml` file by adding the following content:
+
+```xml
+  <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+    
+    <!--- other configurations... -->
+    <pluginGroups>
+      <pluginGroup>com.apuntesdejava</pluginGroup>
+    </pluginGroups>
+    <!--- other configurations... -->
+  </settings>
+
+```
+
+After that, you can now call the plugin as follows:
+
+
+```shell
+mvn jakarta-coffee-builder:add-domain-model ...
 ```
