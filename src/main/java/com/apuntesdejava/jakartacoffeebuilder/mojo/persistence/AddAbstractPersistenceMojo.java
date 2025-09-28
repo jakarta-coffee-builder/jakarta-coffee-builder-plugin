@@ -148,6 +148,9 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      */
     protected MavenProject fullProject;
 
+    /**
+     * Constructor default
+     */
     public AddAbstractPersistenceMojo(){
 
     }

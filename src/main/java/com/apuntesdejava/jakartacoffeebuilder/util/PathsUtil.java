@@ -27,24 +27,30 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 
 /**
- * Utility class for working with file paths within a Maven project. Provides methods for obtaining paths to common
- * directories like 'src/main/java' and 'src/main/webapp', and for creating package directories.
+ * A utility class for resolving and creating file paths within a Maven project structure.
+ * <p>
+ * This class provides static methods to obtain paths to standard Maven directories such as
+ * {@code src/main/java} and {@code src/main/webapp}, and ensures these directories are created
+ * if they do not exist.
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
-public class PathsUtil {
+public final class PathsUtil {
 
-    private PathsUtil(){
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private PathsUtil() {
 
     }
 
     /**
-     * Returns the path to the 'src/main/java' directory within the Maven project. Creates the directory if it doesn't
-     * exist.
+     * Returns the path to the main Java source directory ({@code src/main/java}).
+     * If the directory does not exist, it will be created.
      *
-     * @param mavenProject The Maven project object.
-     * @return The Path object representing the 'src/main/java' directory.
-     * @throws IOException If an I/O error occurs during directory creation.
+     * @param mavenProject The current Maven project.
+     * @return The {@link Path} to the Java source directory.
+     * @throws IOException If an I/O error occurs while creating the directory.
      */
     public static Path getJavaPath(MavenProject mavenProject) throws IOException {
         var javaDir = mavenProject.getBasedir().toPath().resolve("src").resolve("main").resolve("java");
@@ -54,6 +60,14 @@ public class PathsUtil {
         return javaDir;
     }
 
+    /**
+     * Returns the path to the main resources directory ({@code src/main/resources}).
+     * If the directory does not exist, it will be created.
+     *
+     * @param mavenProject The current Maven project.
+     * @return The {@link Path} to the resources directory.
+     * @throws IOException If an I/O error occurs while creating the directory.
+     */
     public static Path getResourcePath(MavenProject mavenProject) throws IOException {
         var resourcesDir = mavenProject.getBasedir().toPath().resolve("src").resolve("main").resolve("resources");
         if (!Files.exists(resourcesDir)) {
@@ -63,12 +77,12 @@ public class PathsUtil {
     }
 
     /**
-     * Returns the path to the 'src/main/webapp' directory within the Maven project. Creates the directory if it doesn't
-     * exist.
+     * Returns the path to the web application source directory ({@code src/main/webapp}).
+     * If the directory does not exist, it will be created.
      *
-     * @param mavenProject The Maven project object.
-     * @return The Path object representing the 'src/main/webapp' directory.
-     * @throws IOException If an I/O error occurs during directory creation.
+     * @param mavenProject The current Maven project.
+     * @return The {@link Path} to the webapp directory.
+     * @throws IOException If an I/O error occurs while creating the directory.
      */
     public static Path getWebappPath(MavenProject mavenProject) throws IOException {
         var webappDir = mavenProject.getBasedir().toPath().resolve("src").resolve("main").resolve("webapp");
@@ -79,16 +93,17 @@ public class PathsUtil {
     }
 
     /**
-     * Returns the path to a package directory within the specified base directory. Creates the directory if it doesn't
-     * exist. The package name is converted to a path using '/' as a separator.
+     * Converts a package name into a directory path relative to a given base path.
+     * For example, "com.example.mypackage" becomes a directory structure {@code com/example/mypackage}.
+     * If the directory structure does not exist, it will be created.
      *
-     * @param javaDir The base directory.
-     * @param packageName The package name (e.g., "com.example.mypackage").
-     * @return The Path object representing the package directory.
-     * @throws IOException If an I/O error occurs during directory creation.
+     * @param basePath    The base directory {@link Path} where the package structure should be created.
+     * @param packageName The package name to convert (e.g., "com.example.mypackage").
+     * @return The {@link Path} to the final package directory.
+     * @throws IOException If an I/O error occurs while creating the directories.
      */
-    public static Path packageToPath(Path javaDir, String packageName) throws IOException {
-        var packageDir = javaDir.resolve(packageName.replace(".", "/"));
+    public static Path packageToPath(Path basePath, String packageName) throws IOException {
+        var packageDir = basePath.resolve(packageName.replace(".", "/"));
         if (!Files.exists(packageDir)) {
             Files.createDirectories(packageDir);
         }
@@ -96,13 +111,14 @@ public class PathsUtil {
     }
 
     /**
-     * Returns the path to a Java source file within a specified package directory in the Maven project.
-     * Creates necessary directories if they don't exist.
+     * Constructs the full path to a Java source file within a specific package.
+     * This method combines {@link #getJavaPath(MavenProject)} and {@link #packageToPath(Path, String)}
+     * to resolve the final file path.
      *
-     * @param mavenProject The Maven project object.
-     * @param packageDefinition The package name (e.g., "com.example.mypackage").
-     * @param javaClassName The name of the Java class (without the .java extension).
-     * @return The Path object representing the Java source file.
+     * @param mavenProject      The current Maven project.
+     * @param packageDefinition The target package name (e.g., "com.example.mypackage").
+     * @param javaClassName     The name of the Java class (without the {@code .java} extension).
+     * @return The fully resolved {@link Path} to the Java source file.
      * @throws IOException If an I/O error occurs during directory creation.
      */
     public static Path getJavaPath(MavenProject mavenProject,
@@ -114,12 +130,12 @@ public class PathsUtil {
     }
 
     /**
-     * Reads the content of a resource file and returns it as a stream of lines.
+     * Reads the content of a classpath resource and returns it as a stream of lines.
      *
-     * @param resourcePath The path to the resource file within the classpath.
-     * @return A Stream of strings, where each string represents a line from the resource file.
-     * @throws IOException If an I/O error occurs while reading the resource.
-     * @throws NullPointerException If the resource cannot be found.
+     * @param resourcePath The path to the resource file within the classpath (e.g., "/templates/my-template.txt").
+     * @return A {@link Stream} of strings, where each string is a line from the resource file.
+     * @throws IOException          If an I/O error occurs while reading the resource.
+     * @throws NullPointerException If the resource stream cannot be found.
      */
     public static Stream<String> getContentFromResource(String resourcePath) throws IOException {
         try (var is = PathsUtil.class.getClassLoader().getResourceAsStream(resourcePath)) {

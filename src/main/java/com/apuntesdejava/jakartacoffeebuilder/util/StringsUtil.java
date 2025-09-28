@@ -139,6 +139,15 @@ public class StringsUtil {
             .orElse(null);
     }
 
+    /**
+     * Finds the first string in the {@code searchAnnotations} set that matches the {@code search} string,
+     * ignoring case differences.
+     *
+     * @param searchAnnotations The set of strings to search within.
+     * @param search The string to match against the elements of {@code searchAnnotations}.
+     * @return An {@link Optional} containing the first matching string from {@code searchAnnotations} if found,
+     *         otherwise an empty {@link Optional}.
+     */
     public static Optional<String> findIgnoreCaseOptional(Set<String> searchAnnotations, String search) {
         return searchAnnotations.stream()
             .filter(item

@@ -59,6 +59,10 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
  */
 public class OpenApiGeneratorHelper {
 
+    /**
+     * The standard filename for the OpenAPI Generator ignore file.
+     * This file lists files and directories that should not be overwritten during code generation.
+     */
     public static final String OPENAPI_GENERATOR_IGNORE_FILENAME = ".openapi-generator-ignore";
 
     /**

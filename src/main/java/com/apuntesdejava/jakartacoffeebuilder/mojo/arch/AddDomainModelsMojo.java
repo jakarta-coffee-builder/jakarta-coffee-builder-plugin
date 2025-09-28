@@ -60,6 +60,9 @@ public class AddDomainModelsMojo extends AbstractMojo {
     )
     private MavenProject mavenProject;
 
+    /**
+     * Default constructor.
+     */
     public AddDomainModelsMojo(){
 
     }

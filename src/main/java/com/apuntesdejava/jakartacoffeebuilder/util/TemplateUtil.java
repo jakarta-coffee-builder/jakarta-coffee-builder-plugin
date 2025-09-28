@@ -26,10 +26,10 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
- * Utility class for generating files using predefined templates with Freemarker.
- * <p>
- * This singleton class provides methods to process template files with a specified data model.
- * It centralizes template configuration and ensures consistent usage throughout the application.
+ * Utility class for generating files using predefined templates with Freemarker. This singleton class provides methods
+ * to process template files with a specified data model. It centralizes template configuration and ensures consistent
+ * usage throughout the application.
+ *
  * <p>
  * The templates are loaded from a predefined location on the classpath, and the default encoding is set to UTF-8.
  */
@@ -46,7 +46,10 @@ public class TemplateUtil {
     private final Configuration configuration;
 
     private TemplateUtil() {
-        this.configuration = new Configuration(Configuration.VERSION_2_3_34);
+        // Set the Freemarker configuration version.
+        // Using the latest stable version is recommended for new projects.
+        this.configuration = new Configuration(Configuration.VERSION_2_3_32);
+        // Load templates from the "/freemaker" directory within the classpath.
         configuration.setClassForTemplateLoading(TemplateUtil.class, "/freemaker");
         configuration.setDefaultEncoding("UTF-8");
     }
@@ -54,9 +57,9 @@ public class TemplateUtil {
 
     /**
      * Generates a Java Bean file using a template and writes it to the specified file path.
-     *
-     * @param log      the logger used to log messages and errors
-     * @param data     the data model map containing values to populate the Java Bean template
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the Java Bean template
      * @param javaPath the file path where the generated Java Bean will be written
      * @throws IOException if an I/O error occurs during file writing
      */
@@ -66,9 +69,9 @@ public class TemplateUtil {
 
     /**
      * Generates an Entity file using a template and writes it to the specified file path.
-     *
-     * @param log      the logger used to log messages and errors
-     * @param data     the data model map containing values to populate the Entity template
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the Entity template
      * @param javaPath the file path where the generated Entity file will be written
      * @throws IOException if an I/O error occurs during file writing
      */
@@ -78,9 +81,9 @@ public class TemplateUtil {
 
     /**
      * Generates a Repository file using a template and writes it to the specified file path.
-     *
-     * @param log      the logger used to log messages and errors
-     * @param data     the data model map containing values to populate the Repository template
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the Repository template
      * @param javaPath the file path where the generated Repository file will be written
      * @throws IOException if an I/O error occurs during file writing
      */
@@ -89,6 +92,17 @@ public class TemplateUtil {
 
     }
 
+    /**
+     * Generates a Java file using a specified template and writes it to the given path.
+     * <p>
+     * This is a generic method used by other `create*File` methods to handle the common logic
+     * of loading a Freemarker template, processing it with provided data, and writing the output to a file.
+     * @param log The logger for reporting errors.
+     * @param data The data model to be used by the Freemarker template.
+     * @param javaPath The path where the generated Java file will be written.
+     * @param templateName The name of the Freemarker template to use (e.g., "java/JavaBean.ftl").
+     * @throws IOException If an I/O error occurs during file operations.
+     */
     private void createJavaFile(Log log,
                                 Map<String, Object> data,
                                 Path javaPath,
@@ -102,29 +116,77 @@ public class TemplateUtil {
         }
     }
 
+    /**
+     * Generates an Enum file using a template and writes it to the specified file path.
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the Enum template
+     * @param enumPath the file path where the generated Enum file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
     public void createEnumFile(Log log, Map<String, Object> data, Path enumPath) throws IOException {
         createJavaFile(log, data, enumPath, "java/Enum.ftl");
     }
 
-
-    public void createMapperFile(Log log, Map<String, Object> fieldsMap, Path mapperPath) throws IOException {
-        createJavaFile(log, fieldsMap, mapperPath, "java/Mapper.ftl");
+    /**
+     * Generates a Mapper file using a template and writes it to the specified file path.
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the Mapper template
+     * @param mapperPath the file path where the generated Mapper file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
+    public void createMapperFile(Log log, Map<String, Object> data, Path mapperPath) throws IOException {
+        createJavaFile(log, data, mapperPath, "java/Mapper.ftl");
     }
 
-    public void createServiceFile(Log log, Map<String, Object> fieldsMap, Path mapperPath) throws IOException {
-        createJavaFile(log, fieldsMap, mapperPath, "java/Service.ftl");
+    /**
+     * Generates a Service file using a template and writes it to the specified file path.
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the Service template
+     * @param servicePath the file path where the generated Service file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
+    public void createServiceFile(Log log, Map<String, Object> data, Path servicePath) throws IOException {
+        createJavaFile(log, data, servicePath, "java/Service.ftl");
     }
 
-    public void createPojoFile(Log log, Map<String, Object> fieldsMap, Path modelPath) throws IOException {
-        createJavaFile(log, fieldsMap, modelPath, "java/Pojo.ftl");
+    /**
+     * Generates a Plain Old Java Object (POJO) file using a template and writes it to the specified file path.
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the POJO template
+     * @param pojoPath the file path where the generated POJO file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
+    public void createPojoFile(Log log, Map<String, Object> data, Path pojoPath) throws IOException {
+        createJavaFile(log, data, pojoPath, "java/Pojo.ftl");
     }
 
-    public void createFacesTemplateFile(Log log, Map<String, Object> fieldsMap, Path xhtmlPath) throws IOException {
-        createJavaFile(log, fieldsMap, xhtmlPath, "xhtml/template.ftl");
+    /**
+     * Generates a JavaServer Faces (JSF) template file (XHTML) using a template and writes it to the specified file path.
+     * <p>
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the JSF template
+     * @param xhtmlPath the file path where the generated XHTML file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
+    public void createFacesTemplateFile(Log log, Map<String, Object> data, Path xhtmlPath) throws IOException {
+        createJavaFile(log, data, xhtmlPath, "xhtml/template.ftl");
     }
 
-    public void createFacesCrudFile(Log log, Map<String, Object> fieldsMap, Path xhtmlPath) throws IOException {
-        createJavaFile(log, fieldsMap, xhtmlPath, "xhtml/crud_prime.ftl");
+    /**
+     * Generates a JavaServer Faces (JSF) CRUD (Create, Read, Update, Delete) file (XHTML) using a template and writes it to the specified file path.
+     * <p>
+     * This method is specifically for PrimeFaces-based CRUD templates.
+     * @param log the logger used to log messages and errors
+     * @param data the data model map containing values to populate the JSF CRUD template
+     * @param xhtmlPath the file path where the generated XHTML file will be written
+     * @throws IOException if an I/O error occurs during file writing
+     */
+    public void createFacesCrudFile(Log log, Map<String, Object> data, Path xhtmlPath) throws IOException {
+        createJavaFile(log, data, xhtmlPath, "xhtml/crud_prime.ftl");
     }
     
     public void createManagedBeanCrudFile(Log log, Map<String, Object> fieldsMap, Path javaPath) throws IOException {

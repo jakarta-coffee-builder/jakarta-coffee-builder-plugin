@@ -52,43 +52,31 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PLAT
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
 
 /**
- * Utility class for handling Maven POM file operations.
+ * A utility class for programmatically manipulating a Maven {@code pom.xml} file.
  * <p>
- * This class provides methods to add dependencies to a Maven project, check for existing
- * dependencies,
- * and save the current state of a Maven project to its POM file.
- * </p>
+ * This class provides static methods to add and manage dependencies, plugins, and properties
+ * within a {@link MavenProject} model. It also includes helpers for querying Maven Central for
+ * the latest artifact versions and for saving the modified POM file back to disk.
  * <p>
- * This class follows the Singleton design pattern to ensure only one instance is created.
- * </p>
- * <p>
- * Usage example:
- * <pre>
- *     PomUtil pomUtil = PomUtil.getInstance();
- *     pomUtil.addDependency(mavenProject, log, groupId, artifactId, version, scope);
- * </pre>
- * <p>
- * Note: This class is thread-safe.
- * </p>
- * <p>
- * Author: Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
- * </p>
+ * This is a final utility class and cannot be instantiated.
+ *
+ * @author Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
  */
-public class PomUtil {
+public final class PomUtil {
 
     /**
-     * Adds a dependency to the given Maven project.
+     * Adds a new dependency to the project's POM model if a dependency with the same
+     * groupId and artifactId does not already exist.
      *
-     * @param mavenProject the Maven project to which the dependency will be added
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency
-     * @param artifactId   the artifact ID of the dependency
-     * @param version      the version of the dependency|
-     * @param scope        the scope of the dependency
-     * @param classifier   the classifier of the dependency
-     * @param exclusions   an array of maps, where each map represents an exclusion with "groupId"
-     *                     and "artifactId" keys.
-     *                     Each map in the array defines a single exclusion.
+     * @param mavenProject The Maven project whose model will be modified.
+     * @param log          The Maven plugin logger for outputting information.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param version      The version of the dependency.
+     * @param scope        The scope of the dependency (e.g., "compile", "provided"). Can be null.
+     * @param classifier   The classifier of the dependency (e.g., "sources", "javadoc"). Can be null.
+     * @param exclusions   A list of maps, where each map represents a dependency to exclude.
+     *                     Each map should contain "groupId" and "artifactId" keys. Can be null.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -125,6 +113,17 @@ public class PomUtil {
         }
     }
 
+    /**
+     * Adds a new dependency with a specific scope and exclusions.
+     *
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param version      The version of the dependency.
+     * @param scope        The scope of the dependency.
+     * @param exclusions   A list of exclusions.
+     */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String groupId,
@@ -136,16 +135,14 @@ public class PomUtil {
     }
 
     /**
-     * Adds a dependency to the given Maven project with exclusions and no specific scope.
+     * Adds a new dependency with a specific version and exclusions.
      *
-     * @param mavenProject the Maven project to which the dependency will be added
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency
-     * @param artifactId   the artifact ID of the dependency
-     * @param version      the version of the dependency
-     * @param exclusions   a list of maps, where each map represents an exclusion with "groupId" and
-     *                     "artifactId" keys.
-     *                     Each map in the list defines a single exclusion.
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param version      The version of the dependency.
+     * @param exclusions   A list of exclusions.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -157,14 +154,14 @@ public class PomUtil {
     }
 
     /**
-     * Adds a dependency to the given Maven project with a specified scope and no exclusions.
+     * Adds a new dependency with a specific scope.
      *
-     * @param mavenProject the Maven project to which the dependency will be added
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency
-     * @param artifactId   the artifact ID of the dependency
-     * @param version      the version of the dependency
-     * @param scope        the scope of the dependency (e.g., "compile", "provided", "test")
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param version      The version of the dependency.
+     * @param scope        The scope of the dependency.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -176,13 +173,13 @@ public class PomUtil {
     }
 
     /**
-     * Adds a dependency to the given Maven project.
+     * Adds a new dependency with a compile scope by default.
      *
-     * @param mavenProject the Maven project to which the dependency will be added
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency
-     * @param artifactId   the artifact ID of the dependency
-     * @param version      the version of the dependency
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param version      The version of the dependency.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -193,12 +190,11 @@ public class PomUtil {
     }
 
     /**
-     * Adds a dependency to the given Maven project using the specified coordinates.
+     * Adds a new dependency using its Maven coordinates (groupId:artifactId:version).
      *
-     * @param mavenProject the Maven project to which the dependency will be added
-     * @param log          the logger to use for logging messages
-     * @param coordinates  the coordinates of the dependency in the format
-     *                     groupId:artifactId:version
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param coordinates  The dependency coordinates string.
      */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
@@ -206,6 +202,15 @@ public class PomUtil {
         addDependency(mavenProject, log, coordinates, null);
     }
 
+    /**
+     * Adds a new dependency using its Maven coordinates and an optional classifier.
+     * If the version is not specified in the coordinates, it attempts to find the latest version.
+     *
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param coordinates  The dependency coordinates string (e.g., "groupId:artifactId" or "groupId:artifactId:version").
+     * @param classifier   The classifier for the dependency. Can be null.
+     */
     public static void addDependency(MavenProject mavenProject,
                                      Log log,
                                      String coordinates,
@@ -229,47 +234,37 @@ public class PomUtil {
     }
 
     /**
-     * Finds the latest version of a Maven dependency from Maven Central.
+     * Finds the latest version of a Maven dependency by querying the Maven Central search API.
      *
-     * @param groupId    the group ID of the dependency.
-     * @param artifactId the artifact ID of the dependency.
-     *
-     * @return an {@link Optional} containing the latest version string, or an empty Optional if not
-     *         found.
-     *
-     * @throws IOException if an error occurs during the HTTP request.
+     * @param groupId    The group ID of the dependency.
+     * @param artifactId The artifact ID of the dependency.
+     * @return An {@link Optional} containing the latest version string, or empty if not found.
+     * @throws IOException if an error occurs during the HTTP request to Maven Central.
      */
     public static Optional<String> findLatestDependencyVersion(String groupId, String artifactId) throws IOException {
         return findLatestVersion(groupId, artifactId, "jar");
     }
 
     /**
-     * Finds the latest version of a Maven plugin from Maven Central.
+     * Finds the latest version of a Maven plugin by querying the Maven Central search API.
      *
-     * @param groupId    the group ID of the plugin.
-     * @param artifactId the artifact ID of the plugin.
-     *
-     * @return an {@link Optional} containing the latest version string, or an empty Optional if not
-     *         found.
-     *
-     * @throws IOException if an error occurs during the HTTP request.
+     * @param groupId    The group ID of the plugin.
+     * @param artifactId The artifact ID of the plugin.
+     * @return An {@link Optional} containing the latest version string, or empty if not found.
+     * @throws IOException if an error occurs during the HTTP request to Maven Central.
      */
     public static Optional<String> findLatestPluginVersion(String groupId, String artifactId) throws IOException {
         return findLatestVersion(groupId, artifactId, "maven-plugin");
     }
 
     /**
-     * Gets the latest version of a Maven artifact from Maven Central.
-     * This method is robust and handles cases where no artifact is found.
+     * Finds the latest version of a Maven artifact with a specific packaging type from Maven Central.
      *
-     * @param groupId    the group ID of the artifact
-     * @param artifactId the artifact ID of the artifact
-     * @param packaging  the packaging type of the artifact (e.g., "jar", "maven-plugin")
-     *
-     * @return an {@link Optional} containing the latest version string, or an empty Optional if not
-     *         found.
-     *
-     * @throws IOException if an error occurs during the HTTP request
+     * @param groupId    The group ID of the artifact.
+     * @param artifactId The artifact ID of the artifact.
+     * @param packaging  The packaging type (e.g., "jar", "maven-plugin").
+     * @return An {@link Optional} containing the latest version string, or empty if not found.
+     * @throws IOException if an error occurs during the HTTP request.
      */
     public static Optional<String> findLatestVersion(String groupId,
                                                      String artifactId,
@@ -286,16 +281,13 @@ public class PomUtil {
     }
 
     /**
-     * Retrieves detailed information about a specific Maven artifact from Maven Central.
+     * Retrieves detailed information for a specific artifact version from Maven Central.
      *
-     * @param groupId    the group ID of the artifact.
-     * @param artifactId the artifact ID of the artifact.
-     * @param version    the version of the artifact.
-     *
-     * @return a {@link JsonObject} containing the artifact's information.
-     *
-     * @throws IOException if an error occurs during the HTTP request or if the artifact is not
-     *                     found.
+     * @param groupId    The group ID of the artifact.
+     * @param artifactId The artifact ID of the artifact.
+     * @param version    The version of the artifact.
+     * @return A {@link JsonObject} containing the artifact's information.
+     * @throws IOException if an error occurs during the HTTP request.
      */
     public static JsonObject getArtifactInfo(String groupId, String artifactId, String version) throws IOException {
         var params = "v:%s AND a:%s AND g:%s".formatted(version, artifactId, groupId);
@@ -305,15 +297,13 @@ public class PomUtil {
     }
 
     /**
-     * Checks if a dependency with the specified group ID and artifact ID exists in the given Maven
-     * project.
+     * Checks if a dependency exists in the project's resolved artifacts.
      *
-     * @param mavenProject the Maven project to check for the dependency
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency to check
-     * @param artifactId   the artifact ID of the dependency to check
-     *
-     * @return true if the dependency exists, false otherwise
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency to check.
+     * @param artifactId   The artifact ID of the dependency to check.
+     * @return {@code true} if the dependency exists, {@code false} otherwise.
      */
     public static boolean existsDependency(MavenProject mavenProject, Log log, String groupId,
                                            String artifactId) {
@@ -323,15 +313,13 @@ public class PomUtil {
     }
 
     /**
-     * Retrieves a dependency with the specified group ID and artifact ID from the given Maven
-     * project.
+     * Retrieves a resolved dependency artifact from the project.
      *
-     * @param mavenProject the Maven project to retrieve the dependency from
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency to retrieve
-     * @param artifactId   the artifact ID of the dependency to retrieve
-     *
-     * @return an Optional containing the dependency if found, or an empty Optional if not found
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @return An {@link Optional} containing the resolved {@link Artifact}, or empty if not found.
      */
     public static Optional<Artifact> getDependency(MavenProject mavenProject,
                                                    Log log,
@@ -347,14 +335,12 @@ public class PomUtil {
     }
 
     /**
-     * Retrieves the current Jakarta EE version from the project's dependencies.
-     * It specifically looks for the {@code jakarta.platform:jakarta.jakartaee-core-api} dependency.
+     * Gets the Jakarta EE version used in the project by inspecting the version of the
+     * {@code jakarta.platform:jakarta.jakartaee-core-api} dependency.
      *
      * @param mavenProject The Maven project to inspect.
      * @param log          The logger for logging messages.
-     *
-     * @return An {@link Optional} containing the version string if found, otherwise an empty
-     *         Optional.
+     * @return An {@link Optional} containing the version string if found, otherwise empty.
      */
     public static Optional<String> getJakartaEeCurrentVersion(MavenProject mavenProject, Log log) {
         return getDependency(mavenProject, log, JAKARTA_PLATFORM, JAKARTA_JAKARTAEE_CORE_API)
@@ -362,16 +348,14 @@ public class PomUtil {
     }
 
     /**
-     * Checks if a dependency with the specified group ID, artifact ID, and version exists in the
-     * given Maven project.
+     * Checks if a dependency with a specific version exists in the project's resolved artifacts.
      *
-     * @param mavenProject the Maven project to check for the dependency
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency to check
-     * @param artifactId   the artifact ID of the dependency to check
-     * @param version      the version of the dependency to check
-     *
-     * @return true if the dependency exists, false otherwise
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param version      The version of the dependency.
+     * @return {@code true} if the dependency with the specified version exists, {@code false} otherwise.
      */
     public static boolean existsDependency(MavenProject mavenProject,
                                            Log log,
@@ -389,12 +373,11 @@ public class PomUtil {
     }
 
     /**
-     * Saves the current state of the given Maven project to its POM file.
+     * Saves the current state of the Maven project model back to its {@code pom.xml} file.
      *
-     * @param mavenProject the Maven project to save
-     * @param log          the logger to use for logging messages
-     *
-     * @throws MojoExecutionException if an error occurs while saving the POM file
+     * @param mavenProject The Maven project to save.
+     * @param log          The logger for logging messages.
+     * @throws MojoExecutionException if an I/O error occurs while writing the file.
      */
     public static void saveMavenProject(MavenProject mavenProject, Log log) throws MojoExecutionException {
         try (var writer = new FileWriter(mavenProject.getFile())) {
@@ -407,12 +390,12 @@ public class PomUtil {
     }
 
     /**
-     * Sets a property in the given Maven project.
+     * Sets a property in the {@code <properties>} section of the project's POM.
      *
-     * @param mavenProject  the Maven project in which the property will be set
-     * @param log           the logger to use for logging messages
-     * @param propertyName  the name of the property to set
-     * @param propertyValue the value of the property to set
+     * @param mavenProject  The Maven project.
+     * @param log           The Maven logger.
+     * @param propertyName  The name of the property to set.
+     * @param propertyValue The value of the property.
      */
     public static void setProperty(MavenProject mavenProject, Log log, String propertyName,
                                    String propertyValue) {
@@ -422,16 +405,15 @@ public class PomUtil {
     }
 
     /**
-     * Adds a plugin to the given Maven project.
+     * Adds or updates a plugin in the main {@code <build>} section of the POM.
      *
-     * @param mavenProject  the Maven project to which the plugin will be added
-     * @param log           the logger to use for logging messages
-     * @param groupId       the group ID of the plugin
-     * @param artifactId    the artifact ID of the plugin
-     * @param version       the version of the plugin
-     * @param configuration the configuration of the plugin as a JsonObject
-     *
-     * @return the Plugin object that was added
+     * @param mavenProject  The Maven project.
+     * @param log           The Maven logger.
+     * @param groupId       The group ID of the plugin.
+     * @param artifactId    The artifact ID of the plugin.
+     * @param version       The version of the plugin.
+     * @param configuration A {@link JsonObject} representing the plugin's {@code <configuration>}.
+     * @return The created or updated {@link Plugin} instance.
      */
     public static Plugin addPlugin(MavenProject mavenProject,
                                    Log log,
@@ -444,17 +426,15 @@ public class PomUtil {
     }
 
     /**
-     * Adds a plugin to the given Maven build base.
+     * Adds or updates a plugin in the specified {@link BuildBase} section (e.g., from a profile).
      *
-     * @param build         the Maven build base to which the plugin will be added (e.g.,
-     *                      {@code Build} or {@code PluginManagement})
-     * @param log           the logger to use for logging messages
-     * @param groupId       the group ID of the plugin
-     * @param artifactId    the artifact ID of the plugin
-     * @param version       the version of the plugin
-     * @param configuration the configuration of the plugin as a JsonObject
-     *
-     * @return the Plugin object that was added or updated
+     * @param build         The build section to modify.
+     * @param log           The Maven logger.
+     * @param groupId       The group ID of the plugin.
+     * @param artifactId    The artifact ID of the plugin.
+     * @param version       The version of the plugin.
+     * @param configuration A {@link JsonObject} representing the plugin's {@code <configuration>}.
+     * @return The created or updated {@link Plugin} instance.
      */
     public static Plugin addPlugin(BuildBase build,
                                    Log log,
@@ -465,20 +445,17 @@ public class PomUtil {
     }
 
     /**
-     * Adds a plugin to the given Maven build base, allowing for configuration and execution
-     * definitions.
-     * If the plugin already exists, it will be updated.
+     * Adds or updates a plugin in the specified {@link BuildBase} section, including configuration and executions.
+     * If the plugin already exists, its configuration and executions are merged.
      *
-     * @param build         the Maven build base to which the plugin will be added (e.g.,
-     *                      {@code Build} or {@code PluginManagement})
-     * @param log           the logger to use for logging messages
-     * @param groupId       the group ID of the plugin
-     * @param artifactId    the artifact ID of the plugin
-     * @param version       the version of the plugin
-     * @param configuration the configuration of the plugin as a JsonObject (can be null)
-     * @param executions    a JsonArray defining plugin executions (can be null)
-     *
-     * @return the Plugin object that was added or updated
+     * @param build         The build section to modify.
+     * @param log           The Maven logger.
+     * @param groupId       The group ID of the plugin.
+     * @param artifactId    The artifact ID of the plugin.
+     * @param version       The version of the plugin.
+     * @param configuration A {@link JsonObject} representing the plugin's {@code <configuration>}. Can be null.
+     * @param executions    A {@link JsonArray} defining plugin executions. Can be null.
+     * @return The created or updated {@link Plugin} instance.
      */
     public static Plugin addPlugin(BuildBase build,
                                    Log log,
@@ -563,13 +540,13 @@ public class PomUtil {
     }
 
     /**
-     * Adds a dependency management to the given Maven project.
+     * Adds a dependency to the {@code <dependencyManagement>} section of the POM.
      *
-     * @param mavenProject the Maven project to which the dependency management will be added
-     * @param log          the logger to use for logging messages
-     * @param groupId      the group ID of the dependency management
-     * @param artifactId   the artifact ID of the dependency management
-     * @param scope        the scope of the dependency management
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger.
+     * @param groupId      The group ID of the dependency.
+     * @param artifactId   The artifact ID of the dependency.
+     * @param scope        The scope of the dependency (e.g., "import").
      */
     public static void addDependencyManagement(MavenProject mavenProject, Log log, String groupId,
                                                String artifactId, String scope) {
@@ -598,6 +575,9 @@ public class PomUtil {
 
     }
 
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
     private PomUtil() {
     }
 }
