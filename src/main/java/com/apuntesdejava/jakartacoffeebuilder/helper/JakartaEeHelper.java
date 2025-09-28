@@ -40,33 +40,21 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 import static java.util.Collections.emptyMap;
 
 /**
- * Utility class for handling Jakarta EE dependencies in Maven projects.
- * <p>
- * This class provides methods to add Jakarta Faces dependencies to a Maven project and to check if a Maven project
- * already has a Jakarta Faces dependency.
- * <p>
- * This class follows the Singleton design pattern to ensure only one instance is created.
- * <p>
- * Usage example:
- * <pre>
- *     JakartaEeUtil jakartaEeUtil = JakartaEeUtil.getInstance();
- *     jakartaEeUtil.addJakartaFacesDependency(mavenProject, log, jakartaEeVersion);
- * </pre>
- * <p>
- * Note: This class is thread-safe.
+ * A singleton helper class that provides methods for managing Jakarta EE dependencies, configurations,
+ * and artifacts within a Maven project. It simplifies tasks such as adding dependencies for various
+ * Jakarta EE specifications, creating configuration files like {@code persistence.xml}, and setting up
+ * data sources.
  *
  * @author Diego Silva &lt;diego.silva at apuntesdejava.com&gt;
  */
-public class JakartaEeHelper {
+public final class JakartaEeHelper {
 
     private JsonObject specifications;
 
     /**
-     * Retrieves the singleton instance of the `JakartaEeHelper` class.
-     * <p>
-     * This method ensures that only one instance of the class is created (Singleton design pattern).
+     * Returns the singleton instance of the {@code JakartaEeHelper}.
      *
-     * @return the singleton instance of `JakartaEeHelper`
+     * @return The singleton instance.
      */
     public static JakartaEeHelper getInstance() {
         return JakartaEeUtilHolder.INSTANCE;
@@ -81,12 +69,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds a Jakarta CDI dependency to the given Maven project.
+     * Adds the Jakarta CDI API dependency to the Maven project for a specific Jakarta EE version.
      *
-     * @param mavenProject     the Maven project to which the dependency will be added
-     * @param log              the logger to use for logging messages
-     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
-     * @throws MojoExecutionException if an error occurs while adding the dependency
+     * @param mavenProject     The Maven project to modify.
+     * @param log              The Maven logger for output.
+     * @param jakartaEeVersion The target Jakarta EE version (e.g., "10.0.0").
+     * @throws MojoExecutionException if an error occurs while adding the dependency.
      */
     public void addJakartaCdiDependency(MavenProject mavenProject,
                                         Log log,
@@ -97,11 +85,11 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds a Jakarta Faces dependency to the given Maven project.
+     * Adds the Jakarta Faces API dependency to the Maven project for a specific Jakarta EE version.
      *
-     * @param mavenProject     the Maven project to which the dependency will be added
-     * @param log              the logger to use for logging messages
-     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
+     * @param mavenProject     The Maven project to modify.
+     * @param log              The Maven logger for output.
+     * @param jakartaEeVersion The target Jakarta EE version (e.g., "10.0.0").
      */
     public void addJakartaFacesDependency(MavenProject mavenProject,
                                           Log log,
@@ -111,34 +99,34 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Checks if the given Maven project has a dependency on Jakarta Faces.
+     * Checks if the project already has a dependency on the Jakarta Faces API.
      *
-     * @param mavenProject the Maven project to check
-     * @param log          the logger to use for logging messages
-     * @return true if the project has a Jakarta Faces dependency, false otherwise
+     * @param mavenProject The Maven project to check.
+     * @param log          The Maven logger for output.
+     * @return {@code true} if the dependency exists, {@code false} otherwise.
      */
     public boolean hasJakartaFacesDependency(MavenProject mavenProject, Log log) {
         return PomUtil.existsDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API);
     }
 
     /**
-     * Checks if the given Maven project has a dependency on Jakarta CDI.
+     * Checks if the project does NOT have a dependency on the Jakarta CDI API.
      *
-     * @param mavenProject the Maven project to check
-     * @param log          the logger to use for logging messages
-     * @return true if the project has a Jakarta CDI dependency, false otherwise
+     * @param mavenProject The Maven project to check.
+     * @param log          The Maven logger for output.
+     * @return {@code true} if the dependency does not exist, {@code false} otherwise.
      */
     public boolean hasNotJakartaCdiDependency(MavenProject mavenProject, Log log) {
         return !PomUtil.existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
     }
 
     /**
-     * Adds a Jakarta Faces servlet declaration to the given Maven project.
+     * Adds the Jakarta Faces Servlet declaration and mapping to the project's {@code web.xml} file.
      *
      * @param mavenProject The Maven project to modify.
-     * @param log          the logger to use for logging messages
-     * @param urlPattern   the URL pattern to use for the servlet
-     * @throws IOException if an error occurs while adding the servlet declaration
+     * @param log          The Maven logger for output.
+     * @param urlPattern   The URL pattern to map the servlet to (e.g., "*.xhtml").
+     * @throws IOException if an I/O error occurs while reading or writing the {@code web.xml} file.
      */
     public void addJakartaFacesServletDeclaration(MavenProject mavenProject,
                                                   Log log,
@@ -153,12 +141,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds a welcome file to the web.xml of the given Maven project.
+     * Adds a welcome file to the project's {@code web.xml} file.
      *
-     * @param mavenProject the Maven project to modify
-     * @param welcomeFile  the welcome file to add
-     * @param log          the logger to use for logging messages
-     * @throws IOException if an error occurs while adding the welcome file
+     * @param mavenProject The Maven project to modify.
+     * @param welcomeFile  The name of the welcome file (e.g., "index.xhtml").
+     * @param log          The Maven logger for output.
+     * @throws IOException if an I/O error occurs while reading or writing the {@code web.xml} file.
      */
     public void addWelcomePages(MavenProject mavenProject, String welcomeFile, Log log) throws IOException {
         var webXmlUtil = WebXmlUtil.getInstance();
@@ -170,34 +158,34 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Checks if the given Maven project has a dependency on Jakarta Persistence.
+     * Checks if the project does NOT have a dependency on the Jakarta Persistence API.
      *
-     * @param mavenProject the Maven project to check
-     * @param log          the logger to use for logging messages
-     * @return true if the project has a Jakarta Persistence dependency, false otherwise
+     * @param mavenProject The Maven project to check.
+     * @param log          The Maven logger for output.
+     * @return {@code true} if the dependency does not exist, {@code false} otherwise.
      */
     public boolean hasNotJakartaPersistenceDependency(MavenProject mavenProject, Log log) {
         return !PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API);
     }
 
     /**
-     * Checks if the Jakarta Data dependency can be added to the given Maven project.
+     * Checks if the project does NOT have a dependency on the Jakarta Data API.
      *
-     * @param mavenProject the Maven project to check
-     * @param log          the logger to use for logging messages
-     * @return true if the Jakarta Data dependency can be added, false otherwise
+     * @param mavenProject The Maven project to check.
+     * @param log          The Maven logger for output.
+     * @return {@code true} if the dependency does not exist, {@code false} otherwise.
      */
     public boolean hasNotJakartaDataDependency(MavenProject mavenProject, Log log) {
         return !PomUtil.existsDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API);
     }
 
     /**
-     * Adds a Jakarta Persistence dependency to the given Maven project.
+     * Adds the Jakarta Persistence API dependency to the Maven project for a specific Jakarta EE version.
      *
-     * @param mavenProject     the Maven project to which the dependency will be added
-     * @param log              the logger to use for logging messages
-     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
-     * @throws MojoExecutionException if an error occurs while adding the dependency
+     * @param mavenProject     The Maven project to modify.
+     * @param log              The Maven logger for output.
+     * @param jakartaEeVersion The target Jakarta EE version (e.g., "10.0.0").
+     * @throws MojoExecutionException if an error occurs while adding the dependency.
      */
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
@@ -209,11 +197,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Creates a `persistence.xml` file in the given Maven project.
+     * Creates a {@code persistence.xml} file in the project's {@code META-INF} directory with a specified
+     * persistence unit name.
      *
-     * @param mavenProject        the Maven project to create the file in
-     * @param log                 the logger to use for logging messages
-     * @param persistenceUnitName the name of the persistence unit to be created
+     * @param mavenProject        The Maven project.
+     * @param log                 The Maven logger for output.
+     * @param persistenceUnitName The name for the persistence unit.
      */
     public void createPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnitName) {
         var persistenceXmlUtil = PersistenceXmlHelper.getInstance();
@@ -225,12 +214,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds a data source to the given Maven project.
+     * Delegates the creation of a data source to a specialized creator based on the {@code declare} strategy.
      *
-     * @param mavenProject the Maven project to which the data source will be added
-     * @param log          the logger to use for logging messages
-     * @param declare      the declaration string for the data source
-     * @param json         the JSON object containing data source parameters
+     * @param mavenProject The Maven project.
+     * @param log          The Maven logger for output.
+     * @param declare      The strategy for declaring the data source (e.g., "web.xml", "payara").
+     * @param json         A {@link JsonObject} containing the data source configuration parameters.
      */
     public void addDataSource(MavenProject mavenProject,
                               Log log,
@@ -252,12 +241,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds a Jakarta Data dependency to the given Maven project.
+     * Adds the Jakarta Data API dependency to the Maven project for a specific Jakarta EE version.
      *
-     * @param mavenProject     the Maven project to which the dependency will be added
-     * @param log              the logger to use for logging messages
-     * @param jakartaEeVersion the version of Jakarta EE to use for the dependency
-     * @throws MojoExecutionException if an error occurs while adding the dependency
+     * @param mavenProject     The Maven project to modify.
+     * @param log              The Maven logger for output.
+     * @param jakartaEeVersion The target Jakarta EE version (e.g., "11.0.0").
+     * @throws MojoExecutionException if an error occurs while adding the dependency.
      */
     public void addJakartaDataDependency(MavenProject mavenProject,
                                          Log log,
@@ -267,11 +256,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Checks if the Jakarta Data dependency can be added to the given Maven project.
+     * Validates if the Jakarta Data dependency can be added, which requires the presence of the
+     * Jakarta Persistence API for Jakarta EE 11.
      *
-     * @param mavenProject the Maven project to check
-     * @param log          the logger to use for logging messages
-     * @return true if the Jakarta Data dependency can be added, false otherwise
+     * @param mavenProject The Maven project to check.
+     * @param log          The Maven logger for output.
+     * @return {@code true} if the required dependency is present, {@code false} otherwise.
      */
     public boolean isValidAddJakartaDataDependency(MavenProject mavenProject, Log log) {
         return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
@@ -279,11 +269,12 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Checks and adds the necessary Jakarta EE dependencies to the Maven project.
+     * Orchestrates the addition of data-related dependencies (like Jakarta Data, Hibernate, and JDBC drivers)
+     * based on the project's current Jakarta EE version and a provided database dialect definition.
      *
-     * @param mavenProject the Maven project to which the dependencies will be added
-     * @param log          the logger used to log messages
-     * @param definition   the JSON object containing the dialect information
+     * @param mavenProject The Maven project to modify.
+     * @param log          The Maven logger for output.
+     * @param definition   A {@link JsonObject} containing dialect and JDBC driver coordinate information.
      */
     public void checkDataDependencies(MavenProject mavenProject, Log log, JsonObject definition) {
         PomUtil.getDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API).ifPresent(
@@ -321,6 +312,12 @@ public class JakartaEeHelper {
                 dialectClass);
     }
 
+    /**
+     * Gets the path to the {@code persistence.xml} file if it exists.
+     *
+     * @param mavenProject The Maven project.
+     * @return An {@link Optional} containing the {@link Path} to the file, or empty if it does not exist.
+     */
     public Optional<Path> getPersistenceXmlPath(MavenProject mavenProject) {
         var persistenceXmlPah = PersistenceXmlHelper.getInstance()
             .getPersistencePath(mavenProject.getFile().toPath().getParent());
@@ -361,11 +358,11 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds a persistence class provider to the given Maven project.
+     * Creates a CDI producer class that provides an {@code EntityManager} instance.
      *
-     * @param mavenProject the Maven project to which the provider will be added
-     * @param log          the logger to use for logging messages
-     * @throws IOException if an error occurs while adding the provider
+     * @param mavenProject The Maven project where the class will be created.
+     * @param log          The Maven logger for output.
+     * @throws IOException if an I/O error occurs while creating the file.
      */
     public void addPersistenceClassProvider(MavenProject mavenProject, Log log) throws IOException {
         var packageDefinition = MavenProjectUtil.getProviderPackage(mavenProject);
@@ -397,13 +394,11 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds the Jackson Core and Jackson Annotations dependencies to the Maven project. This method also sets the
-     * "jackson-core.version" property in the pom.xml based on the configuration found using
-     * {@link CoffeeBuilderUtil#getDependencyConfiguration(String)}.
+     * Adds Jackson Core and Jackson Annotations dependencies to the project.
      *
      * @param mavenProject The Maven project to modify.
-     * @param log          The logger for logging messages.
-     * @throws IOException If an I/O error occurs.
+     * @param log          The Maven logger for output.
+     * @throws IOException If an I/O error occurs while fetching dependency configurations.
      */
     public void addJacksonDependency(MavenProject mavenProject, Log log) throws IOException {
         CoffeeBuilderUtil.getDependencyConfiguration("jackson-core")
@@ -417,12 +412,11 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds the MicroProfile OpenAPI API dependency to the Maven project. This method retrieves the version from the
-     * configuration and sets the "microprofile-openapi-api.version" property in the pom.xml.
+     * Adds the MicroProfile OpenAPI API dependency to the project.
      *
      * @param mavenProject The Maven project to modify.
-     * @param log          The logger for logging messages.
-     * @throws IOException If an I/O error occurs.
+     * @param log          The Maven logger for output.
+     * @throws IOException If an I/O error occurs while fetching dependency configurations.
      */
     public void addMicroprofileOpenApiApiDependency(MavenProject mavenProject,
                                                     Log log) throws IOException {
@@ -437,14 +431,13 @@ public class JakartaEeHelper {
     }
 
     /**
-     * Adds the Jakarta Validation API dependency to the Maven project. This method retrieves the version from the
-     * configuration and sets the "jakarta.validation-api.version" property in the pom.xml.
+     * Adds the Jakarta Validation API dependency to the project for a specific Jakarta EE version.
      *
      * @param mavenProject     The Maven project to modify.
-     * @param log              The logger for logging messages.
-     * @param jakartaEeVersion The version of Jakarta EE to use for the dependency.
-     * @throws IOException            If an I/O error occurs.
-     * @throws MojoExecutionException If a Maven execution error occurs.
+     * @param log              The Maven logger for output.
+     * @param jakartaEeVersion The target Jakarta EE version.
+     * @throws IOException            If an I/O error occurs while fetching dependency configurations.
+     * @throws MojoExecutionException If the specified dependency configuration is not found.
      */
     public void addJakartaValidationApiDependency(MavenProject mavenProject,
                                                   Log log,
@@ -457,6 +450,13 @@ public class JakartaEeHelper {
             "${jakarta.validation-api.version}", "provided");
     }
 
+    /**
+     * Configures the {@code build-helper-maven-plugin} to add a generated source directory.
+     *
+     * @param mavenProject The Maven project to modify.
+     * @param log          The Maven logger for output.
+     * @throws IOException If an I/O error occurs.
+     */
     public void addHelperGenerateSource(MavenProject mavenProject, Log log) throws IOException {
         var executions
             = Json.createArrayBuilder()
@@ -485,14 +485,34 @@ public class JakartaEeHelper {
                     "build-helper-maven-plugin", version, null, executions));
     }
 
+    /**
+     * Checks if the project does NOT have a dependency on PrimeFaces.
+     *
+     * @param mavenProject The Maven project to check.
+     * @param log          The Maven logger for output.
+     * @return {@code true} if the dependency does not exist, {@code false} otherwise.
+     */
     public boolean hasNotPrimeFacesDependency(MavenProject mavenProject, Log log) {
         return !PomUtil.existsDependency(mavenProject, log, ORG_PRIMEFACES, PRIMEFACES);
     }
 
+    /**
+     * Adds the PrimeFaces dependency (with the "jakarta" classifier) to the project.
+     *
+     * @param mavenProject The Maven project to modify.
+     * @param log          The Maven logger for output.
+     */
     public void addPrimeFacesDependency(MavenProject mavenProject, Log log) {
         PomUtil.addDependency(mavenProject, log, "%s:%s".formatted(ORG_PRIMEFACES, PRIMEFACES), "jakarta");
     }
 
+    /**
+     * Placeholder method for creating a domain model.
+     *
+     * @param mavenProject      The Maven project.
+     * @param entityName        The name of the entity.
+     * @param entityDescription A {@link JsonObject} describing the entity.
+     */
     public void createDomain(MavenProject mavenProject, String entityName, JsonObject entityDescription) {
         var modelPackage = MavenProjectUtil.getDomainModelPackage(mavenProject);
     }

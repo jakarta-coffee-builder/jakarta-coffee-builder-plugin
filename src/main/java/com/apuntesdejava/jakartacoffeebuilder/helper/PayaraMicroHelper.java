@@ -50,6 +50,11 @@ public class PayaraMicroHelper {
     private PayaraMicroHelper() {
     }
 
+    /**
+     * Returns the singleton instance of {@code PayaraMicroHelper}.
+     *
+     * @return The singleton instance of {@code PayaraMicroHelper}.
+     */
     public static PayaraMicroHelper getInstance() {
         return PayaraMicroHelperHolder.INSTANCE;
     }

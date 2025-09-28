@@ -50,6 +50,13 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.MODEL_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 
+/**
+ * Helper class for generating PrimeFaces-related code and configurations.
+ * This class extends {@link JakartaFacesHelper} and provides methods for
+ * creating forms, managed beans, and managing message bundles specific to PrimeFaces.
+ * It interacts with various utility classes to read JSON definitions,
+ * generate files from templates, and manipulate XML documents.
+ */
 public class PrimeFacesHelper extends JakartaFacesHelper {
 
     protected static final Namespace PRIMEFACES_NS_P_NAMESPACE = new Namespace("p", "primefaces");
@@ -59,6 +66,11 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
 
     }
 
+    /**
+     * Returns the singleton instance of {@code PrimeFacesHelper}.
+     *
+     * @return The singleton instance of {@code PrimeFacesHelper}.
+     */
     public static PrimeFacesHelper getInstance() {
         return PrimeFacesUtilHolder.INSTANCE;
     }
@@ -158,6 +170,16 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
             )).orElse(Map.of());
     }
 
+    /**
+     * Creates a PrimeFaces managed bean for a given entity.
+     *
+     * @param mavenProject The Maven project context.
+     * @param log The logger for logging messages.
+     * @param pageName The name of the JSF page associated with the managed bean.
+     * @param entityName The name of the entity for which the managed bean is created.
+     * @param fieldIdDefinition A map containing the ID field's name and type for the entity.
+     * @throws IOException If an I/O error occurs during file creation.
+     */
     public void createManagedBean(MavenProject mavenProject,
                                   Log log,
                                   String pageName,
