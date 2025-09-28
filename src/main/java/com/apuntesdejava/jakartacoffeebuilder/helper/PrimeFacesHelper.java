@@ -59,8 +59,20 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
  */
 public class PrimeFacesHelper extends JakartaFacesHelper {
 
+    /**
+     * PrimeFaces XML namespace for the "p" prefix.
+     */
     protected static final Namespace PRIMEFACES_NS_P_NAMESPACE = new Namespace("p", "primefaces");
+
+    /**
+     * Name of the messages properties file.
+     */
     private static final String MESSAGES_PROPERTIES = "messages.properties";
+
+
+    Predicate<Map.Entry<String, JsonValue>> entryFilter = entry -> entry.getValue()
+        .getValueType() == JsonValue.ValueType.OBJECT
+        && entry.getValue().asJsonObject().containsKey(ENTITY);
 
     private PrimeFacesHelper() {
 
@@ -109,10 +121,6 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         saveMessagesBundle(mavenProject, log, properties);
 
     }
-
-    Predicate<Map.Entry<String, JsonValue>> entryFilter = entry -> entry.getValue()
-        .getValueType() == JsonValue.ValueType.OBJECT
-        && entry.getValue().asJsonObject().containsKey(ENTITY);
 
     private void createFormFromEntity(MavenProject mavenProject,
                                       Log log,
@@ -173,10 +181,10 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
     /**
      * Creates a PrimeFaces managed bean for a given entity.
      *
-     * @param mavenProject The Maven project context.
-     * @param log The logger for logging messages.
-     * @param pageName The name of the JSF page associated with the managed bean.
-     * @param entityName The name of the entity for which the managed bean is created.
+     * @param mavenProject      The Maven project context.
+     * @param log               The logger for logging messages.
+     * @param pageName          The name of the JSF page associated with the managed bean.
+     * @param entityName        The name of the entity for which the managed bean is created.
      * @param fieldIdDefinition A map containing the ID field's name and type for the entity.
      * @throws IOException If an I/O error occurs during file creation.
      */

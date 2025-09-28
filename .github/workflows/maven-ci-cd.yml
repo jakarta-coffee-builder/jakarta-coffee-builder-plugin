@@ -97,22 +97,11 @@ jobs:
           # Actualiza el pom.xml en el runner a la versión de release
           mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 
-      - name: Configurar GPG para loopback pinentry
-        run: |
-          mkdir -p ~/.gnupg
-          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-          # Asegurar permisos correctos
-          chmod 600 ~/.gnupg/gpg-agent.conf
-          # Recargar agente para que coja la configuración
-          gpgconf --kill gpg-agent || true
-          gpgconf --reload gpg-agent || true
-
       - name: Deploy Release to Sonatype Central
-        run: mvn -B -Dgpg.passphrase="${GPG_PASSPHRASE}" -Dgpg.executable=gpg -Dgpg.useAgent=false deploy -P release --file pom.xml
+        run: mvn -B deploy -P release --file pom.xml
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Create GitHub Release and Tag
         uses: softprops/action-gh-release@v2
