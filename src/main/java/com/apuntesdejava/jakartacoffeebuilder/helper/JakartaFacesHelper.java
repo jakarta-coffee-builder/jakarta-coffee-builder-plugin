@@ -54,16 +54,20 @@ public class JakartaFacesHelper {
     protected static final Namespace FACES_NS_CORE_NAMESPACE = new Namespace("f", FACES_NS_CORE);
     protected static final Namespace FACES_NS_UI_NAMESPACE = new Namespace("ui", FACES_NS_UI);
 
-    /**
-     * Retrieves the singleton instance of the JakartaFacesHelper class. This method ensures that only one instance of
-     * the helper is created and provides a global point of access to it.
-     *
+ /**
+ * Retrieves the singleton instance of the JakartaFacesHelper class.
+ * This method ensures that only one instance of the helper is created
+ * and provides a global point of access to it.
+ *
      * @return the singleton instance of JakartaFacesHelper
      */
     public static JakartaFacesHelper getInstance() {
         return JakartaFacesUtilHolder.INSTANCE;
     }
 
+ /**
+ * Private constructor to enforce the singleton pattern.
+ */
     protected JakartaFacesHelper() {
     }
 
@@ -77,15 +81,15 @@ public class JakartaFacesHelper {
         return Optional.of(xhtml);
     }
 
-    /**
-     * Adds a new JSF face page to the specified Maven project's web application directory. The method generates an
-     * XHTML page with optional managed bean support.
-     *
-     * @param mavenProject      the Maven project for which the face page will be created
-     * @param log               the logger used to output warnings and informational messages
-     * @param pageName          the name of the face page to be created, without file extension
-     * @param createManagedBean a boolean indicating if a managed bean reference should be added
-     * @throws IOException if an input/output error occurs during file operations
+ /**
+ * Adds a new JSF face page to the specified Maven project's web application directory.
+ * The method generates an XHTML page with optional managed bean support.
+ *
+ * @param mavenProject the Maven project for which the face page will be created.
+ * @param log the logger used to output warnings and informational messages.
+ * @param pageName the name of the face page to be created, without file extension.
+ * @param createManagedBean a boolean indicating if a managed bean reference should be added.
+ * @throws IOException if an input/output error occurs during file operations.
      */
     public void addFacePage(MavenProject mavenProject,
                             Log log,
@@ -105,6 +109,16 @@ public class JakartaFacesHelper {
         });
     }
 
+ /**
+ * Creates a new Facelet page document. This method initializes an XHTML document
+ * with the necessary JSF namespaces and a basic structure, allowing for custom
+ * content to be added to the body.
+ *
+ * @param log The logger for outputting messages.
+ * @param xhtml The path where the XHTML file will be saved.
+ * @param processInBody A consumer to add custom elements within the `<body>` tag.
+ * @return The created Document object representing the Facelet page.
+ */
     protected Document createFacePage(Log log, Path xhtml, Consumer<Element> processInBody) {
         var xmlUtil = XmlUtil.getInstance();
         return xmlUtil.getDocument(log, xhtml, () -> {
@@ -129,19 +143,28 @@ public class JakartaFacesHelper {
         }).orElseThrow();
     }
 
+ /**
+ * Creates a managed bean file for a given page in the specified Maven project.
+ * This method generates a Java class file for the managed bean, placing it in the
+ * appropriate package directory inside the project structure.
+ *
+ * @param mavenProject the Maven project for which the managed bean will be created.
+ * @param log the logger used to output debug and error messages.
+ * @param pageName the name of the page for which the managed bean is being created.
+ * @throws IOException if an input/output error occurs during file operations.
+ */
     public void createManagedBean(MavenProject mavenProject, Log log, String pageName) throws IOException {
         createManagedBean(mavenProject, log, pageName, null);
     }
 
-    /**
-     * Creates a managed bean file for a given page in the specified Maven project. The method generates a Java class
-     * file for the managed bean, placing it in the appropriate package directory inside the project structure.
-     *
-     * @param mavenProject     the Maven project for which the managed bean will be created
-     * @param log              the logger used to output debug and error messages
-     * @param pageName         the name of the page for which the managed bean is being created
-     * @param entityDefinition
-     * @throws IOException if an input/output error occurs during file operations
+ /**
+ * Creates a managed bean file for a given page in the specified Maven project.
+ *
+ * @param mavenProject the Maven project for which the managed bean will be created.
+ * @param log the logger used to output debug and error messages.
+ * @param pageName the name of the page for which the managed bean is being created.
+ * @param entityDefinition A JsonObject representing the entity definition, used to generate fields for the bean.
+ * @throws IOException if an input/output error occurs during file operations.
      */
     public void createManagedBean(MavenProject mavenProject,
                                   Log log,
@@ -179,18 +202,18 @@ public class JakartaFacesHelper {
                 .toList();
     }
 
-    /**
-     * Adds a new JSF face page to a Maven-based web application using a specified Facelet template. This method
-     * generates an XHTML page based on the provided Facelet template and, optionally, includes support for a managed
-     * bean. The generated page will match the naming conventions and settings defined in the project structure.
-     *
-     * @param mavenProject      the Maven project where the face page will be added
-     * @param log               the logger used to log warnings, errors, or informational messages
-     * @param pageName          the name of the face page to be created, without the file extension
-     * @param templateFacelet   the path to the Facelet template that will be used as the base for the page
-     * @param createManagedBean a boolean indicating whether a managed bean should be created and referenced in the
-     *                          generated page
-     * @throws IOException if an I/O error occurs during file operations
+ /**
+ * Adds a new JSF face page to a Maven-based web application using a specified Facelet template.
+ * This method generates an XHTML page based on the provided Facelet template and, optionally,
+ * includes support for a managed bean. The generated page will match the naming conventions
+ * and settings defined in the project structure.
+ *
+ * @param mavenProject the Maven project where the face page will be added.
+ * @param log the logger used to log warnings, errors, or informational messages.
+ * @param pageName the name of the face page to be created, without the file extension.
+ * @param templateFacelet the path to the Facelet template that will be used as the base for the page.
+ * @param createManagedBean a boolean indicating whether a managed bean should be created and referenced in the generated page.
+ * @throws IOException if an I/O error occurs during file operations.
      */
     public void addFacePageWithFaceletTemplate(MavenProject mavenProject,
                                                Log log,
@@ -212,6 +235,19 @@ public class JakartaFacesHelper {
         });
     }
 
+ /**
+ * Creates a new Facelet page document that uses a specified template.
+ * This method initializes an XHTML document with the necessary JSF namespaces and
+ * a basic structure, linking it to a Facelet template. It also processes
+ * `ui:insert` elements from the template to allow for custom content injection.
+ *
+ * @param log The logger for outputting messages.
+ * @param xhtml The path where the XHTML file will be saved.
+ * @param templateFacelet The path to the Facelet template to be used.
+ * @param processInBody A consumer to add custom elements within the `ui:define` tags.
+ * @param additionalNamespaces Optional additional namespaces to be added to the root element.
+ * @return The created Document object representing the Facelet page with the template.
+ */
     protected Document createFacePageWithTemplate(Log log,
                                                   Path xhtml,
                                                   String templateFacelet,
@@ -243,18 +279,16 @@ public class JakartaFacesHelper {
         }).orElseThrow();
     }
 
-    /**
-     * Adds a new Facelet template to the specified Maven project's web application directory. This method generates an
-     * XHTML file based on the provided templateName, and optionally includes &lt;ui:insert&gt; elements with the names
-     * specified in the inserts list.
-     *
-     * @param mavenProject the Maven project for which the template will be created
-     * @param log          the logger for outputting warnings and informational messages
-     * @param templateName the name of the Facelet template, which determines the base structure of the generated XHTML
-     *                     page
-     * @param inserts      a list of insert names to be added as &lt;ui:insert&gt; elements in the generated XHTML file;
-     *                     may be null or empty
-     * @throws IOException if an input/output error occurs during file creation or modification
+ /**
+ * Adds a new Facelet template to the specified Maven project's web application directory.
+ * This method generates an XHTML file based on the provided templateName, and optionally
+ * includes `ui:insert` elements with the names specified in the inserts list.
+ *
+ * @param mavenProject the Maven project for which the template will be created.
+ * @param log the logger for outputting warnings and informational messages.
+ * @param templateName the name of the Facelet template, which determines the base structure of the generated XHTML page.
+ * @param inserts a list of insert names to be added as `ui:insert` elements in the generated XHTML file; may be null or empty.
+ * @throws IOException if an input/output error occurs during file creation or modification.
      */
     public void addFaceTemplate(MavenProject mavenProject,
                                 Log log,
@@ -273,6 +307,14 @@ public class JakartaFacesHelper {
 
     }
 
+ /**
+ * Creates the root element for a Facelet template document. This method sets up
+ * a `ui:composition` element with the necessary namespaces.
+ *
+ * @param document The Document object to which the root element will be added.
+ * @param namespaces An array of additional namespaces to be added to the root element.
+ * @return The created root Element.
+ */
     private Element getRootElementForTemplate(Document document, Namespace... namespaces) {
         QName rootQName = new QName("composition", FACES_NS_UI_NAMESPACE);
         Element rootElement = document.addElement(rootQName);
@@ -284,6 +326,9 @@ public class JakartaFacesHelper {
         return rootElement;
     }
 
+ /**
+ * A private static inner class to hold the singleton instance of JakartaFacesHelper.
+ */
     private static class JakartaFacesUtilHolder {
 
         private static final JakartaFacesHelper INSTANCE = new JakartaFacesHelper();
