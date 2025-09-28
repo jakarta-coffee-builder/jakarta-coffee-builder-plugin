@@ -17,31 +17,36 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 
 /**
- * Utility class for JSON operations.
+ * A utility class for JSON-related operations, including reading and writing JSON files
+ * and converting between JSON structures and Maven's {@link Xpp3Dom} model.
  */
-public class JsonUtil {
+public final class JsonUtil {
 
     private static final String ARTIFACT_TEMPLATE = "%s:%s";
 
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
     private JsonUtil() {
     }
 
     /**
-     * Reads a JSON value from the specified file path.
+     * Reads a JSON file from the specified path and parses it into a {@link JsonValue}.
      *
-     * @param jsonPath the path to the JSON file
-     * @return the JSON value read from the file
-     * @throws IOException if an I/O error occurs
+     * @param jsonPath The {@link Path} to the JSON file.
+     * @return The parsed {@link JsonValue} from the file.
+     * @throws IOException if an I/O error occurs while reading the file.
      */
     public static JsonValue readJsonValue(Path jsonPath) throws IOException {
         return Json.createReader(Files.newBufferedReader(jsonPath)).readValue();
     }
 
     /**
-     * Retrieves the value from a JsonValue object.
+     * Extracts the underlying standard Java object from a {@link JsonValue}.
      *
-     * @param jsonValue the JsonValue object to retrieve the value from
-     * @return the value of the JsonValue object as an Object
+     * @param jsonValue The {@link JsonValue} to process.
+     * @return The corresponding Java object (e.g., {@link JsonObject}, {@link String}, {@link java.math.BigDecimal}, {@link Boolean}).
+     * Returns {@code null} for {@code JsonValue.ValueType.NULL}.
      */
     public static Object getJsonValue(JsonValue jsonValue) {
         return switch (jsonValue.getValueType()) {
@@ -91,13 +96,15 @@ public class JsonUtil {
     }
 
     /**
-     * Converts a JsonObject to an Xpp3Dom object.
+     * Converts a {@link JsonObject} into an {@link Xpp3Dom} model, recursively building the DOM tree.
+     * This is typically used to create or update {@code <configuration>} sections in a Maven POM.
      *
-     * @param log         the Log object to use for logging
-     * @param config      the Xpp3Dom object to which the JsonObject will be added
-     * @param jsonObject  the JsonObject to convert
-     * @param allowRepeat whether to allow repeated keys in the JsonObject
-     * @return the resulting Xpp3Dom object
+     * @param log         The Maven logger for debug output.
+     * @param config      The parent {@link Xpp3Dom} node to which the new elements will be appended.
+     * @param jsonObject  The {@link JsonObject} to convert.
+     * @param allowRepeat If {@code true}, allows multiple elements with the same name to be added.
+     *                    If {@code false}, existing elements with the same name will be reused/merged.
+     * @return The updated parent {@link Xpp3Dom} node.
      */
     public static Xpp3Dom jsonToXpp3Dom(Log log, Xpp3Dom config, JsonObject jsonObject, boolean allowRepeat) {
         jsonObject.forEach((key, value) -> {
@@ -119,16 +126,26 @@ public class JsonUtil {
         return config;
     }
 
+    /**
+     * Converts a {@link JsonObject} into an {@link Xpp3Dom} model, preventing repeated elements.
+     * This is a convenience method that calls {@link #jsonToXpp3Dom(Log, Xpp3Dom, JsonObject, boolean)}
+     * with {@code allowRepeat} set to {@code false}.
+     *
+     * @param log        The Maven logger for debug output.
+     * @param config     The parent {@link Xpp3Dom} node to which the new elements will be appended.
+     * @param jsonObject The {@link JsonObject} to convert.
+     * @return The updated parent {@link Xpp3Dom} node.
+     */
     public static Xpp3Dom jsonToXpp3Dom(Log log, Xpp3Dom config, JsonObject jsonObject) {
         return jsonToXpp3Dom(log, config, jsonObject, false);
     }
 
     /**
-     * Saves a JsonObject to the specified file path.
+     * Writes a {@link JsonValue} to the specified file path.
      *
-     * @param jsonFile the path to the JSON file
-     * @param json     the JsonObject to save
-     * @throws IOException if an I/O error occurs
+     * @param jsonFile The {@link Path} of the file to be written.
+     * @param json     The {@link JsonValue} to write to the file.
+     * @throws IOException if an I/O error occurs during writing.
      */
     public static void saveJsonValue(Path jsonFile, JsonValue json) throws IOException {
         try (var writer = Files.newBufferedWriter(jsonFile)) {

@@ -18,7 +18,6 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.helper.PersistenceXmlHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -37,49 +36,81 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 import static com.apuntesdejava.jakartacoffeebuilder.util.DataSourceUtil.validateDataSourceName;
 
 /**
- * Abstract base class for Mojos that add persistence-related configurations.
+ * An abstract base class for Maven Mojos that handle the addition of persistence-related configurations,
+ * such as data sources and persistence units. This class provides common parameters and helper methods
+ * to simplify the creation of concrete Mojo implementations.
  */
 public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
 
+    /**
+     * The current Maven project instance. This is automatically injected by Maven.
+     */
     @Parameter(defaultValue = "${project}",
         readonly = true)
     protected MavenProject mavenProject;
+    /**
+     * The JNDI name for the data source.
+     */
     @Parameter(
         property = "datasource-name",
         required = true,
         defaultValue = "defaultDatasource"
     )
     protected String datasourceName;
+    /**
+     * The JDBC URL for the database connection.
+     */
     @Parameter(
         property = "url",
         defaultValue = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
     )
     protected String url;
+    /**
+     * The password for the database user.
+     */
     @Parameter(
         property = "password"
     )
     protected String password;
+    /**
+     * The username for the database connection.
+     */
     @Parameter(
         property = "user"
     )
     protected String user;
+    /**
+     * The database server name. Used for data sources that require it.
+     */
     @Parameter(
         property = "server-name"
     )
     protected String serverName;
+    /**
+     * The port number for the database server.
+     */
     @Parameter(
         property = "port-number"
     )
     protected Integer portNumber;
+    /**
+     * A comma-separated list of additional properties for the data source.
+     * (e.g., "prop1=value1,prop2=value2").
+     */
     @Parameter(
         property = "properties"
     )
     protected String properties;
+    /**
+     * Specifies where the data source should be declared.
+     * For example, 'web' for web.xml or a server-specific location.
+     */
     @Parameter(
         property = "declare",
         required = true,
@@ -87,9 +118,15 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     )
     protected String declare;
 
+    /**
+     * The Maven Project Builder component, used to build a full Maven project from a POM file.
+     */
     @Component
     protected ProjectBuilder projectBuilder;
 
+    /**
+     * The current Maven session. This is automatically injected by Maven.
+     */
     @Parameter(
         defaultValue = "${session}",
         readonly = true,
@@ -97,18 +134,41 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     )
     protected MavenSession mavenSession;
 
+    /**
+     * The name of the persistence unit to be created or updated in the {@code persistence.xml} file.
+     */
     @Parameter(
         defaultValue = "defaultPU",
         property = "persistence-unit-name"
     )
     protected String persistenceUnitName;
+    /**
+     * Holds the fully resolved Maven project, including all dependencies and inherited profiles.
+     * This is initialized by the {@link #init()} method.
+     */
     protected MavenProject fullProject;
 
+    public AddAbstractPersistenceMojo(){
+
+    }
+
+    /**
+     * Initializes the Mojo by resolving the full Maven project, which includes all dependencies and parent POM data.
+     * This method should be called at the beginning of the {@code execute} method in subclasses.
+     *
+     * @throws ProjectBuildingException if the full project cannot be resolved.
+     */
     protected void init() throws ProjectBuildingException {
         this.fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
     }
 
+    /**
+     * Gathers all the data source-related parameters provided to the Mojo and organizes them into a
+     * {@link JsonObject}. It also validates the data source name.
+     *
+     * @return A {@link JsonObject} containing the key-value pairs of the data source configuration.
+     */
     protected JsonObject getDataSourceParameters() {
         datasourceName = validateDataSourceName(declare, datasourceName);
         var jsonBuilder = Json.createObjectBuilder()
@@ -137,6 +197,13 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         return jsonBuilder.build();
     }
 
+    /**
+     * Creates or updates a persistence unit in the {@code persistence.xml} file, associating it with the
+     * configured data source.
+     *
+     * @param json The {@link JsonObject} containing the data source parameters, primarily to get the data source name.
+     * @throws ProjectBuildingException if there is an error processing the project configuration.
+     */
     protected void createPersistenceUnit(JsonObject json) throws ProjectBuildingException {
         var log = getLog();
         if (StringUtils.isNotBlank(persistenceUnitName)) {
@@ -147,6 +214,15 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Adds the necessary JDBC driver dependencies to the project and configures the data source in the
+     * location specified by the {@code declare} parameter (e.g., {@code web.xml}).
+     *
+     * @param log  The Maven plugin logger.
+     * @param json The {@link JsonObject} containing the data source parameters.
+     * @throws ProjectBuildingException if there is an error processing the project configuration.
+     * @throws IOException              if an I/O error occurs.
+     */
     protected void addDataSourceConfiguration(Log log, JsonObject json) throws ProjectBuildingException, IOException {
         var jakartaEeHelper = JakartaEeHelper.getInstance();
         CoffeeBuilderUtil.getJdbcConfiguration(url)

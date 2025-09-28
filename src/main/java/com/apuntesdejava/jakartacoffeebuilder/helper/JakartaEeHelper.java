@@ -461,13 +461,13 @@ public class JakartaEeHelper {
         var executions
             = Json.createArrayBuilder()
             .add(Json.createObjectBuilder()
-                .add("id", "add-source")
-                .add("phase",
-                    "generate-sources")
-                .add(GOALS,
-                    Json.createArrayBuilder()
-                        .add(
-                            Json.createObjectBuilder().add(GOAL, "add-source")))
+                    .add("id", "add-source")
+                    .add("phase",
+                        "generate-sources")
+                    .add(GOALS,
+                        Json.createArrayBuilder()
+                            .add(
+                                Json.createObjectBuilder().add(GOAL, "add-source")))
                 /*.add(CONFIGURATION,
                     Json.createObjectBuilder()
                         .add("sources",

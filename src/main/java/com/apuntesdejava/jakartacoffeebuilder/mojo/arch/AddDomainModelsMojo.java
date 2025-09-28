@@ -30,23 +30,48 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * A Maven Mojo that generates the domain model architecture, including DTOs, Mappers, and Services,
+ * based on a provided JSON file defining the entities. This goal is intended to scaffold the
+ * application's layers from a single source of truth.
+ */
 @Mojo(
         name = "add-domain-models"
 )
 public class AddDomainModelsMojo extends AbstractMojo {
 
+    /**
+     * The path to the JSON file that contains the entity definitions. This file serves as the input
+     * for generating the domain models.
+     */
     @Parameter(
             required = true,
             property = "entities-file"
     )
     private File entitiesFile;
 
+    /**
+     * The current Maven project instance. This is automatically injected by Maven and provides
+     * access to the project's configuration and files.
+     */
     @Parameter(
             defaultValue = "${project}",
             readonly = true
     )
     private MavenProject mavenProject;
 
+    public AddDomainModelsMojo(){
+
+    }
+
+    /**
+     * Executes the Mojo's primary logic. This method orchestrates the entire process of
+     * reading the entity definitions, generating the corresponding architectural components
+     * (DTOs, Mappers, Services), and updating the project configuration.
+     *
+     * @throws MojoExecutionException if the entities file is not found or a critical error occurs.
+     * @throws MojoFailureException   if an I/O error or other recoverable error occurs during the process.
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {

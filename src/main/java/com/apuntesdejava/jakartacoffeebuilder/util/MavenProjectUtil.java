@@ -32,25 +32,30 @@ import java.util.Optional;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ENTITY;
 
 /**
- * Helper class for Maven project operations.
- * Provides methods to retrieve full Maven projects with resolved dependencies
- * and to construct package names based on Maven project details.
+ * A utility class for common Maven project-related operations.
+ * <p>
+ * This class provides static helper methods to interact with a {@link MavenProject} object,
+ * such as resolving the full project with dependencies, deriving package names from project
+ * coordinates, and manipulating profiles and build configurations.
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
-public class MavenProjectUtil {
+public final class MavenProjectUtil {
 
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
     private MavenProjectUtil() {
     }
 
     /**
-     * Retrieves the full Maven project with resolved dependencies.
+     * Resolves and returns the full {@link MavenProject} instance, including all its dependencies.
      *
-     * @param mavenSession   the current Maven session
-     * @param projectBuilder the project builder to use
-     * @param mavenProject   the Maven project to build
-     * @return the fully built Maven project with resolved dependencies
-     * @throws ProjectBuildingException if an error occurs during project building
+     * @param mavenSession   The current {@link MavenSession}.
+     * @param projectBuilder The {@link ProjectBuilder} component for constructing projects.
+     * @param mavenProject   The initial {@link MavenProject} to resolve.
+     * @return The fully resolved {@link MavenProject} with all dependencies.
+     * @throws ProjectBuildingException if an error occurs while building the project.
      */
     public static MavenProject getFullProject(MavenSession mavenSession,
                                               ProjectBuilder projectBuilder,
@@ -62,11 +67,11 @@ public class MavenProjectUtil {
     }
 
     /**
-     * Constructs a package name based on the group ID and artifact ID of the given Maven project.
-     * Non-alphanumeric characters in the group ID and artifact ID are replaced with dots.
+     * Derives a base package name from the project's group ID and artifact ID.
+     * Any characters that are not alphanumeric are replaced with a dot (.).
      *
-     * @param mavenProject the Maven project containing the group ID and artifact ID
-     * @return the generated package name as a string
+     * @param mavenProject The Maven project.
+     * @return The generated base package name as a string.
      */
     public static String getProjectPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(RegExUtils.replaceAll(mavenProject.getGroupId(), "[^a-zA-Z0-9]", "."),
@@ -74,82 +79,112 @@ public class MavenProjectUtil {
     }
 
     /**
-     * Constructs a package name for the "entity" layer based on the Maven project details.
+     * Constructs the package name for the persistence entity layer.
      *
-     * @param mavenProject the Maven project containing the group ID and artifact ID
-     * @return the generated package name for the "entity" layer
+     * @param mavenProject The Maven project.
+     * @return The package name for the entity layer (e.g., {@code com.example.project.entity}).
      */
     public static String getEntityPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), ENTITY);
     }
 
+    /**
+     * Constructs the package name for the DTO/model layer.
+     *
+     * @param mavenProject The Maven project.
+     * @return The package name for the model layer (e.g., {@code com.example.project.model}).
+     */
     public static String getModelPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
     }
 
+    /**
+     * Constructs the package name for the mapper layer (e.g., for MapStruct).
+     *
+     * @param mavenProject The Maven project.
+     * @return The package name for the mapper layer (e.g., {@code com.example.project.mapper}).
+     */
     public static String getMapperPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "mapper");
     }
-    
+
+    /**
+     * Constructs the package name for the service layer.
+     *
+     * @param mavenProject The Maven project.
+     * @return The package name for the service layer (e.g., {@code com.example.project.service}).
+     */
     public static String getServicePackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "service");
     }
 
+    /**
+     * Constructs the package name for Java enums.
+     *
+     * @param mavenProject The Maven project.
+     * @return The package name for the enums layer (e.g., {@code com.example.project.enums}).
+     */
     public static String getEnumsPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "enums");
     }
 
     /**
-     * Constructs a package name for the "repository" layer based on the Maven project details.
+     * Constructs the package name for the repository/DAO layer.
      *
-     * @param mavenProject the Maven project containing the group ID and artifact ID
-     * @return the generated package name for the "repository" layer
+     * @param mavenProject The Maven project.
+     * @return The package name for the repository layer (e.g., {@code com.example.project.repository}).
      */
     public static String getRepositoryPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "repository");
     }
 
     /**
-     * Constructs a package name for the "provider" layer based on the Maven project details.
+     * Constructs the package name for a provider layer (e.g., for JAX-RS providers).
      *
-     * @param mavenProject the Maven project containing the group ID and artifact ID
-     * @return the generated package name for the "provider" layer
+     * @param mavenProject The Maven project.
+     * @return The package name for the provider layer (e.g., {@code com.example.project.provider}).
      */
     public static String getProviderPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
     }
 
     /**
-     * Constructs a package name for the "faces" layer based on the Maven project details.
+     * Constructs the package name for the JSF/Faces managed bean layer.
      *
-     * @param mavenProject the Maven project containing the group ID and artifact ID
-     * @return the generated package name for the "faces" layer
+     * @param mavenProject The Maven project.
+     * @return The package name for the faces layer (e.g., {@code com.example.project.faces}).
      */
     public static String getFacesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "faces");
     }
 
     /**
-     * Constructs a package name for the "resources" API layer based on the Maven project details.
+     * Constructs the package name for the REST API resources layer.
      *
-     * @param mavenProject the Maven project containing the group ID and artifact ID
-     * @return the generated package name for the "resources" API layer
+     * @param mavenProject The Maven project.
+     * @return The package name for the resources layer (e.g., {@code com.example.project.resources}).
      */
     public static String getApiResourcesPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
     }
 
+    /**
+     * Constructs the package name for the domain model layer.
+     *
+     * @param mavenProject The Maven project.
+     * @return The package name for the model layer (e.g., {@code com.example.project.model}).
+     */
     public static String getDomainModelPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
     }
 
     /**
-     * Retrieves an active profile from the Maven project by its ID.
-     * If the profile does not exist, a new one is created, added to the active profiles, and returned.
+     * Retrieves a profile from the project's model by its ID. If the profile does not exist,
+     * it is created and added to the model.
      *
      * @param mavenProject The Maven project.
-     * @param profileId    The ID of the profile to retrieve or create.
-     * @return The found or newly created {@link Profile}.
+     * @param profileId    The ID of the profile to find or create.
+     * @return The existing or newly created {@link Profile}.
      */
     public static Profile getProfile(MavenProject mavenProject, String profileId) {
         var model = getOriginalModel(mavenProject);
@@ -171,16 +206,24 @@ public class MavenProjectUtil {
     }
 
     /**
-     * Retrieves the parent directory of the Maven project's POM file.
+     * Gets the parent directory of the Maven project's POM file.
      *
      * @param mavenProject The Maven project.
-     * @return The {@link Path} to the parent directory of the POM file.
+     * @return The {@link Path} to the directory containing the {@code pom.xml} file.
      */
     public static Path getParent(MavenProject mavenProject) {
         return mavenProject.getFile().toPath().getParent();
     }
 
 
+    /**
+     * Retrieves the {@link BuildBase} section from a specific profile. If the profile or its build
+     * section does not exist, they are created.
+     *
+     * @param mavenProject The Maven project.
+     * @param profileId    The ID of the profile containing the build section.
+     * @return The existing or newly created {@link BuildBase} instance.
+     */
     public static BuildBase getBuild(MavenProject mavenProject,String profileId){
         var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
 

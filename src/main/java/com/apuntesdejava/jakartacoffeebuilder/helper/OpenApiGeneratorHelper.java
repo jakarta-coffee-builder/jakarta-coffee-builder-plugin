@@ -47,8 +47,8 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
  * <p>
  * The generated code is configured to use the Helidon server framework with Jakarta EE and JSON-B serialization.
  * </p>
- * <p>
- * <p>
+ *
+ *
  * Usage:
  * <ul>
  * <li>Obtain an instance of this helper using {@link #getInstance()}.</li>

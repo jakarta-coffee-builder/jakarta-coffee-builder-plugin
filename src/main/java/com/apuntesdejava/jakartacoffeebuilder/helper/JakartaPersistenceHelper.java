@@ -40,7 +40,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  * A helper class for managing Jakarta Persistence entities within a Maven project. Provides methods to read JSON data
  * and add entity definitions to the project. Utilizes various utilities for JSON processing, string manipulation, and
  * template generation. This class follows the singleton pattern to ensure a single instance is used.
- * <p>
+ *
  * <p>
  * Key functionalities include:</p>
  * <ul>
@@ -48,7 +48,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  * <li>Generating field definitions and annotations from JSON data.</li>
  * <li>Creating import statements for Jakarta Persistence annotations.</li>
  * </ul>
- * <p>
+ *
  * <p>
  * Note: This class is not intended to be instantiated directly. Use {@link #getInstance()} to obtain the singleton
  * instance.</p>
@@ -92,7 +92,6 @@ public class JakartaPersistenceHelper {
      * @param log                the logger used for logging debug and error messages
      * @param jsonPath           the path to the JSON file containing entity definitions
      * @param persistenceXmlPath the path to the persistence.xml file
-     *
      * @throws IOException if an I/O error occurs while reading the JSON file
      */
     public void addEntities(MavenProject mavenProject,
@@ -153,9 +152,9 @@ public class JakartaPersistenceHelper {
         var repositoryBuilder = RepositoryBuilder.getInstance();
         repositoryBuilder
             .buildRepository(mavenProject, log, entityName + suffix, entity,
-                             ClassDefinitionHelper.getInstance()
-                                 .importsFromFieldsClassesType(entity
-                                     .getJsonObject(FIELDS)));
+                ClassDefinitionHelper.getInstance()
+                    .importsFromFieldsClassesType(entity
+                        .getJsonObject(FIELDS)));
 
     }
 
@@ -175,24 +174,24 @@ public class JakartaPersistenceHelper {
             var classDefinitionHelper = ClassDefinitionHelper.getInstance();
             var fields = classDefinitionHelper
                 .createFieldsDefinitions(fieldsJson,
-                                         (fieldName, field, annotations) -> getFieldType(
-                                             mavenProject,
-                                             log,
-                                             entityName,
-                                             entitiesName,
-                                             fieldName,
-                                             field,
-                                             annotations,
-                                             importsList));
+                    (fieldName, field, annotations) -> getFieldType(
+                        mavenProject,
+                        log,
+                        entityName,
+                        entitiesName,
+                        fieldName,
+                        field,
+                        annotations,
+                        importsList));
             importsList.addAll(createImportsCollectionFromSearchAnnotation(fieldsJson));
             importsList.addAll(createImportsCollectionFromGeneratedValue(fieldsJson));
             importsList.addAll(classDefinitionHelper.importsFromFieldsClassesType(fieldsJson));
 
             Map<String, Object> fieldsMap = new LinkedHashMap<>(
                 Map.of(PACKAGE_NAME, packageDefinition,
-                       CLASS_NAME, entityName,
-                       IMPORTS_LIST, importsList,
-                       FIELDS, fields));
+                    CLASS_NAME, entityName,
+                    IMPORTS_LIST, importsList,
+                    FIELDS, fields));
             if (StringUtils.isNotBlank(tableName)) {
                 fieldsMap.put("tableName", tableName);
             }
@@ -209,7 +208,7 @@ public class JakartaPersistenceHelper {
         return fieldsJson.values().stream()
             .map(JsonValue::asJsonObject)
             .filter(field -> field.containsKey(GENERATED_VALUE)
-            && StringsUtil
+                && StringsUtil
                 .findIgnoreCaseOptional(GENERATION_TYPES, field.getString(GENERATED_VALUE)).isPresent())
             .findFirst()
             .map(generatedValue -> Set.of("jakarta.persistence.GeneratedValue", "jakarta.persistence.GenerationType"))
@@ -230,7 +229,7 @@ public class JakartaPersistenceHelper {
         }
         if (Strings.CS.equals(type, "enum")) {
             return evaluateFieldEnumType(mavenProject, log, entityName, fieldName, field, importsList,
-                                         annotations);
+                annotations);
         }
         if (entitiesName.contains(type + suffix)) {
             return type + suffix;
@@ -251,7 +250,7 @@ public class JakartaPersistenceHelper {
             .map(JsonString::getString)
             .toList();
         var fullName = createEnum(mavenProject, log, entityName + StringUtils.capitalize(fieldName),
-                              enumValues);
+            enumValues);
         importsList.add(fullName);
         importsList.add("jakarta.persistence.Enumerated");
         /*   importsList.add("jakarta.persistence.EnumType");

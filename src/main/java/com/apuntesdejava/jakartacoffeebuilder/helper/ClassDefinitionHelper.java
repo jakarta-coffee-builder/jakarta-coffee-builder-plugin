@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -40,8 +40,9 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATED_VALUE;
 
 /**
- *
- * @author dsilva
+ * A singleton helper class that provides utilities for creating class and field definitions from JSON objects.
+ * It is responsible for parsing JSON structures that define entities and their properties,
+ * and transforming them into a structured map representation that can be used for code generation.
  */
 public class ClassDefinitionHelper {
 
@@ -55,6 +56,11 @@ public class ClassDefinitionHelper {
         }
     }
 
+    /**
+     * Returns the singleton instance of the {@code ClassDefinitionHelper}.
+     *
+     * @return The single instance of this class.
+     */
     public static ClassDefinitionHelper getInstance() {
         return ClassDefinitionHelperHolder.INSTANCE;
     }
@@ -64,6 +70,17 @@ public class ClassDefinitionHelper {
         private static final ClassDefinitionHelper INSTANCE = new ClassDefinitionHelper();
     }
 
+    /**
+     * Creates a list of field definitions from a JSON object representing the fields of a class.
+     * Each field is processed to extract its name, type, and any associated annotations.
+     *
+     * @param fieldsJson    A {@link JsonObject} where keys are field names and values are objects
+     *                      containing field properties.
+     * @param evaluateField A {@link TriFunction} that takes the field name, its JSON object definition,
+     *                      and a list of annotations, and returns the evaluated type of the field as a String.
+     * @return A {@link List} of {@link Map}s, where each map represents a field's definition,
+     * including its name, type, and annotations. Returns an empty list if {@code fieldsJson} is null.
+     */
     public List<Map<String, Object>> createFieldsDefinitions(JsonObject fieldsJson,
                                                              TriFunction<String, JsonObject, List<Map<String, Object>>, String> evaluateField) {
         if (fieldsJson == null) return List.of();
@@ -117,6 +134,13 @@ public class ClassDefinitionHelper {
         annotations.addAll(annot);
     }
 
+    /**
+     * Extracts a collection of fully qualified class names that need to be imported based on the
+     * types of the fields defined in a JSON object.
+     *
+     * @param fields A {@link JsonObject} containing the field definitions for a class.
+     * @return A {@link Collection} of unique, fully qualified class names required for import.
+     */
     public Collection<String> importsFromFieldsClassesType(JsonObject fields) {
 
         return fields.values().stream()

@@ -20,29 +20,31 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 
 /**
- * Utility class for performing HTTP requests.
+ * A utility class for handling HTTP requests.
  * <p>
- * Provides methods to execute HTTP GET requests and convert the responses into different formats using conversion
- * functions.
- * </p>
+ * This class provides static methods to perform HTTP GET requests and process the
+ * responses. It is designed to fetch remote configuration files and other resources.
  */
-public class HttpUtil {
+public final class HttpUtil {
 
     private static final System.Logger LOG = System.getLogger(HttpUtil.class.getName());
 
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
     private HttpUtil() {
     }
 
     /**
-     * Executes an HTTP GET request to the specified URL with optional query parameters and converts the response
-     * content using the provided converter function.
+     * Executes an HTTP GET request to a specified URL with optional query parameters and converts
+     * the response body using a provided converter function.
      *
-     * @param <T>        the type of the result produced by the converter
-     * @param address    the URL to send the GET request to
-     * @param converter  a function to convert the response content from String to type T
-     * @param parameters optional query parameters to include in the request
-     * @return the converted response content
-     * @throws IOException if an I/O error occurs during the request
+     * @param <T>        The target type of the response after conversion.
+     * @param address    The URL for the GET request.
+     * @param converter  A {@link Function} that transforms the raw response string into the target type {@code T}.
+     * @param parameters An optional varargs array of {@link Parameter} objects to be sent as URL query parameters.
+     * @return The converted response of type {@code T}.
+     * @throws IOException if an I/O error occurs during the HTTP request.
      */
     public static <T> T getContent(String address,
                                    Function<String, T> converter,
@@ -58,12 +60,12 @@ public class HttpUtil {
             return httpClient.execute(httpGet, response -> {
                 var responseString = EntityUtils.toString(response.getEntity());
                 return converter.apply(responseString);
-            }); 
+            });
         }
     }
 
     /**
-     * A converter function that converts a JSON response string to a JsonObject.
+     * A reusable {@link Function} that converts a JSON string into a {@link JsonObject}.
      */
     public static final Function<String, JsonObject> STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER = (response) -> {
 
@@ -74,19 +76,25 @@ public class HttpUtil {
     };
 
     /**
-     * Record class representing a query parameter for HTTP requests.
+     * A record representing a key-value pair for an HTTP query parameter.
      *
-     * @param name  the name of the parameter
-     * @param value the value of the parameter
+     * @param name  The name of the parameter.
+     * @param value The value of the parameter.
      */
     public record Parameter(String name, String value) {
 
     }
 
+    /**
+     * Constructs a full URL by prepending the appropriate base URL (development or production)
+     * to a given service path. The selection is based on the "devel" system property.
+     *
+     * @param serviceUrl The relative path of the service or resource (e.g., "/dependencies.json").
+     * @return The complete URL as a string.
+     */
     public static String getUrl(String serviceUrl) {
         return (BooleanUtils.toBoolean(System.getProperty("devel", "false"))
                 ? DEV_BASE_URL : PRD_BASE_URL) + serviceUrl;
     }
 
-    //make function  get content from url
 }

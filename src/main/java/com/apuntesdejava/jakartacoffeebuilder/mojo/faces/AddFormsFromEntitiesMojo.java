@@ -37,36 +37,55 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * This Mojo adds forms based on entities defined in a specified file.
- * It also ensures that PrimeFaces is a dependency in the project.
+ * A Maven Mojo that generates Jakarta Server Faces (JSF) views (XHTML files) and associated
+ * backing beans from entity definitions. It uses a JSON file to define the structure of the forms
+ * and another JSON file for the entity definitions. This goal automates the creation of CRUD
+ * user interfaces, ensuring that the necessary PrimeFaces dependency is included in the project.
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
-
 @Mojo(
     name = "add-forms-from-entities"
 )
 public class AddFormsFromEntitiesMojo extends AbstractMojo {
 
+    /**
+     * The path to the JSON file that defines the structure and layout of the forms to be generated.
+     */
     @Parameter(
         required = true,
         property = "forms-file"
     )
     private File formsFile;
 
+    /**
+     * The path to the JSON file that contains the entity definitions. These entities are used as the
+     * data model for the generated forms.
+     */
     @Parameter(
         required = true,
         property = "entities-file"
     )
     private File entitiesFile;
 
-
+    /**
+     * The current Maven project instance. This is automatically injected by Maven and provides
+     * access to the project's configuration and files.
+     */
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
+    /**
+     * The Maven Project Builder component, used to build a full Maven project from a POM file,
+     * including all dependencies and parent POM data.
+     */
     @Component
     private ProjectBuilder projectBuilder;
 
+    /**
+     * The current Maven session. This is automatically injected by Maven and provides access to the
+     * current execution environment.
+     */
     @Parameter(
         defaultValue = "${session}",
         readonly = true,
@@ -74,11 +93,37 @@ public class AddFormsFromEntitiesMojo extends AbstractMojo {
     )
     private MavenSession mavenSession;
 
+
+    /**
+     * Constructor público sin argumentos.
+     * <p>
+     * Maven y el sistema de plugins requieren un constructor público sin argumentos
+     * para instanciar el Mojo. No realiza ninguna inicialización explícita aquí;
+     * los campos anotados son inyectados por Maven en tiempo de ejecución.
+     */
+    public AddFormsFromEntitiesMojo() {
+
+    }
+
+    /**
+     * Executes the Mojo's primary logic. This method orchestrates the process of:
+     * <ol>
+     *     <li>Validating the existence of the input files.</li>
+     *     <li>Resolving the full Maven project to access all dependencies.</li>
+     *     <li>Checking for and adding the PrimeFaces dependency if it's missing.</li>
+     *     <li>Invoking the helper to generate the JSF forms and backing beans.</li>
+     *     <li>Saving any modifications to the project's POM file.</li>
+     * </ol>
+     *
+     * @throws MojoExecutionException if a required file is not found or a critical error occurs.
+     * @throws MojoFailureException   if an I/O error or a project building error occurs during execution.
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
             var formsPath = validateFile(formsFile);
+            validateFile(entitiesFile); // Also validate the entities file
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
             checkDependency(log, fullProject);
             PrimeFacesHelper.getInstance().addFormsFromEntities(fullProject, log, formsPath, entitiesFile.toPath());
@@ -89,7 +134,7 @@ public class AddFormsFromEntitiesMojo extends AbstractMojo {
         }
     }
 
-    private void checkDependency(Log log, MavenProject fullProject)   {
+    private void checkDependency(Log log, MavenProject fullProject) {
         log.debug("Checking PrimeFaces dependency");
         var jakartaEeUtil = JakartaEeHelper.getInstance();
         if (jakartaEeUtil.hasNotPrimeFacesDependency(fullProject, log))
