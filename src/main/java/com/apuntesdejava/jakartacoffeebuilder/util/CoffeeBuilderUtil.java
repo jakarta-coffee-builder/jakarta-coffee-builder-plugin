@@ -29,25 +29,28 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static com.apuntesdejava.jakartacoffeebuilder.util.HttpUtil.STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER;
 
 /**
- * Utility class for handling CoffeeBuilder operations.
+ * A utility class providing helper methods for the Jakarta Coffee Builder plugin.
  * <p>
- * This class provides methods to retrieve dependency configurations, properties configurations,
- * and dialect configurations from remote sources. It also allows updating the project configuration
- * and retrieving the dialect from the project configuration.
- * </p>
+ * This class offers static methods to fetch various configurations from remote JSON files,
+ * such as dependency details, server definitions, and class structures. It also provides
+ * helpers for parsing entity definitions.
  */
 public class CoffeeBuilderUtil {
 
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
     private CoffeeBuilderUtil() {
 
     }
 
     /**
-     * Retrieves the dependency configuration for a given name.
+     * Retrieves a specific dependency configuration from a remote repository.
      *
-     * @param name the name of the dependency
-     * @return an Optional containing the JsonObject of the dependency configuration if present
-     * @throws IOException if an error occurs while obtaining the content
+     * @param name The name of the dependency to retrieve (e.g., "maven-compiler-plugin").
+     * @return An {@link Optional} containing the dependency's configuration as a {@link JsonObject},
+     * or empty if not found.
+     * @throws IOException if an I/O error occurs during the HTTP request.
      */
     public static Optional<JsonObject> getDependencyConfiguration(String name) throws IOException {
         var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DEPENDENCIES_URL),
@@ -55,12 +58,26 @@ public class CoffeeBuilderUtil {
         return Optional.ofNullable(response.getJsonObject(name));
     }
 
+    /**
+     * Retrieves a specific server definition from a remote repository.
+     *
+     * @param name The name of the server to retrieve (e.g., "payara").
+     * @return An {@link Optional} containing the server's definition as a {@link JsonObject},
+     * or empty if not found.
+     * @throws IOException if an I/O error occurs during the HTTP request.
+     */
     public static Optional<JsonObject> getServerDefinition(String name) throws IOException {
         var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SERVERS_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonObject(name));
     }
 
+    /**
+     * Retrieves all Jakarta EE specification definitions from a remote repository.
+     *
+     * @return An {@link Optional} containing the complete set of specification definitions.
+     * @throws IOException if an I/O error occurs during the HTTP request.
+     */
     public static Optional<JsonObject> getSpecificationsDefinitions() throws IOException {
         return Optional.ofNullable(
             HttpUtil.getContent(HttpUtil.getUrl(Constants.SPECIFICATIONS_URL),
@@ -68,6 +85,12 @@ public class CoffeeBuilderUtil {
         );
     }
 
+    /**
+     * Retrieves all class type definitions from a remote repository.
+     *
+     * @return An {@link Optional} containing the complete set of class definitions.
+     * @throws IOException if an I/O error occurs during the HTTP request.
+     */
     public static Optional<JsonObject> getClassesDefinitions() throws IOException {
         return Optional.ofNullable(
             HttpUtil.getContent(HttpUtil.getUrl(Constants.CLASSES_DEFINITIONS),
@@ -75,6 +98,12 @@ public class CoffeeBuilderUtil {
         );
     }
 
+    /**
+     * Retrieves the OpenAPI generator configuration from a remote repository.
+     *
+     * @return An {@link Optional} containing the OpenAPI generator configuration.
+     * @throws IOException if an I/O error occurs during the HTTP request.
+     */
     public static Optional<JsonObject> getOpenApiGeneratorConfiguration() throws IOException {
         return Optional.ofNullable(
             HttpUtil.getContent(HttpUtil.getUrl(Constants.OPEN_API_GENERATOR_CONFIGURATION),
@@ -83,11 +112,11 @@ public class CoffeeBuilderUtil {
     }
 
     /**
-     * Retrieves the properties configuration for a given name.
+     * Retrieves a specific set of properties configuration from a remote repository.
      *
-     * @param name the name of the properties configuration
-     * @return an Optional containing the JsonArray of the properties configuration if present
-     * @throws IOException if an error occurs while obtaining the content
+     * @param name The name of the properties configuration to retrieve.
+     * @return An {@link Optional} containing the properties as a {@link JsonArray}, or empty if not found.
+     * @throws IOException if an I/O error occurs during the HTTP request.
      */
     public static Optional<JsonArray> getPropertiesConfiguration(String name) throws IOException {
         var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.PROPERTIES_URL),
@@ -96,10 +125,10 @@ public class CoffeeBuilderUtil {
     }
 
     /**
-     * Retrieves the dialect configuration from a remote source.
+     * Retrieves the complete dialect configuration for JDBC drivers from a remote repository.
      *
-     * @return an Optional containing the JsonObject of the dialect configuration if present
-     * @throws IOException if an error occurs while obtaining the content
+     * @return An {@link Optional} containing the dialect configurations.
+     * @throws IOException if an I/O error occurs during the HTTP request.
      */
     public static Optional<JsonObject> getDialectConfiguration() throws IOException {
         var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DIALECT_URL),
@@ -107,6 +136,14 @@ public class CoffeeBuilderUtil {
         return Optional.ofNullable(response);
     }
 
+    /**
+     * Retrieves a specific XML schema definition based on the Jakarta EE version and schema name.
+     *
+     * @param jakartaEeVersion The version of Jakarta EE (e.g., "10.0.0").
+     * @param name             The name of the schema to retrieve (e.g., "web-app").
+     * @return An {@link Optional} containing the schema definition as a {@link JsonObject}, or empty if not found.
+     * @throws IOException if an I/O error occurs during the HTTP request.
+     */
     public static Optional<JsonObject> getSchema(String jakartaEeVersion, String name) throws IOException {
         var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SCHEMAS_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
@@ -115,11 +152,11 @@ public class CoffeeBuilderUtil {
 
 
     /**
-     * Retrieves the JDBC configuration for the given database URL.
+     * Retrieves the JDBC configuration for a given database URL by extracting the dialect key.
      *
-     * @param url the JDBC URL from which the dialect key will be extracted
-     * @return an Optional containing the JsonObject of the JDBC configuration if present
-     * @throws IOException if an error occurs while obtaining the dialect configuration
+     * @param url The JDBC URL (e.g., "jdbc:h2:mem:test").
+     * @return An {@link Optional} containing the JDBC configuration as a {@link JsonObject}, or empty if not found.
+     * @throws IOException if an I/O error occurs while fetching the dialect configuration.
      */
     public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
         final String dialectKey = StringUtils.substringBetween(url, "jdbc:", ":");
@@ -129,10 +166,11 @@ public class CoffeeBuilderUtil {
     }
 
     /**
-     * Retrieves the field marked as the identifier (ID) from the entity definition.
+     * Finds the field that is marked as the primary identifier (ID) within an entity's JSON definition.
      *
-     * @param entity the JSON object representing the entity
-     * @return an {@link Optional} containing the JSON object of the ID field, or empty if not found
+     * @param entity The {@link JsonObject} representing the entity.
+     * @return An {@link Optional} containing a {@link Map.Entry} of the ID field's name and its JSON value,
+     * or empty if no ID field is found.
      */
     public static Optional<Map.Entry<String, JsonValue>> getFieldId(JsonObject entity) {
         return entity.getJsonObject("fields")
@@ -146,12 +184,11 @@ public class CoffeeBuilderUtil {
     }
 
     /**
-     * Retrieves the class type associated with the field marked as the identifier (ID) from the entity definition.
-     * If no ID field is found, the provided default value is returned.
+     * Retrieves the class type of the entity's primary identifier (ID) field.
      *
-     * @param entity       the JSON object representing the entity
-     * @param defaultValue the default value to return if no ID field or class type is found
-     * @return the class type as a string, or the default value if no ID field or class type is found
+     * @param entity       The {@link JsonObject} representing the entity.
+     * @param defaultValue The default value to return if no ID field or type is found.
+     * @return The class type of the ID field as a {@link String}, or the {@code defaultValue} if not found.
      */
     public static String getFieldIdClass(JsonObject entity, String defaultValue) {
         return getFieldId(entity).map(f -> f.getValue().asJsonObject().getString(TYPE)).orElse(defaultValue);

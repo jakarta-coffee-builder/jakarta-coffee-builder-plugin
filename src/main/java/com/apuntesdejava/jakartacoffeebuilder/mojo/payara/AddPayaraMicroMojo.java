@@ -32,7 +32,17 @@ import org.apache.maven.project.ProjectBuildingException;
 import java.io.IOException;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Mojo that adds the Payara Micro plugin and the corresponding Maven profile to the project.
+ *
+ * <p>Resolves the full {@code MavenProject} using the provided {@code ProjectBuilder} and
+ * {@code MavenSession}, obtains the current Jakarta EE version via {@link PomUtil}, and delegates
+ * the addition of the plugin/profile to {@link PayaraMicroHelper}.</p>
+ *
+ * <p>Extends {@link org.apache.maven.plugin.AbstractMojo} and is bound to the Maven goal
+ * {@code add-payaramicro}.</p>
+ *
+ * @author Diego Silva
+ * @since 1.0.0
  */
 @Mojo(
     name = "add-payaramicro"
@@ -61,6 +71,14 @@ public class AddPayaraMicroMojo extends AbstractMojo {
         required = true
     )
     private MavenSession mavenSession;
+
+    /**
+     * Default no-argument constructor.
+     *
+     * <p>Provided for the Maven plugin infrastructure. No initialization required.</p>
+     */
+    public AddPayaraMicroMojo() {
+    }
 
 
     @Override

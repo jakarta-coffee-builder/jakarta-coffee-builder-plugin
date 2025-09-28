@@ -32,13 +32,13 @@ import java.io.IOException;
  * This Mojo ensures that the required Jakarta EE dependencies are present in the project
  * and creates a `persistence.xml` file with the specified persistence unit name.
  * </p>
- * <p>
+ *
  * Usage:
  * <ul>
  * <li>Configure the Mojo in the Maven POM file.</li>
  * <li>Specify the Jakarta EE version and persistence unit name as parameters.</li>
  * </ul>
- * <p>
+ *
  * <p>
  * This Mojo is part of the Jakarta Coffee Builder Plugin and simplifies the configuration
  * of Jakarta EE persistence in Maven projects.
@@ -95,7 +95,6 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
      * </p>
      *
      * @param log the Maven logger instance.
-     *
      * @throws MojoExecutionException if an error occurs while resolving dependencies.
      */
     private void checkDependency(Log log) throws MojoExecutionException {

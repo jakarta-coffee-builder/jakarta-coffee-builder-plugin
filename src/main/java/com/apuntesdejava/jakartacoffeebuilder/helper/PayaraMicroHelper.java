@@ -28,7 +28,22 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * @author Diego Silva <diego.silva at apuntesdejava.com>
+ * Helper for adding and configuring the Payara Micro Maven plugin in a Maven project.
+ *
+ * <p>This singleton class provides a convenience method to add the Payara Micro
+ * plugin configuration to a project's POM. It reads server definitions from
+ * resources, validates the requested Jakarta EE version, builds the plugin
+ * configuration as a JSON object and delegates POM modifications to project
+ * utilities.</p>
+ *
+ * <p>Intended to be used in a Maven plugin/runtime context. The
+ * {@link #addPlugin(org.apache.maven.project.MavenProject, org.apache.maven.plugin.logging.Log, String, String)}
+ * method can throw {@link java.io.IOException} or {@link org.apache.maven.plugin.MojoExecutionException}
+ * when I/O or execution errors occur.</p>
+ *
+ * @see com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil
+ * @see com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil
+ * @see com.apuntesdejava.jakartacoffeebuilder.util.PomUtil
  */
 public class PayaraMicroHelper {
 
@@ -42,11 +57,11 @@ public class PayaraMicroHelper {
     /**
      * Adds the Payara Micro Maven plugin to the project's POM file.
      *
-     * @param mavenProject The Maven project.
-     * @param log The Maven logger.
-     * @param profileId The ID of the profile to which the plugin should be added.
+     * @param mavenProject     The Maven project.
+     * @param log              The Maven logger.
+     * @param profileId        The ID of the profile to which the plugin should be added.
      * @param jakartaEeVersion The Jakarta EE version to be used with Payara Micro.
-     * @throws IOException If an I/O error occurs while reading or writing the POM.
+     * @throws IOException            If an I/O error occurs while reading or writing the POM.
      * @throws MojoExecutionException If an error occurs during plugin execution.
      */
     public void addPlugin(MavenProject mavenProject,
@@ -58,25 +73,25 @@ public class PayaraMicroHelper {
         if (!definition.containsKey(jakartaEeVersion))
             throw new MojoExecutionException("Jakarta EE version " + jakartaEeVersion + " doesn't exist");
         var configuration = Json.createObjectBuilder()
-                                .add("payaraVersion", definition.getString(jakartaEeVersion))
-                                .add("deployWar", "false")
-                                .add("commandLineOptions",
-                                    Json.createObjectBuilder()
-                                        .add("option",
-                                            Json.createArrayBuilder()
-                                                .add(
-                                                    Json.createObjectBuilder()
-                                                        .add("key", "--autoBindHttp")
-                                                )
-                                                .add(
-                                                    Json.createObjectBuilder()
-                                                        .add("key", "--deploy")
-                                                        .add("value",
-                                                            "${project.build.directory}/${project.build.finalName}")
-                                                )
-                                        )
-                                )
-                                .build();
+            .add("payaraVersion", definition.getString(jakartaEeVersion))
+            .add("deployWar", "false")
+            .add("commandLineOptions",
+                Json.createObjectBuilder()
+                    .add("option",
+                        Json.createArrayBuilder()
+                            .add(
+                                Json.createObjectBuilder()
+                                    .add("key", "--autoBindHttp")
+                            )
+                            .add(
+                                Json.createObjectBuilder()
+                                    .add("key", "--deploy")
+                                    .add("value",
+                                        "${project.build.directory}/${project.build.finalName}")
+                            )
+                    )
+            )
+            .build();
         var build = MavenProjectUtil.getBuild(mavenProject, profileId);
         var plugin = PomUtil.addPlugin(build, log, "fish.payara.maven.plugins",
             "payara-micro-maven-plugin", "2.4",

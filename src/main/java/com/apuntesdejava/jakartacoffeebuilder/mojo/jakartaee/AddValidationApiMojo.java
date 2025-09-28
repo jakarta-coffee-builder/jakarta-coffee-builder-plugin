@@ -16,16 +16,23 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
+/**
+ * A Maven Mojo that adds the Jakarta Validation API dependency to the project's pom.xml.
+ * This allows the project to use standard validation annotations like {@code @NotNull}, {@code @Size}, etc.
+ */
 @Mojo(
     name = "add-validation-api"
 )
 public class AddValidationApiMojo extends AbstractMojo {
     /**
-     * The Maven project.
+     * The current Maven project instance. This is automatically injected by Maven.
      */
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject mavenProject;
 
+    /**
+     * The current Maven session. This is automatically injected by Maven.
+     */
     @Parameter(
         defaultValue = "${session}",
         readonly = true,
@@ -34,15 +41,26 @@ public class AddValidationApiMojo extends AbstractMojo {
     private MavenSession mavenSession;
 
 
+    /**
+     * The Maven Project Builder component, used to build a full Maven project from a POM file.
+     */
     @Component
     private ProjectBuilder projectBuilder;
 
     /**
-     * Constructor por defecto.
+     * Default constructor.
      */
     public AddValidationApiMojo() {
     }
 
+    /**
+     * Executes the Mojo's primary logic. This method resolves the full project to determine the
+     * correct Jakarta EE version, adds the Jakarta Validation API dependency to the project's POM, and
+     * then saves the modified {@code pom.xml} file.
+     *
+     * @throws MojoExecutionException if a critical error occurs during execution.
+     * @throws MojoFailureException   if a recoverable error, such as a project building or I/O issue, occurs.
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         var log = getLog();

@@ -16,52 +16,74 @@
 package com.apuntesdejava.jakartacoffeebuilder.helper.jakarta10;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.RepositoryBuilder;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import jakarta.json.JsonObject;
-
-import java.util.Collection;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
+
+import static com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil.getFieldIdClass;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+
+
 /**
- * Jakarta 10 Repository Builder implementation. This class provides the logic to build a repository based on an entity
- * defined in a JSON object.
+ * An implementation of {@link RepositoryBuilder} for Jakarta EE 10.
  * <p>
- * <p>
- * Implements the {@link RepositoryBuilder} interface.</p>
- * <p>
- * <p>
- * Usage example:</p>
- * <pre>
- * {@code
- * Jakarta10RepositoryBuilderImpl builder = new Jakarta10RepositoryBuilderImpl();
- * builder.buildRepository(mavenProject, log, entityJson);
- * }
- * </pre>
+ * This class is responsible for generating the repository layer for a given entity,
+ * based on its JSON definition. It handles the specific requirements and APIs
+ * available in Jakarta EE 10.
  *
  * @author Diego Silva diego.silva at apuntesdejava.com
  */
 public class Jakarta10RepositoryBuilderImpl implements RepositoryBuilder {
 
     /**
-     * Default constructor for Jakarta10RepositoryBuilderImpl.<br>
-     * Initializes a new instance of the Jakarta10RepositoryBuilderImpl class.
+     * Constructs a new instance of {@code Jakarta10RepositoryBuilderImpl}.
      */
     public Jakarta10RepositoryBuilderImpl() {
     }
 
     /**
-     * Builds a repository for a specific entity using Jakarta 10.
+     * Builds a repository based on the provided entity definition for a Jakarta EE 10 project.
      *
-     * @param mavenProject The Maven project being worked on.
-     * @param log          The logger object to log messages during the build process.
-     * @param entityName
-     * @param entity       The JSON object representing the entity for which the repository will be built.
-     * @param imports
+     * @param mavenProject The Maven project context, used to access project details like base directory.
+     * @param log          A logger for outputting information or errors during the build process.
+     * @param entityName   The name of the entity for which to create the repository.
+     * @param entity       The JSON object containing the detailed definition of the entity.
+     * @param imports      A collection of fully qualified class names to be added as import statements
+     *                     in the generated repository file.
      */
     @Override
     public void buildRepository(MavenProject mavenProject, Log log, String entityName, JsonObject entity, Collection<String> imports) {
 
-        log.info("Building Jakarta 10 Repository for entity: " + entityName);
+        try {
+            log.info("Building Jakarta 10 Repository for entity: " + entityName);
+            var packageDefinition = MavenProjectUtil.getRepositoryPackage(mavenProject);
+            var packageEntity = MavenProjectUtil.getEntityPackage(mavenProject);
+            var className = entityName + "Repository";
+            log.debug("entity:" + entity);
+            var repositoryPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
+            var classRepository = StringUtils.capitalize(entity.getString("repository", "crud"));
+
+            TemplateUtil.getInstance()
+                    .createRepositoryFile(log, Map.of(
+                        PACKAGE_NAME, packageDefinition,
+                        CLASS_NAME, className,
+                        "entityName", entityName,
+                        "classRepository", classRepository,
+                        "packageEntity", packageEntity,
+                        "importsList", imports,
+                        "idType", getFieldIdClass(entity, "Long")
+                    ), repositoryPath);
+        } catch (IOException e) {
+            log.error("Error building Jakarta 10 Repository for entity: " + entityName, e);
+        }
     }
 }
