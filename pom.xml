@@ -300,6 +300,11 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <excludePackageNames>
+                                        com.apuntesdejava.jakarta_coffee_builder_plugin
+                                    </excludePackageNames>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
