@@ -79,10 +79,10 @@ jobs:
           server-password: OSSRH_TOKEN
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       - name: Set release version
         id: set_version
@@ -97,11 +97,21 @@ jobs:
           # Actualiza el pom.xml en el runner a la versión de release
           mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 
-      - name: Deploy Release to Sonatype Central
-        run: mvn -B deploy -P release --file pom.xml
+      - name: Set up GPG for Maven
+        run: |
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          echo "use-agent" >> ~/.gnupg/gpg.conf
+          gpgconf --kill gpg-agent
+          gpgconf --launch gpg-agent
+
+      - name: Deploy to Maven Central
         env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: |
+          mvn -B clean deploy -P release \
+            -Dgpg.passphrase="$GPG_PASSPHRASE"
 
       - name: Create GitHub Release and Tag
         uses: softprops/action-gh-release@v2

@@ -276,6 +276,11 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <gpgPassphrase>${gpg.passphrase}</gpgPassphrase>
+                            <useAgent>true</useAgent>
+                            <pinentryMode>loopback</pinentryMode>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
