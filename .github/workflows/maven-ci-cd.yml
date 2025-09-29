@@ -98,13 +98,13 @@ jobs:
           mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 
 
-      - name: Deploy to Maven Central
-        env:
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        run: |
-          mvn -B clean deploy -P release  -Dgpg.passphrase="$GPG_PASSPHRASE"
+#      - name: Deploy to Maven Central
+#        env:
+#          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+#          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+#          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+#        run: |
+#          mvn -B clean deploy -P release  -Dgpg.passphrase="$GPG_PASSPHRASE"
 
       - name: Create GitHub Release and Tag
         uses: softprops/action-gh-release@v2
