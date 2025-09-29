@@ -46,7 +46,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          server-id: ossrh
+          server-id: central
           server-username: OSSRH_USERNAME
           server-password: OSSRH_TOKEN
 
@@ -74,15 +74,15 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          server-id: ossrh
+          server-id: central
           server-username: OSSRH_USERNAME
           server-password: OSSRH_TOKEN
 
       - name: Import GPG key
-        run: |
-          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHARSE }}
 
       - name: Set release version
         id: set_version
@@ -97,12 +97,6 @@ jobs:
           # Actualiza el pom.xml en el runner a la versión de release
           mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 
-      - name: Set up GPG for Maven
-        run: |
-          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-          echo "use-agent" >> ~/.gnupg/gpg.conf
-          gpgconf --kill gpg-agent
-          gpgconf --launch gpg-agent
 
       - name: Deploy to Maven Central
         env:
@@ -110,8 +104,7 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
         run: |
-          mvn -B clean deploy -P release \
-            -Dgpg.passphrase="$GPG_PASSPHRASE"
+          mvn -B clean deploy -P release  -Dgpg.passphrase="$GPG_PASSPHRASE"
 
       - name: Create GitHub Release and Tag
         uses: softprops/action-gh-release@v2
