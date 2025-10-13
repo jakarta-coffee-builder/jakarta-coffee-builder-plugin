@@ -29,7 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ENTITY;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 
 /**
  * A utility class for common Maven project-related operations.
@@ -85,7 +85,7 @@ public final class MavenProjectUtil {
      * @return The package name for the entity layer (e.g., {@code com.example.project.entity}).
      */
     public static String getEntityPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), ENTITY);
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), INFRASTRUCTURE, ENTITY);
     }
 
     /**
@@ -95,7 +95,7 @@ public final class MavenProjectUtil {
      * @return The package name for the model layer (e.g., {@code com.example.project.model}).
      */
     public static String getModelPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), DOMAIN, "model");
     }
 
     /**
@@ -105,7 +105,7 @@ public final class MavenProjectUtil {
      * @return The package name for the mapper layer (e.g., {@code com.example.project.mapper}).
      */
     public static String getMapperPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "mapper");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), INFRASTRUCTURE, "mapper");
     }
 
     /**
@@ -115,7 +115,11 @@ public final class MavenProjectUtil {
      * @return The package name for the service layer (e.g., {@code com.example.project.service}).
      */
     public static String getServicePackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "service");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), INFRASTRUCTURE, "domain");
+    }
+
+    public static String getModelRepositoryPackage(MavenProject mavenProject) {
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), DOMAIN, "repository");
     }
 
     /**
@@ -135,7 +139,7 @@ public final class MavenProjectUtil {
      * @return The package name for the repository layer (e.g., {@code com.example.project.repository}).
      */
     public static String getRepositoryPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "repository");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), INFRASTRUCTURE, "repository");
     }
 
     /**
@@ -145,7 +149,7 @@ public final class MavenProjectUtil {
      * @return The package name for the provider layer (e.g., {@code com.example.project.provider}).
      */
     public static String getProviderPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "provider");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), INFRASTRUCTURE, "provider");
     }
 
     /**
@@ -155,7 +159,7 @@ public final class MavenProjectUtil {
      * @return The package name for the faces layer (e.g., {@code com.example.project.faces}).
      */
     public static String getFacesPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "faces");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), APP, "faces");
     }
 
     /**
@@ -165,7 +169,7 @@ public final class MavenProjectUtil {
      * @return The package name for the resources layer (e.g., {@code com.example.project.resources}).
      */
     public static String getApiResourcesPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "resources");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), APP, "resources");
     }
 
     /**
@@ -175,7 +179,7 @@ public final class MavenProjectUtil {
      * @return The package name for the model layer (e.g., {@code com.example.project.model}).
      */
     public static String getDomainModelPackage(MavenProject mavenProject) {
-        return "%s.%s".formatted(getProjectPackage(mavenProject), "model");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), DOMAIN, "model");
     }
 
     /**
@@ -189,15 +193,15 @@ public final class MavenProjectUtil {
     public static Profile getProfile(MavenProject mavenProject, String profileId) {
         var model = getOriginalModel(mavenProject);
         return model.getProfiles()
-                    .stream()
-                    .filter(profile -> profile.getId().equals(profileId))
-                    .findFirst()
-                    .orElseGet(() -> {
-                        var profile = new Profile();
-                        profile.setId(profileId);
-                        model.addProfile(profile);
-                        return profile;
-                    });
+            .stream()
+            .filter(profile -> profile.getId().equals(profileId))
+            .findFirst()
+            .orElseGet(() -> {
+                var profile = new Profile();
+                profile.setId(profileId);
+                model.addProfile(profile);
+                return profile;
+            });
 
     }
 
@@ -224,15 +228,15 @@ public final class MavenProjectUtil {
      * @param profileId    The ID of the profile containing the build section.
      * @return The existing or newly created {@link BuildBase} instance.
      */
-    public static BuildBase getBuild(MavenProject mavenProject,String profileId){
+    public static BuildBase getBuild(MavenProject mavenProject, String profileId) {
         var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
 
         return Optional.ofNullable(profile.getBuild())
-                       .orElseGet(() -> {
-                                Build bld = new Build();
-                                profile.setBuild(bld);
-                                bld.setPlugins(new ArrayList<>());
-                                return bld;
-                            });
+            .orElseGet(() -> {
+                Build bld = new Build();
+                profile.setBuild(bld);
+                bld.setPlugins(new ArrayList<>());
+                return bld;
+            });
     }
 }

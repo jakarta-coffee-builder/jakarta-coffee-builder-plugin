@@ -53,10 +53,9 @@ public class ArchitectureHelper {
      *
      * @param mavenProject The current Maven project.
      * @param log          The logger for outputting information.
-     * @throws MojoExecutionException if a fatal error occurs during dependency resolution.
      * @throws IOException            if an I/O error occurs while modifying the POM.
      */
-    public void checkDependency(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
+    public void checkDependency(MavenProject mavenProject, Log log) throws IOException {
         log.debug("Checking org.mapstruct depending");
         if (!PomUtil.existsDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT)) {
             var version = PomUtil.findLatestDependencyVersion(ORG_MAPSTRUCT, MAPSTRUCT).orElseThrow();
@@ -201,7 +200,7 @@ public class ArchitectureHelper {
 
     private void createService(MavenProject mavenProject, Log log, String modelName, JsonValue entityDefinitionValue) {
         try {
-            var serviceName = modelName + "Service";
+            var serviceName = modelName + "RepositoryImpl";
             var packageDefinition = MavenProjectUtil.getServicePackage(mavenProject);
             var servicePath = PathsUtil.getJavaPath(mavenProject, packageDefinition, serviceName);
             var entityDefinition = entityDefinitionValue.asJsonObject();
@@ -211,6 +210,7 @@ public class ArchitectureHelper {
             );
 
             importsList.addAll(List.of(
+                MavenProjectUtil.getModelRepositoryPackage(mavenProject)+ "." + modelName + "Repository",
                 MavenProjectUtil.getMapperPackage(mavenProject) + "." + modelName + "Mapper",
                 MavenProjectUtil.getModelPackage(mavenProject) + "." + modelName,
                 MavenProjectUtil.getRepositoryPackage(mavenProject) + "." + modelName + "EntityRepository"
@@ -226,6 +226,44 @@ public class ArchitectureHelper {
             TemplateUtil.getInstance().createServiceFile(log, fieldsMap, servicePath);
         } catch (IOException ex) {
             log.error("Error creating Service " + modelName, ex);
+        }
+    }
+
+    public void createModelRepositoryInterfaces(MavenProject mavenProject, Log log, JsonObject jsonContent) {
+        jsonContent.forEach((entityName, entityDefinition) -> createModelRepositoryInterface(mavenProject,
+            log,
+            entityName,
+            entityDefinition));
+    }
+
+    private void createModelRepositoryInterface(MavenProject mavenProject,
+                                                Log log,
+                                                String modelName,
+                                                JsonValue entityDefinitionValue) {
+        try {
+            var serviceName = modelName + "Repository";
+            var packageDefinition = MavenProjectUtil.getModelRepositoryPackage(mavenProject);
+            var servicePath = PathsUtil.getJavaPath(mavenProject, packageDefinition, serviceName);
+            var entityDefinition = entityDefinitionValue.asJsonObject();
+
+            Collection<String> importsList = new ArrayList<>(
+                ClassDefinitionHelper.getInstance().importsFromFieldsClassesType(entityDefinition.getJsonObject(FIELDS))
+            );
+
+            importsList.add(
+                MavenProjectUtil.getModelPackage(mavenProject) + "." + modelName
+            );
+            String idClass = CoffeeBuilderUtil.getFieldIdClass(entityDefinition, "Long");
+
+            var fieldsMap = Map.ofEntries(
+                Map.entry(PACKAGE_NAME, packageDefinition),
+                Map.entry("idClass", idClass),
+                Map.entry(IMPORTS_LIST, importsList),
+                Map.entry(MODEL_NAME, modelName)
+            );
+            TemplateUtil.getInstance().createModelRepositoryFile(log, fieldsMap, servicePath);
+        } catch (IOException ex) {
+            log.error("Error creating Repository Model " + modelName, ex);
         }
     }
 
