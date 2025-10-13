@@ -152,6 +152,11 @@ public class TemplateUtil {
         createJavaFile(log, data, servicePath, "java/Service.ftl");
     }
 
+    public void createModelRepositoryFile(Log log, Map<String, Object> data, Path servicePath) throws IOException {
+        createJavaFile(log, data, servicePath, "java/ModelRepository.ftl");
+    }
+
+
     /**
      * Generates a Plain Old Java Object (POJO) file using a template and writes it to the specified file path.
      *

@@ -87,6 +87,7 @@ public class AddDomainModelsMojo extends AbstractMojo {
 
             architectureHelper.createDtos(mavenProject, log, jsonContent);
             architectureHelper.createMappers(mavenProject, log, jsonContent);
+            architectureHelper.createModelRepositoryInterfaces(mavenProject, log, jsonContent);
             architectureHelper.createServices(mavenProject, log, jsonContent);
 
             PomUtil.saveMavenProject(mavenProject, log);

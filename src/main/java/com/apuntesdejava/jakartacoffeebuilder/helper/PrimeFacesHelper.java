@@ -197,7 +197,7 @@ public class PrimeFacesHelper extends JakartaFacesHelper {
         var className = StringsUtil.toPascalCase(pageName) + "Bean";
         var managedBeanPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
         List<String> importsList = List.of(
-            "%s.%sService".formatted(MavenProjectUtil.getServicePackage(mavenProject), entityName),
+            "%s.%sRepository".formatted(MavenProjectUtil.getModelRepositoryPackage(mavenProject), entityName),
             "%s.%s".formatted(MavenProjectUtil.getModelPackage(mavenProject), entityName)
         );
         Map<String, Object> fieldsMap = new LinkedHashMap<>(Map.ofEntries(

@@ -82,7 +82,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-temp
 Add a Face page, associating it with a Managed Bean. It can also be done by using a specified Facelet template
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-page
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-page
 ```
 
 **Parameters**
@@ -97,11 +97,11 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-page
 
 **Example**
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-page \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-page \
     -Dname=hello-world \
     -Dmanaged-bean=false
 
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-page \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-page \
     -Dname=persons \
     -Dmanaged-bean=true
 
@@ -120,7 +120,7 @@ Creating page with / without Managed Bean:
 Add Jakarta Persistence configuration in `persistence.xml` file
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-persistence
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-persistence
 ```
 
 **Parameters**
@@ -143,7 +143,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-persisten
 Add DataSource configuration
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-datasource
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-datasource
 ```
 
 **Parameters**
@@ -163,7 +163,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-datasourc
 
 ### Add Jakarta Persistence Entity
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-entities
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-entities
 
 ```
 
@@ -226,7 +226,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-entities
 ### Create REST services with OpenAPI specifications
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:create-openapi
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:create-openapi
 ```
 
 **Parameters**
@@ -243,7 +243,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:create-openap
 Add Glassfish Embedded Plugin
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-glassfish-embedded
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-glassfish-embedded
 ```
 
 
@@ -260,7 +260,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-glassfish
 Add PayaraMicro Plugin
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-payaramicro
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-payaramicro
 ```
 
 ### Add Domain Model
@@ -268,7 +268,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-payaramic
 The domain model is based using the definition of entities
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-domain-models
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-domain-models
 ```
 
 **Parameters**
@@ -280,14 +280,14 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-domain-mo
 **Example**
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-domain-models \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-domain-models \
     -Dentities-file=entities.json
 ```
 
 ### Add Forms (Primefaces) from Entities
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-forms-from-entities
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-forms-from-entities
 ```
 
 **Parameters**

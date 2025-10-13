@@ -75,7 +75,7 @@ public final class MavenProjectUtil {
      */
     public static String getProjectPackage(MavenProject mavenProject) {
         return "%s.%s".formatted(RegExUtils.replaceAll(mavenProject.getGroupId(), "[^a-zA-Z0-9]", "."),
-                RegExUtils.replaceAll(mavenProject.getArtifactId(), "[^a-zA-Z0-9]", "."));
+            RegExUtils.replaceAll(mavenProject.getArtifactId(), "[^a-zA-Z0-9]", "."));
     }
 
     /**
@@ -115,7 +115,11 @@ public final class MavenProjectUtil {
      * @return The package name for the service layer (e.g., {@code com.example.project.service}).
      */
     public static String getServicePackage(MavenProject mavenProject) {
-        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), DOMAIN, "service");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), INFRASTRUCTURE, "domain");
+    }
+
+    public static String getModelRepositoryPackage(MavenProject mavenProject) {
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), DOMAIN, "repository");
     }
 
     /**
@@ -155,7 +159,7 @@ public final class MavenProjectUtil {
      * @return The package name for the faces layer (e.g., {@code com.example.project.faces}).
      */
     public static String getFacesPackage(MavenProject mavenProject) {
-        return "%s.%s.%s".formatted(getProjectPackage(mavenProject),APP, "faces");
+        return "%s.%s.%s".formatted(getProjectPackage(mavenProject), APP, "faces");
     }
 
     /**
@@ -189,15 +193,15 @@ public final class MavenProjectUtil {
     public static Profile getProfile(MavenProject mavenProject, String profileId) {
         var model = getOriginalModel(mavenProject);
         return model.getProfiles()
-                .stream()
-                .filter(profile -> profile.getId().equals(profileId))
-                .findFirst()
-                .orElseGet(() -> {
-                    var profile = new Profile();
-                    profile.setId(profileId);
-                    model.addProfile(profile);
-                    return profile;
-                });
+            .stream()
+            .filter(profile -> profile.getId().equals(profileId))
+            .findFirst()
+            .orElseGet(() -> {
+                var profile = new Profile();
+                profile.setId(profileId);
+                model.addProfile(profile);
+                return profile;
+            });
 
     }
 
@@ -228,11 +232,11 @@ public final class MavenProjectUtil {
         var profile = MavenProjectUtil.getProfile(mavenProject, profileId);
 
         return Optional.ofNullable(profile.getBuild())
-                .orElseGet(() -> {
-                    Build bld = new Build();
-                    profile.setBuild(bld);
-                    bld.setPlugins(new ArrayList<>());
-                    return bld;
-                });
+            .orElseGet(() -> {
+                Build bld = new Build();
+                profile.setBuild(bld);
+                bld.setPlugins(new ArrayList<>());
+                return bld;
+            });
     }
 }
