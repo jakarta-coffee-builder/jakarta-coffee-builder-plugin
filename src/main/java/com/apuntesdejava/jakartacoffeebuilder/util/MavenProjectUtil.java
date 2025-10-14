@@ -25,11 +25,13 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.APP;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DOMAIN;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ENTITY;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.INFRASTRUCTURE;
 
 /**
  * A utility class for common Maven project-related operations.
@@ -214,17 +216,6 @@ public final class MavenProjectUtil {
     private static Model getOriginalModel(MavenProject mavenProject) {
         return Optional.ofNullable(mavenProject.getOriginalModel()).orElse(mavenProject.getModel());
     }
-
-    /**
-     * Gets the parent directory of the Maven project's POM file.
-     *
-     * @param mavenProject The Maven project.
-     * @return The {@link Path} to the directory containing the {@code pom.xml} file.
-     */
-    public static Path getParent(MavenProject mavenProject) {
-        return mavenProject.getFile().toPath().getParent();
-    }
-
 
     /**
      * Retrieves the {@link BuildBase} section from a specific profile. If the profile or its build
