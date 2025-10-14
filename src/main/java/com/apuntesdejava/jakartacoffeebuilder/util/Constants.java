@@ -291,11 +291,27 @@ public final class Constants {
      * A key representing an entity.
      */
     public static final String ENTITY = "entity";
+
+    /**
+     * Represents the "infrastructure" layer or component.
+     */
+    public static final String INFRASTRUCTURE = "infrastructure";
+
+    /**
+     * Represents the "domain" layer or component.
+     */
+    public static final String DOMAIN = "domain";
+
+    /**
+     * Represents the "application" layer or component.
+     */
+    public static final String APP = "app";
+
     /**
      * A set of annotation names that are searched for within field definitions.
      */
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
-        "ElementCollection");
+            "ElementCollection");
     /**
      * A set of supported strategies for the {@code @GeneratedValue} annotation.
      */
