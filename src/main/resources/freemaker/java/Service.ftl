@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
-public class ${modelName}Service {
+public class ${modelName}RepositoryImpl implements ${modelName}Repository {
 
     @Inject
     private ${modelName}Mapper mapper;
@@ -21,32 +21,32 @@ public class ${modelName}Service {
     @Inject
     private ${modelName}EntityRepository entityRepository;
 
-    public List<${modelName}> findAll() {
+    @Override public List<${modelName}> findAll() {
      return entityRepository.findAll().map(mapper::entityToModel).toList();
     }
 
     @Transactional
-    public ${modelName} save(${modelName} model) {
+    @Override public ${modelName} save(${modelName} model) {
         var entity = mapper.modelToEntity(model);
         return mapper.entityToModel(entityRepository.save(entity));
     }
 
-    public Optional<${modelName}> findById(${idClass} id) {
+    @Override public Optional<${modelName}> findById(${idClass} id) {
         return entityRepository.findById(id).map(mapper::entityToModel);
     }
 
     @Transactional
-    public void deleteById(${idClass} id){
+    @Override public void deleteById(${idClass} id){
         entityRepository.deleteById(id);
     }
 
     @Transactional
-    public void delete(${modelName} model){
+    @Override public void delete(${modelName} model){
         entityRepository.delete(mapper.modelToEntity(model));
     }
 
     @Transactional
-    public void deleteAll(List<${modelName}> models){
+    @Override public void deleteAll(List<${modelName}> models){
         entityRepository.deleteAll(models.stream().map(mapper::modelToEntity).toList());
     }
 }

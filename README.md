@@ -1,5 +1,5 @@
 # Jakarta Coffee Builder Plugin
-![Maven Central Version](https://img.shields.io/maven-central/v/com.apuntesdejava/jakarta-coffee-builder-plugin)  ![GitHub last commit](https://img.shields.io/github/last-commit/jakarta-coffee-builder/jakarta-coffee-builder-plugin)  [![GitHub](https://img.shields.io/badge/maven-plugin-darkgreen?logo=github)](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin) 
+![Maven Central Version](https://img.shields.io/maven-central/v/com.apuntesdejava/jakarta-coffee-builder-plugin)  ![GitHub last commit](https://img.shields.io/github/last-commit/jakarta-coffee-builder/jakarta-coffee-builder-plugin)  [![GitHub](https://img.shields.io/badge/maven-plugin-darkgreen?logo=github)](https://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/jakarta-coffee-builder/jakarta-coffee-builder-plugin/maven-ci-cd.yml)
 
 `develop`: ![GitHub branch check runs](https://img.shields.io/github/check-runs/jakarta-coffee-builder/jakarta-coffee-builder-plugin/develop) ![GitHub commit activity (branch)](https://img.shields.io/github/commit-activity/m/jakarta-coffee-builder/jakarta-coffee-builder-plugin/develop)
@@ -16,7 +16,7 @@ Maven plugin for adding and modifying Jakarta EE functionality to a project.
 Add Jakarta Faces Servlet configuration in `web.xml` file
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-faces 
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-faces 
 ```
 
 **Parameters**
@@ -56,7 +56,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-faces
 Add a Facelet page
 
 ```shell
-mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.2-SNAPSHOT:add-face-template" 
+mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-template" 
 ```
 
 **Parameters**
@@ -70,7 +70,7 @@ mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.2-SNAPSHOT:add-face-tem
 
 **Example**
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-template \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-template \
     -Dname=/WEB-INF/template/main.xhtml \
     -Dinserts=header,body,footer
 ```
@@ -82,7 +82,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-template \
 Add a Face page, associating it with a Managed Bean. It can also be done by using a specified Facelet template
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-page
 ```
 
 **Parameters**
@@ -97,11 +97,11 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page
 
 **Example**
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-page \
     -Dname=hello-world \
     -Dmanaged-bean=false
 
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-page \
     -Dname=persons \
     -Dmanaged-bean=true
 
@@ -120,7 +120,7 @@ Creating page with / without Managed Bean:
 Add Jakarta Persistence configuration in `persistence.xml` file
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-persistence
 ```
 
 **Parameters**
@@ -140,10 +140,10 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-persistence
 
 ### Add DataSource configuration
 
-Add DataSource configuration 
+Add DataSource configuration
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-datasource
 ```
 
 **Parameters**
@@ -163,7 +163,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-datasource
 
 ### Add Jakarta Persistence Entity
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-entities
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-entities
 
 ```
 
@@ -175,7 +175,50 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-entities
 
 **Example JSON File**
 ```json
-``
+{
+  "Category": {
+    "fields": {
+      "id": {
+        "type": "UUID",
+        "isId": true,
+        "generatedValue": "UUID"
+      },
+      "name": {
+        "type": "String",
+        "column": {
+          "length": 100
+        }
+      }
+    }
+  },
+  "Pet": {
+    "fields": {
+      "id": {
+        "type": "Long",
+        "isId": true,
+        "generatedValue": "Identity"
+      },
+      "category": {
+        "type": "Category",
+        "manyToOne": true,
+        "joinColumn": {
+          "name": "category_id",
+          "nullable": false
+        }
+      },
+      "name": {
+        "type": "String",
+        "column": {
+          "length": 100
+        }
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  } 
+}
+```
 
 
 ## Jakarta RESTful Web Services
@@ -183,7 +226,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-entities
 ### Create REST services with OpenAPI specifications
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:create-openapi
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:create-openapi
 ```
 
 **Parameters**
@@ -200,7 +243,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:create-openapi
 Add Glassfish Embedded Plugin
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-glassfish-embedded
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-glassfish-embedded
 ```
 
 
@@ -217,7 +260,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-glassfish-embedded
 Add PayaraMicro Plugin
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-payaramicro
 ```
 
 ### Add Domain Model
@@ -225,7 +268,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-payaramicro
 The domain model is based using the definition of entities
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-domain-models
 ```
 
 **Parameters**
@@ -237,14 +280,14 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model
 **Example**
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-domain-models \
     -Dentities-file=entities.json
 ```
 
 ### Add Forms (Primefaces) from Entities
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-forms-from-entities
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-forms-from-entities
 ```
 
 **Parameters**
@@ -255,33 +298,26 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-forms-from-entities
 | `forms-file`    | The name of the json file that contains the list of forms and columns to Faces Pages               | [forms.json](examples/forms.json)       |
 
 
-# Additional settings
-
-To avoid the whole long plugin coordinate, like this:
-
-```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-domain-model ...
+**Example JSON File**
+```json
+{
+  "CategoryList": {
+    "entity": "Category",
+    "title": "Categories List",
+    "base": "/",
+    "template": {
+      "facelet": "/WEB-INF/templates/template1.xhtml",
+      "define": "body"
+    },
+    "fields": {
+      "id": {
+        "label": "Category Id"
+      },
+      "name": {
+        "label": "Category Name"
+      }
+    }
+  }
+}
 ```
-
-Edit the `~/.m2/settings.xml` file by adding the following content:
-
-```xml
-  <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-    
-    <!--- other configurations... -->
-    <pluginGroups>
-      <pluginGroup>com.apuntesdejava</pluginGroup>
-    </pluginGroups>
-    <!--- other configurations... -->
-  </settings>
-
-```
-
-After that, you can now call the plugin as follows:
-
-
-```shell
-mvn jakarta-coffee-builder:add-domain-model ...
-```
+ 
