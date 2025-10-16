@@ -16,7 +16,7 @@ Maven plugin for adding and modifying Jakarta EE functionality to a project.
 Add Jakarta Faces Servlet configuration in `web.xml` file
 
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-faces 
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-faces 
 ```
 
 **Parameters**
@@ -56,7 +56,7 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-faces
 Add a Facelet page
 
 ```shell
-mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-template" 
+mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-template" 
 ```
 
 **Parameters**
@@ -70,7 +70,7 @@ mvn "com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-tem
 
 **Example**
 ```shell
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3-SNAPSHOT:add-face-template \
+mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.3:add-face-template \
     -Dname=/WEB-INF/template/main.xhtml \
     -Dinserts=header,body,footer
 ```
