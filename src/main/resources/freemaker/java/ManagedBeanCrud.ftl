@@ -6,8 +6,8 @@ import ${importItem};
     </#list>
 </#if>
 <#assign formId="${instanceModelName}Form" />
-<#assign serviceClassName="${modelName}Service" />
-<#assign serviceInstanceName="${instanceModelName}Service" />
+<#assign serviceClassName="${modelName}Repository" />
+<#assign serviceInstanceName="${instanceModelName}Repository" />
 <#assign currentModel="current${modelName}" />
 <#assign selectedModels="selected${modelName}s" />
 <#assign idNameCap=idName?cap_first />
