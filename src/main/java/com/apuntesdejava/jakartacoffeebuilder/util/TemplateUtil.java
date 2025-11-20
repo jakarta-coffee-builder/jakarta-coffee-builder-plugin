@@ -67,6 +67,10 @@ public class TemplateUtil {
         createJavaFile(log, data, javaPath, "java/JavaBean.ftl");
     }
 
+    public void createFacesConfigurationFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
+        createJavaFile(log, data, javaPath, "java/FacesConfiguration.ftl");
+    }
+
     /**
      * Generates an Entity file using a template and writes it to the specified file path.
      *

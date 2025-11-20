@@ -36,7 +36,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ARTIFACT_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FIELDS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOAL;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GROUP_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_DATA;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_DATA_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_ENTERPRISE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_ENTERPRISE_CDI_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PERSISTENCE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PERSISTENCE_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.MAVEN_COMPILER_PLUGIN;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ORG_APACHE_MAVEN_PLUGINS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ORG_PRIMEFACES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PRIMEFACES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PROVIDED_SCOPE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static java.util.Collections.emptyMap;
 
 /**
@@ -125,19 +147,21 @@ public final class JakartaEeHelper {
      *
      * @param mavenProject The Maven project to modify.
      * @param log          The Maven logger for output.
-     * @param urlPattern   The URL pattern to map the servlet to (e.g., "*.xhtml").
      * @throws IOException if an I/O error occurs while reading or writing the {@code web.xml} file.
      */
-    public void addJakartaFacesServletDeclaration(MavenProject mavenProject,
-                                                  Log log,
-                                                  String urlPattern) throws IOException {
-        var webXmlUtil = WebXmlUtil.getInstance();
-        webXmlUtil.checkExistsFile(mavenProject, log)
-            .ifPresent(document -> {
-                webXmlUtil.addServletDeclaration(document, urlPattern, log, JAKARTA_FACES_SERVLET,
-                    JAKARTA_FACES_SERVLET_DEFINITION);
-                webXmlUtil.saveDocument(mavenProject, document, log);
-            });
+    public void addJakartaFacesDeclaration(MavenProject mavenProject,
+                                           Log log) throws IOException {
+
+        var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject);
+        var className = "FacesConfiguration";
+        var facesConfiguratinClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
+
+        TemplateUtil.getInstance().createFacesConfigurationFile(log,
+            Map.of(PACKAGE_NAME, packageDefinition,
+                CLASS_NAME, className
+            ),
+            facesConfiguratinClassPath
+        );
     }
 
     /**
