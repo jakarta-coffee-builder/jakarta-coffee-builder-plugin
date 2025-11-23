@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
  * A utility class for JSON-related operations, including reading and writing JSON files
@@ -80,19 +81,19 @@ public final class JsonUtil {
         log.debug("---- in array");
         var values = value.asJsonArray();
         values.stream()
-              .map(JsonValue::asJsonObject)
-              .filter(item -> {
-                  var groupId = item.getString("groupId");
-                  var artifactId = item.getString("artifactId");
-                  return !childrenIds.contains(ARTIFACT_TEMPLATE.formatted(groupId, artifactId));
-              })
-              .forEach(item -> config.addChild(jsonToXpp3Dom(log, new Xpp3Dom(key), item, true)));
+            .map(JsonValue::asJsonObject)
+            .filter(item -> {
+                var groupId = item.getString("groupId", EMPTY);
+                var artifactId = item.getString("artifactId", EMPTY);
+                return !childrenIds.contains(ARTIFACT_TEMPLATE.formatted(groupId, artifactId));
+            })
+            .forEach(item -> config.addChild(jsonToXpp3Dom(log, new Xpp3Dom(key), item, true)));
     }
 
     private static Set<String> getPluginsKeys(Xpp3Dom[] children) {
         return Arrays.stream(children)
-                     .map(item -> ARTIFACT_TEMPLATE.formatted(item.getChild("groupId").getValue(),
-                         item.getChild("artifactId").getValue())).collect(toSet());
+            .map(item -> ARTIFACT_TEMPLATE.formatted(item.getChild("groupId").getValue(),
+                item.getChild("artifactId").getValue())).collect(toSet());
     }
 
     /**

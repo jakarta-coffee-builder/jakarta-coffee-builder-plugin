@@ -19,22 +19,16 @@ import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonValue;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.dom4j.Document;
+import org.dom4j.Namespace;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Optional;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.HIBERNATE_PROVIDER;
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
-
-import org.dom4j.Namespace;
 
 /**
  * Helper class for managing `persistence.xml` files. Provides methods to create and save `persistence.xml` documents.
@@ -70,10 +64,8 @@ public class PersistenceXmlHelper {
      * @param mavenProject        the current Maven project, used to resolve paths and the Jakarta EE version.
      * @param log                 the Maven logger for outputting messages.
      * @param persistenceUnitName the name to be assigned to the new persistence unit.
-     *
      * @return an {@link Optional} containing the created or loaded {@link Document}, or an empty {@code Optional} if an
-     *         error occurs during file access.
-     *
+     * error occurs during file access.
      * @throws RuntimeException if an {@link IOException} occurs while fetching schema information.
      */
     public Optional<Document> createPersistenceXml(MavenProject mavenProject, Log log, String persistenceUnitName) {
@@ -81,26 +73,26 @@ public class PersistenceXmlHelper {
         var xmlUtil = XmlUtil.getInstance();
         var xmlPath = getPersistencePath(currentPath);
         return xmlUtil.getDocument(log, xmlPath, document -> {
-                                   try {
-                                       var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log)
-                                           .orElseThrow();
-                                       JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
-                                                                                                  "persistence")
-                                           .orElseThrow();
+            try {
+                var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log)
+                    .orElseThrow();
+                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                        "persistence")
+                    .orElseThrow();
 
-                                       var persistenceElem = document.addElement("persistence",
-                                                                             "https://jakarta.ee/xml/ns/persistence");
+                var persistenceElem = document.addElement("persistence",
+                    "https://jakarta.ee/xml/ns/persistence");
 //                persistenceElem.add(new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"));
 //                persistenceElem.add(new Namespace("schemaLocation",
 //                    "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url")));
-                                       persistenceElem.addAttribute("version", schemaDescription.getString("version"));
+                persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
-                                       var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
-                                       persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
-                                   } catch (IOException e) {
-                                       throw new RuntimeException(e);
-                                   }
-                               });
+                var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
+                persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**
@@ -119,7 +111,6 @@ public class PersistenceXmlHelper {
      * directory structure (`src/main/resources/META-INF`) to the provided base path.
      *
      * @param currentPath the base path from which the `persistence.xml` path will be resolved
-     *
      * @return the resolved `Path` to the `persistence.xml` file
      */
     protected Path getPersistencePath(Path currentPath) {
@@ -144,8 +135,8 @@ public class PersistenceXmlHelper {
             .ifPresent(document -> {
                 var xmlUtil = XmlUtil.getInstance();
                 xmlUtil.findElementsStream(document,
-                                           "//*[local-name()='persistence-unit'][@name='%s'][not(*[local-name()='jta-data-source' and text()='%s'])]"
-                                               .formatted(persistenceUnit, name))
+                        "//*[local-name()='persistence-unit'][@name='%s'][not(*[local-name()='jta-data-source' and text()='%s'])]"
+                            .formatted(persistenceUnit, name))
                     .findFirst()
                     .ifPresent(element -> {
                         xmlUtil.removeElement(element, "jta-data-source");
@@ -154,55 +145,6 @@ public class PersistenceXmlHelper {
                         savePersistenceXml(currentPath, log, document);
                     });
             });
-    }
-
-    /**
-     * Adds a provider to the `persistence.xml` file.
-     *
-     * @param currentPath  the current path where the `persistence.xml` is located
-     * @param log          the logger to use for logging messages
-     * @param dialectClass the class name of the dialect to be added
-     */
-    public void addProviderToPersistenceXml(Path currentPath, Log log, String dialectClass) {
-        var persistencePath = getPersistencePath(currentPath);
-        var xmlUtil = XmlUtil.getInstance();
-        xmlUtil.getDocument(log, persistencePath).ifPresent(persistenceXml -> {
-            xmlUtil.findElementsStream(persistenceXml, "//*[local-name()='persistence-unit']")
-                .findFirst()
-                .ifPresent(elem -> {
-                    if (xmlUtil.findElementsStream(persistenceXml,
-                                                   "//*[local-name()='persistence-unit']/*[local-name()='provider' and text()='%s']"
-                                                       .formatted(HIBERNATE_PROVIDER))
-                        .findFirst().isEmpty()) {
-                        xmlUtil.addElementAtStart(elem, log, "provider", HIBERNATE_PROVIDER);
-                    }
-                    xmlUtil.getElement(elem, "properties", persistenceNS).ifPresent(properties -> {
-                        if (StringUtils.isNotBlank(dialectClass)) {
-                            xmlUtil.addElement(properties, "property",
-                                               Map.of(NAME, "hibernate.dialect", VALUE, dialectClass));
-                        }
-                        try {
-                            CoffeeBuilderUtil.getPropertiesConfiguration("jpa-hibernate")
-                                .ifPresent(propertiesConfig -> propertiesConfig
-                                .stream()
-                                .map(JsonValue::asJsonObject)
-                                .forEach(property -> {
-                                    var name = property.getString(NAME);
-                                    var value = property.getString(VALUE);
-                                    xmlUtil.addElement(
-                                        properties, "property",
-                                        Map.of(NAME, name, VALUE, value)
-                                    );
-                                }));
-                        } catch (IOException e) {
-                            log.error(e.getMessage(), e);
-                        }
-                    });
-
-                });
-            xmlUtil.saveDocument(persistenceXml, log, persistencePath);
-        });
-
     }
 
     private static class PersistenceXmlUtilHolder {
