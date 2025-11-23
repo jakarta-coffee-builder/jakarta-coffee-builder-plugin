@@ -15,19 +15,37 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.*;
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.commons.lang3.Strings;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ARTIFACT_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FIELDS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GROUP_ID;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IMPORTS_LIST;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.MAPSTRUCT;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.MAVEN_COMPILER_PLUGIN;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.MODEL_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ORG_APACHE_MAVEN_PLUGINS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ORG_MAPSTRUCT;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 
 /**
  * A singleton helper class for scaffolding architecture layers, including DTOs, Mappers, and Services.
@@ -47,41 +65,50 @@ public class ArchitectureHelper {
         return ArchitectureHelperHolder.INSTANCE;
     }
 
+    private static void addMapStructDependency(MavenProject mavenProject, Log log) throws IOException {
+        var version = PomUtil.findLatestDependencyVersion(ORG_MAPSTRUCT, MAPSTRUCT).orElseThrow();
+        PomUtil.setProperty(mavenProject, log, "org.mapstruct.version", version);
+        PomUtil.addDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT, "${org.mapstruct.version}");
+
+        CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
+            .ifPresent(
+                mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
+                    ORG_APACHE_MAVEN_PLUGINS,
+                    MAVEN_COMPILER_PLUGIN,
+                    mavenCompilerPlugin.getString("version"),
+                    Json.createObjectBuilder()
+                        .add("annotationProcessorPaths",
+                            Json.createObjectBuilder()
+                                .add("path",
+                                    Json.createArrayBuilder()
+                                        .add(
+                                            Json.createObjectBuilder()
+                                                .add(GROUP_ID, ORG_MAPSTRUCT)
+                                                .add(ARTIFACT_ID, "mapstruct-processor")
+                                                .add("version", "${org.mapstruct.version}")
+                                        )
+                                )
+                        )
+                        .build()));
+    }
+
     /**
      * Checks if the MapStruct dependency is present in the project. If not, it adds the dependency
      * and configures the Maven Compiler Plugin to use the MapStruct annotation processor.
      *
-     * @param mavenProject The current Maven project.
-     * @param log          The logger for outputting information.
-     * @throws IOException            if an I/O error occurs while modifying the POM.
+     * @param mavenProject     The current Maven project.
+     * @param log              The logger for outputting information.
+     * @param jakartaEeVersion Jakarta EE Version
+     * @throws IOException if an I/O error occurs while modifying the POM.
      */
-    public void checkDependency(MavenProject mavenProject, Log log) throws IOException {
+    public void checkDependency(MavenProject mavenProject, Log log, String jakartaEeVersion) throws IOException {
         log.debug("Checking org.mapstruct depending");
         if (!PomUtil.existsDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT)) {
-            var version = PomUtil.findLatestDependencyVersion(ORG_MAPSTRUCT, MAPSTRUCT).orElseThrow();
-            PomUtil.setProperty(mavenProject, log, "org.mapstruct.version", version);
-            PomUtil.addDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT, "${org.mapstruct.version}");
-
-            CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
-                .ifPresent(
-                    mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
-                        ORG_APACHE_MAVEN_PLUGINS,
-                        MAVEN_COMPILER_PLUGIN,
-                        mavenCompilerPlugin.getString("version"),
-                        Json.createObjectBuilder()
-                            .add("annotationProcessorPaths",
-                                Json.createObjectBuilder()
-                                    .add("path",
-                                        Json.createArrayBuilder()
-                                            .add(
-                                                Json.createObjectBuilder()
-                                                    .add(GROUP_ID, ORG_MAPSTRUCT)
-                                                    .add(ARTIFACT_ID, "mapstruct-processor")
-                                                    .add("version", "${org.mapstruct.version}")
-                                            )
-                                    )
-                            )
-                            .build()));
+            addMapStructDependency(mavenProject, log);
+        }
+        var jakartaEeHelper = JakartaEeHelper.getInstance();
+        if (jakartaEeHelper.hasNotJakartaTransactionDependency(mavenProject, log)) {
+            jakartaEeHelper.addJakartaTransactionDependency(mavenProject, log, jakartaEeVersion);
         }
     }
 
