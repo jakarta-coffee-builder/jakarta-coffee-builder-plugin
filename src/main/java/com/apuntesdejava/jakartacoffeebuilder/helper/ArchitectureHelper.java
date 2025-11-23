@@ -237,7 +237,7 @@ public class ArchitectureHelper {
             );
 
             importsList.addAll(List.of(
-                MavenProjectUtil.getModelRepositoryPackage(mavenProject)+ "." + modelName + "Repository",
+                MavenProjectUtil.getModelRepositoryPackage(mavenProject) + "." + modelName + "Repository",
                 MavenProjectUtil.getMapperPackage(mavenProject) + "." + modelName + "Mapper",
                 MavenProjectUtil.getModelPackage(mavenProject) + "." + modelName,
                 MavenProjectUtil.getRepositoryPackage(mavenProject) + "." + modelName + "EntityRepository"
@@ -257,10 +257,27 @@ public class ArchitectureHelper {
     }
 
     public void createModelRepositoryInterfaces(MavenProject mavenProject, Log log, JsonObject jsonContent) {
+        createAbstractModelRepositoryInterface(mavenProject, log);
         jsonContent.forEach((entityName, entityDefinition) -> createModelRepositoryInterface(mavenProject,
             log,
             entityName,
             entityDefinition));
+    }
+
+    private void createAbstractModelRepositoryInterface(MavenProject mavenProject, Log log) {
+        try {
+            var packageDefinition = MavenProjectUtil.getModelRepositoryPackage(mavenProject);
+            var abstractModelRepositoryPath = PathsUtil.getJavaPath(mavenProject,
+                packageDefinition,
+                "AbstractModelRepository");
+
+            var fieldsMap = Map.ofEntries(
+                Map.entry(PACKAGE_NAME, (Object) packageDefinition)
+            );
+            TemplateUtil.getInstance().createAbstractModelRepositoryFile(log, fieldsMap, abstractModelRepositoryPath);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
     private void createModelRepositoryInterface(MavenProject mavenProject,
