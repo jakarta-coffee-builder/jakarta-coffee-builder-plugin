@@ -17,13 +17,18 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.arch;
 
 import com.apuntesdejava.jakartacoffeebuilder.helper.ArchitectureHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.JsonUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,34 +41,53 @@ import java.nio.file.Path;
  * application's layers from a single source of truth.
  */
 @Mojo(
-        name = "add-domain-models"
+    name = "add-domain-models"
 )
 public class AddDomainModelsMojo extends AbstractMojo {
 
+    /**
+     * The Maven Project Builder component, used to build a full Maven project from a POM file.
+     */
+    @Component
+    protected ProjectBuilder projectBuilder;
+    /**
+     * The current Maven session. This is automatically injected by Maven.
+     */
+    @Parameter(
+        defaultValue = "${session}",
+        readonly = true,
+        required = true
+    )
+    protected MavenSession mavenSession;
+    protected MavenProject fullProject;
     /**
      * The path to the JSON file that contains the entity definitions. This file serves as the input
      * for generating the domain models.
      */
     @Parameter(
-            required = true,
-            property = "entities-file"
+        required = true,
+        property = "entities-file"
     )
     private File entitiesFile;
-
     /**
      * The current Maven project instance. This is automatically injected by Maven and provides
      * access to the project's configuration and files.
      */
     @Parameter(
-            defaultValue = "${project}",
-            readonly = true
+        defaultValue = "${project}",
+        readonly = true
     )
     private MavenProject mavenProject;
 
     /**
      * Default constructor.
      */
-    public AddDomainModelsMojo(){
+    public AddDomainModelsMojo() {
+
+    }
+
+    protected void init() throws ProjectBuildingException {
+        this.fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
     }
 
@@ -79,9 +103,11 @@ public class AddDomainModelsMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             var log = getLog();
+            init();
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
             var formsPath = validateFile(entitiesFile);
             var architectureHelper = ArchitectureHelper.getInstance();
-            architectureHelper.checkDependency(mavenProject, log);
+            architectureHelper.checkDependency(mavenProject, log, jakartaEeVersion);
 
             var jsonContent = JsonUtil.readJsonValue(formsPath).asJsonObject();
 
@@ -91,7 +117,7 @@ public class AddDomainModelsMojo extends AbstractMojo {
             architectureHelper.createServices(mavenProject, log, jsonContent);
 
             PomUtil.saveMavenProject(mavenProject, log);
-        } catch (IOException e) {
+        } catch (IOException | ProjectBuildingException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
     }

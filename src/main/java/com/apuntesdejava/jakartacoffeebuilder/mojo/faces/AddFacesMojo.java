@@ -64,14 +64,8 @@ import java.io.IOException;
 public class AddFacesMojo extends AbstractMojo {
 
     @Parameter(
-        property = "url-pattern",
-        defaultValue = "*.faces"
-    )
-    private String urlPattern;
-
-    @Parameter(
         property = "welcome-file",
-        defaultValue = "index.faces"
+        defaultValue = "index.xhtml"
     )
     private String welcomeFile;
 
@@ -102,11 +96,11 @@ public class AddFacesMojo extends AbstractMojo {
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
             var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
-            log.info("Executing: url-pattern:%s | welcome-file:%s".formatted(urlPattern, welcomeFile));
+            log.info("Executing: welcome-file:%s".formatted(welcomeFile));
             log.debug("Project name:%s".formatted(mavenProject.getName()));
 
             checkDependency(log, jakartaEeVersion, fullProject);
-            checkJakartaFacesServletDeclaration(log, fullProject);
+            checkJakartaFacesDeclaration(log, fullProject);
             checkWelcomePages(log, fullProject);
             PomUtil.saveMavenProject(mavenProject, log);
         } catch (ProjectBuildingException e) {
@@ -124,11 +118,11 @@ public class AddFacesMojo extends AbstractMojo {
         }
     }
 
-    private void checkJakartaFacesServletDeclaration(Log log, MavenProject fullProject) throws MojoExecutionException {
+    private void checkJakartaFacesDeclaration(Log log, MavenProject fullProject) throws MojoExecutionException {
         try {
             log.debug("Checking Jakarta Faces Declaration");
 
-            JakartaEeHelper.getInstance().addJakartaFacesServletDeclaration(fullProject, log, urlPattern);
+            JakartaEeHelper.getInstance().addJakartaFacesDeclaration(fullProject, log);
         } catch (IOException ex) {
             log.error(ex);
             throw new MojoExecutionException("Error adding Jakarta Faces Servlet Declaration", ex);
