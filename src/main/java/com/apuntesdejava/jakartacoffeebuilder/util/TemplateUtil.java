@@ -58,8 +58,8 @@ public class TemplateUtil {
     /**
      * <p>Generates a Java Bean file using a template and writes it to the specified file path.</p>
      *
-     * @param log      The logger used to log messages and errors.
-     * @param data     The data model map containing values to populate the Java Bean template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the Java Bean template.
      * @param javaPath The file path where the generated Java Bean will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -67,15 +67,11 @@ public class TemplateUtil {
         createJavaFile(log, data, javaPath, "java/JavaBean.ftl");
     }
 
-    public void createFacesConfigurationFile(Log log, Map<String, Object> data, Path javaPath) throws IOException {
-        createJavaFile(log, data, javaPath, "java/FacesConfiguration.ftl");
-    }
-
     /**
      * Generates an Entity file using a template and writes it to the specified file path.
      *
-     * @param log      The logger used to log messages and errors.
-     * @param data     The data model map containing values to populate the Entity template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the Entity template.
      * @param javaPath The file path where the generated Entity file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -86,8 +82,8 @@ public class TemplateUtil {
     /**
      * Generates a Repository file using a template and writes it to the specified file path.
      *
-     * @param log      The logger used to log messages and errors.
-     * @param data     The data model map containing values to populate the Repository template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the Repository template.
      * @param javaPath The file path where the generated Repository file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -101,10 +97,9 @@ public class TemplateUtil {
      * <p>
      * This is a generic method used by other `create*File` methods to handle the common logic
      * of loading a Freemarker template, processing it with provided data, and writing the output to a file.</p>
-     *
-     * @param log          The logger for reporting errors.
-     * @param data         The data model to be used by the Freemarker template.
-     * @param javaPath     The path where the generated Java file will be written.
+     * @param log The logger for reporting errors.
+     * @param data The data model to be used by the Freemarker template.
+     * @param javaPath The path where the generated Java file will be written.
      * @param templateName The name of the Freemarker template to use (e.g., "java/JavaBean.ftl").
      * @throws IOException If an I/O error occurs during file operations.
      */
@@ -124,8 +119,8 @@ public class TemplateUtil {
     /**
      * Generates an Enum file using a template and writes it to the specified file path.
      *
-     * @param log      The logger used to log messages and errors.
-     * @param data     The data model map containing values to populate the Enum template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the Enum template.
      * @param enumPath The file path where the generated Enum file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -136,8 +131,8 @@ public class TemplateUtil {
     /**
      * Generates a Mapper file using a template and writes it to the specified file path.
      *
-     * @param log        The logger used to log messages and errors.
-     * @param data       The data model map containing values to populate the Mapper template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the Mapper template.
      * @param mapperPath The file path where the generated Mapper file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -148,8 +143,8 @@ public class TemplateUtil {
     /**
      * Generates a Service file using a template and writes it to the specified file path.
      *
-     * @param log         The logger used to log messages and errors.
-     * @param data        The data model map containing values to populate the Service template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the Service template.
      * @param servicePath The file path where the generated Service file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -161,16 +156,12 @@ public class TemplateUtil {
         createJavaFile(log, data, servicePath, "java/ModelRepository.ftl");
     }
 
-    public void createAbstractModelRepositoryFile(Log log, Map<String, Object> data, Path servicePath) throws
-        IOException {
-        createJavaFile(log, data, servicePath, "java/AbstractModelRepository.ftl");
-    }
 
     /**
      * Generates a Plain Old Java Object (POJO) file using a template and writes it to the specified file path.
      *
-     * @param log      The logger used to log messages and errors.
-     * @param data     The data model map containing values to populate the POJO template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the POJO template.
      * @param pojoPath The file path where the generated POJO file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -181,8 +172,8 @@ public class TemplateUtil {
     /**
      * Generates a JavaServer Faces (JSF) template file (XHTML) using a template and writes it to the specified file path.
      *
-     * @param log       The logger used to log messages and errors.
-     * @param data      The data model map containing values to populate the JSF template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the JSF template.
      * @param xhtmlPath The file path where the generated XHTML file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
@@ -194,22 +185,21 @@ public class TemplateUtil {
      * Generates a JavaServer Faces (JSF) CRUD (Create, Read, Update, Delete) file (XHTML) using a template and writes it to the specified file path.
      *
      * <p>This method is specifically for PrimeFaces-based CRUD templates.</p>
-     *
-     * @param log       The logger used to log messages and errors.
-     * @param data      The data model map containing values to populate the JSF CRUD template.
+     * @param log The logger used to log messages and errors.
+     * @param data The data model map containing values to populate the JSF CRUD template.
      * @param xhtmlPath The file path where the generated XHTML file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
     public void createFacesCrudFile(Log log, Map<String, Object> data, Path xhtmlPath) throws IOException {
         createJavaFile(log, data, xhtmlPath, "xhtml/crud_prime.ftl");
     }
-
+    
     /**
      * Generates a Managed Bean CRUD file using a template and writes it to the specified file path.
      *
-     * @param log       The logger used to log messages and errors.
+     * @param log The logger used to log messages and errors.
      * @param fieldsMap The data model map containing values to populate the Managed Bean CRUD template.
-     * @param javaPath  The file path where the generated Managed Bean CRUD file will be written.
+     * @param javaPath The file path where the generated Managed Bean CRUD file will be written.
      * @throws IOException If an I/O error occurs during file writing.
      */
     public void createManagedBeanCrudFile(Log log, Map<String, Object> fieldsMap, Path javaPath) throws IOException {

@@ -18,7 +18,6 @@ package com.apuntesdejava.jakartacoffeebuilder.mojo.persistence;
 import com.apuntesdejava.jakartacoffeebuilder.helper.JakartaEeHelper;
 import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
 import com.apuntesdejava.jakartacoffeebuilder.util.PomUtil;
-import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -27,15 +26,13 @@ import org.apache.maven.project.ProjectBuildingException;
 
 import java.io.IOException;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_10;
-
 /**
  * Mojo for adding persistence configuration to a Jakarta EE project.
  * <p>
  * This Mojo ensures that the required Jakarta EE dependencies are present in the project
  * and creates a `persistence.xml` file with the specified persistence unit name.
  * </p>
- * <p>
+ *
  * Usage:
  * <ul>
  * <li>Configure the Mojo in the Maven POM file.</li>
@@ -110,10 +107,10 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
                 jakartaEeHelper.addJakartaCdiDependency(mavenProject, log, jakartaEeVersion);
             }
             if (jakartaEeHelper.hasNotJakartaPersistenceDependency(fullProject, log)) {
-                jakartaEeHelper.addJakartaPersistenceDependency(fullProject, log, jakartaEeVersion);
+                jakartaEeHelper.addJakartaPersistenceDependency(mavenProject, log, jakartaEeVersion);
             }
-            if (Strings.CI.equals(jakartaEeVersion, JAKARTAEE_VERSION_10))
-                jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
+
+            jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
             CoffeeBuilderUtil.getJdbcConfiguration(url)
                 .ifPresent(definition
                     -> jakartaEeHelper.checkDataDependencies(mavenProject, log, definition));
