@@ -26,6 +26,7 @@ import org.dom4j.Namespace;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
@@ -88,6 +89,11 @@ public class PersistenceXmlHelper {
                 persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
                 var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
+                var propertiesElement = xmlUtil.addElement(persistenceUnitElem, "properties");
+                xmlUtil.addElement(propertiesElement, "property", Map.of(
+                    "name", "jakarta.persistence.schema-generation.database.action",
+                    "value", "drop-and-create"
+                ));
                 persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
             } catch (IOException e) {
                 throw new RuntimeException(e);
