@@ -121,12 +121,14 @@ public class XmlUtil {
      * @param parent     the parent element to which the new element will be added
      * @param tagName    the tag name of the new element
      * @param attributes a map of attributes to set on the new element
+     * @return the newly created element
      */
-    public void addElement(Element parent, String tagName, Map<String, String> attributes) {
-        if (existsChildElement(parent, tagName, attributes)) return;
+    public Element addElement(Element parent, String tagName, Map<String, String> attributes) {
+        if (existsChildElement(parent, tagName, attributes)) return parent;
 
         var element = parent.addElement(tagName);
         attributes.forEach(element::addAttribute);
+        return element;
     }
 
     /**
@@ -230,8 +232,8 @@ public class XmlUtil {
             }
             Files.createDirectories(path.getParent());
             var doc = createDocumentType == null
-                    ? DocumentHelper.createDocument()
-                    : createDocumentType.get();
+                ? DocumentHelper.createDocument()
+                : createDocumentType.get();
             Optional.ofNullable(postCreate).ifPresent(p -> p.accept(doc));
             return Optional.of(doc);
         } catch (IOException | DocumentException e) {
@@ -343,7 +345,7 @@ public class XmlUtil {
      * @param xmlPath  the path to save the transformed XML document
      */
     public void saveDocument(Document document, Log log, Path xmlPath) {
-        if (document==null)return;
+        if (document == null) return;
         var format = OutputFormat.createPrettyPrint();
         format.setIndentSize(4);
         format.setSuppressDeclaration(false);

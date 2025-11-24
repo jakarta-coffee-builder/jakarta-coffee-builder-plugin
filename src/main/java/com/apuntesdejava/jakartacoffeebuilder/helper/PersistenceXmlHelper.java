@@ -38,10 +38,9 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
  */
 public class PersistenceXmlHelper {
 
-    private final Namespace persistenceNS;
+    public static final String NS_PERSISTENCE = "https://jakarta.ee/xml/ns/persistence";
 
     private PersistenceXmlHelper() {
-        this.persistenceNS = new Namespace("", "https://jakarta.ee/xml/ns/persistence");
     }
 
     /**
@@ -82,19 +81,22 @@ public class PersistenceXmlHelper {
                     .orElseThrow();
 
                 var persistenceElem = document.addElement("persistence",
-                    "https://jakarta.ee/xml/ns/persistence");
-//                persistenceElem.add(new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"));
-//                persistenceElem.add(new Namespace("schemaLocation",
-//                    "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url")));
+                    NS_PERSISTENCE);
+                var xsiNS = new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                persistenceElem.add(xsiNS);
+                persistenceElem.addAttribute("xsi:schemaLocation",
+                    "%s %s".formatted(NS_PERSISTENCE, schemaDescription.getString("url")));
                 persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
-                var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
+                var persistenceUnitElem = xmlUtil.addElement(persistenceElem,
+                    "persistence-unit",
+                    Map.of(NAME, persistenceUnitName));
                 var propertiesElement = xmlUtil.addElement(persistenceUnitElem, "properties");
                 xmlUtil.addElement(propertiesElement, "property", Map.of(
                     "name", "jakarta.persistence.schema-generation.database.action",
                     "value", "drop-and-create"
                 ));
-                persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
