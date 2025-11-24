@@ -39,7 +39,7 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
 public class PersistenceXmlHelper {
 
     public static final String NS_PERSISTENCE = "https://jakarta.ee/xml/ns/persistence";
-
+    public static final String JTA_DATA_SOURCE = "jta-data-source";
     private PersistenceXmlHelper() {
     }
 
@@ -143,12 +143,11 @@ public class PersistenceXmlHelper {
             .ifPresent(document -> {
                 var xmlUtil = XmlUtil.getInstance();
                 xmlUtil.findElementsStream(document,
-                        "//*[local-name()='persistence-unit'][@name='%s'][not(*[local-name()='jta-data-source' and text()='%s'])]"
-                            .formatted(persistenceUnit, name))
+                        "//*[local-name()='persistence-unit'][@name='%s']".formatted(persistenceUnit))
                     .findFirst()
-                    .ifPresent(element -> {
-                        xmlUtil.removeElement(element, "jta-data-source");
-                        xmlUtil.addElement(element, "jta-data-source").setText(name);
+                    .ifPresent(persistenceUnitElement -> {
+                        xmlUtil.removeElement(persistenceUnitElement, JTA_DATA_SOURCE);
+                        xmlUtil.addElementAsFirstChild(persistenceUnitElement, JTA_DATA_SOURCE, name);
                         var currentPath = mavenProject.getBasedir().toPath();
                         savePersistenceXml(currentPath, log, document);
                     });

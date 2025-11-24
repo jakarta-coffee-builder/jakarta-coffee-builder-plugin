@@ -415,6 +415,22 @@ public class XmlUtil {
         Optional.ofNullable(element.element(qName)).ifPresent(element::remove);
     }
 
+    /**
+     * Adds a new element as the first child of the given parent element.
+     *
+     * @param parent      the parent element to which the new element will be added
+     * @param tagName     the tag name of the new element
+     * @param textContent the text content of the new element
+     * @return the newly created element
+     */
+    public Element addElementAsFirstChild(Element parent, String tagName, String textContent) {
+        QName qName = new QName(tagName, parent.getNamespace());
+        var element = DocumentHelper.createElement(qName);
+        element.setText(textContent);
+        parent.content().addFirst(element);
+        return element;
+    }
+
     private static class XmlUtilHolder {
 
         private static final XmlUtil INSTANCE = new XmlUtil();
