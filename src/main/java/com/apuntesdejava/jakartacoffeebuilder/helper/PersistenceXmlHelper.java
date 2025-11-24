@@ -38,10 +38,9 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
  */
 public class PersistenceXmlHelper {
 
-    private final Namespace persistenceNS;
-
+    public static final String NS_PERSISTENCE = "https://jakarta.ee/xml/ns/persistence";
+    public static final String JTA_DATA_SOURCE = "jta-data-source";
     private PersistenceXmlHelper() {
-        this.persistenceNS = new Namespace("", "https://jakarta.ee/xml/ns/persistence");
     }
 
     /**
@@ -82,19 +81,22 @@ public class PersistenceXmlHelper {
                     .orElseThrow();
 
                 var persistenceElem = document.addElement("persistence",
-                    "https://jakarta.ee/xml/ns/persistence");
-//                persistenceElem.add(new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance"));
-//                persistenceElem.add(new Namespace("schemaLocation",
-//                    "https://jakarta.ee/xml/ns/persistence " + schemaDescription.getString("url")));
+                    NS_PERSISTENCE);
+                var xsiNS = new Namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+                persistenceElem.add(xsiNS);
+                persistenceElem.addAttribute("xsi:schemaLocation",
+                    "%s %s".formatted(NS_PERSISTENCE, schemaDescription.getString("url")));
                 persistenceElem.addAttribute("version", schemaDescription.getString("version"));
 
-                var persistenceUnitElem = xmlUtil.addElement(persistenceElem, "persistence-unit");
+                var persistenceUnitElem = xmlUtil.addElement(persistenceElem,
+                    "persistence-unit",
+                    Map.of(NAME, persistenceUnitName));
                 var propertiesElement = xmlUtil.addElement(persistenceUnitElem, "properties");
                 xmlUtil.addElement(propertiesElement, "property", Map.of(
                     "name", "jakarta.persistence.schema-generation.database.action",
                     "value", "drop-and-create"
                 ));
-                persistenceUnitElem.addAttribute(NAME, persistenceUnitName);
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -141,12 +143,11 @@ public class PersistenceXmlHelper {
             .ifPresent(document -> {
                 var xmlUtil = XmlUtil.getInstance();
                 xmlUtil.findElementsStream(document,
-                        "//*[local-name()='persistence-unit'][@name='%s'][not(*[local-name()='jta-data-source' and text()='%s'])]"
-                            .formatted(persistenceUnit, name))
+                        "//*[local-name()='persistence-unit'][@name='%s']".formatted(persistenceUnit))
                     .findFirst()
-                    .ifPresent(element -> {
-                        xmlUtil.removeElement(element, "jta-data-source");
-                        xmlUtil.addElement(element, "jta-data-source").setText(name);
+                    .ifPresent(persistenceUnitElement -> {
+                        xmlUtil.removeElement(persistenceUnitElement, JTA_DATA_SOURCE);
+                        xmlUtil.addElementAsFirstChild(persistenceUnitElement, JTA_DATA_SOURCE, name);
                         var currentPath = mavenProject.getBasedir().toPath();
                         savePersistenceXml(currentPath, log, document);
                     });

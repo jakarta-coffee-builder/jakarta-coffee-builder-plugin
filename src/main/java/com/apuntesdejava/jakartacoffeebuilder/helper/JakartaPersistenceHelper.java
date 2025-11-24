@@ -15,7 +15,13 @@
  */
 package com.apuntesdejava.jakartacoffeebuilder.helper;
 
-import com.apuntesdejava.jakartacoffeebuilder.util.*;
+import com.apuntesdejava.jakartacoffeebuilder.util.CoffeeBuilderUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.JsonUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.MavenProjectUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.PathsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.TemplateUtil;
+import com.apuntesdejava.jakartacoffeebuilder.util.XmlUtil;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
@@ -23,17 +29,31 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.Node;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FIELDS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FULL_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATED_VALUE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GENERATION_TYPES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.IMPORTS_LIST;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.SEARCH_ANNOTATIONS_FIELD_KEYS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TABLE_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 /**
@@ -106,37 +126,11 @@ public class JakartaPersistenceHelper {
             .map(className -> className + suffix)
             .collect(Collectors.toSet());
         jsonContent.forEach((key, value) -> addEntity(mavenProject, log, key, value.asJsonObject(), entitiesName));
-        addEntitiesToPersistenceXml(mavenProject, log, persistenceDoc, entitiesName);
+
         xmlUtil.saveDocument(persistenceDoc, log, persistenceXmlPath);
 
     }
 
-    private void addEntitiesToPersistenceXml(MavenProject mavenProject,
-                                             Log log,
-                                             Document persistenceDoc,
-                                             Set<String> entitiesName) {
-        log.debug("Adding all entities to persistence.xml");
-        Element root = persistenceDoc.getRootElement();
-        Element persistenceUnit = (Element) root.selectSingleNode("//*[local-name()='persistence-unit']");
-        if (persistenceUnit == null) {
-            log.warn("No <persistence-unit> found in persistence.xml. Skipping class registration.");
-            return;
-        }
-        String entityPackage = MavenProjectUtil.getEntityPackage(mavenProject);
-        List<Node> content = persistenceUnit.content();
-        int propertiesIndex = content.indexOf(persistenceUnit.element("properties"));
-
-        if (propertiesIndex != -1) {
-            entitiesName.stream().map(entityName -> entityPackage + "." + entityName).forEach(fqcn -> {
-                log.info("Adding class to persistence.xml: " + fqcn);
-                Element classElement = persistenceUnit.addElement("class").addText(fqcn);
-
-                content.remove(classElement);
-                content.add(propertiesIndex, classElement);
-
-            });
-        }
-    }
 
     private void addEntity(MavenProject mavenProject,
                            Log log,
@@ -192,10 +186,11 @@ public class JakartaPersistenceHelper {
                     CLASS_NAME, entityName,
                     IMPORTS_LIST, importsList,
                     FIELDS, fields));
-            if (StringUtils.isNotBlank(tableName)) {
+            if (StringUtils.isBlank(tableName)) {
+                fieldsMap.put("tableName", Strings.CS.removeEnd(entityName, suffix));
+            } else {
                 fieldsMap.put("tableName", tableName);
             }
-            fieldsMap.put("entityName", Strings.CS.removeEnd(entityName, suffix));
 
             TemplateUtil.getInstance()
                 .createEntityFile(log, fieldsMap, entityPath);
