@@ -19,12 +19,6 @@ Add Jakarta Faces Servlet configuration in `web.xml` file
 mvn com.apuntesdejava:jakarta-coffee-builder-plugin:0.0.5:add-faces 
 ```
 
-**Parameters**
-
-| Parameter     | Definition                                                                                                            | Default value |
-|---------------|-----------------------------------------------------------------------------------------------------------------------|---------------|
-| `url-pattern` | This parameter defines the URL pattern for all Faces pages. This value will be included in the servlet configuration. | `*.xhtml`     |
-
 **Result**
 
 ```java
