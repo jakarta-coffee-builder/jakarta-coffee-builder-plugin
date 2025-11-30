@@ -65,6 +65,9 @@ public final class Constants {
      * The artifact ID for the Jakarta CDI API.
      */
     public static final String JAKARTA_ENTERPRISE_CDI_API = "jakarta.enterprise.cdi-api";
+
+    public static final String JAKARTA_TRANSACTION = "jakarta.transaction";
+    public static final String JAKARTA_TRANSACTION_API = "jakarta.transaction-api";
     /**
      * The group ID for Jakarta Data.
      */
@@ -191,10 +194,7 @@ public final class Constants {
     public static final String OPEN_API_GENERATOR_CONFIGURATION = "/openapi-generator-config.json";
 
     // --- Persistence and Web Configuration ---
-    /**
-     * The class name for the Hibernate JPA persistence provider.
-     */
-    public static final String HIBERNATE_PROVIDER = "org.hibernate.jpa.HibernatePersistenceProvider";
+
     /**
      * The class name for the Jakarta Faces Servlet.
      */
@@ -299,7 +299,7 @@ public final class Constants {
      * A set of annotation names that are searched for within field definitions.
      */
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
-            "ElementCollection");
+        "ElementCollection");
     /**
      * A set of supported strategies for the {@code @GeneratedValue} annotation.
      */

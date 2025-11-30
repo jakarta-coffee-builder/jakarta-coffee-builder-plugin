@@ -36,7 +36,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.FIELDS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOAL;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.GOALS;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTAEE_VERSION_11;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_DATA;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_DATA_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_ENTERPRISE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_ENTERPRISE_CDI_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PERSISTENCE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_PERSISTENCE_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_TRANSACTION;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_TRANSACTION_API;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.ORG_PRIMEFACES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PACKAGE_NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PRIMEFACES;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PROVIDED_SCOPE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.TYPE;
 import static java.util.Collections.emptyMap;
 
 /**
@@ -120,24 +140,44 @@ public final class JakartaEeHelper {
         return !PomUtil.existsDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API);
     }
 
+    public boolean hasNotJakartaTransactionDependency(MavenProject mavenProject, Log log) {
+        return !PomUtil.existsDependency(mavenProject, log, JAKARTA_TRANSACTION, JAKARTA_TRANSACTION_API);
+    }
+
+    public void addJakartaTransactionDependency(MavenProject mavenProject,
+                                                Log log,
+                                                String jakartaEeVersion) {
+        Optional.ofNullable(specifications.getJsonObject(jakartaEeVersion)
+                .getString(JAKARTA_TRANSACTION_API))
+            .ifPresentOrElse(jakartaPersistenceVersion -> PomUtil.addDependency(mavenProject,
+                    log,
+                    JAKARTA_TRANSACTION,
+                    JAKARTA_TRANSACTION_API,
+                    jakartaPersistenceVersion,
+                    PROVIDED_SCOPE),
+                () -> log.error("%s no declarado".formatted(JAKARTA_TRANSACTION)));
+    }
+
     /**
      * Adds the Jakarta Faces Servlet declaration and mapping to the project's {@code web.xml} file.
      *
      * @param mavenProject The Maven project to modify.
      * @param log          The Maven logger for output.
-     * @param urlPattern   The URL pattern to map the servlet to (e.g., "*.xhtml").
      * @throws IOException if an I/O error occurs while reading or writing the {@code web.xml} file.
      */
-    public void addJakartaFacesServletDeclaration(MavenProject mavenProject,
-                                                  Log log,
-                                                  String urlPattern) throws IOException {
-        var webXmlUtil = WebXmlUtil.getInstance();
-        webXmlUtil.checkExistsFile(mavenProject, log)
-            .ifPresent(document -> {
-                webXmlUtil.addServletDeclaration(document, urlPattern, log, JAKARTA_FACES_SERVLET,
-                    JAKARTA_FACES_SERVLET_DEFINITION);
-                webXmlUtil.saveDocument(mavenProject, document, log);
-            });
+    public void addJakartaFacesDeclaration(MavenProject mavenProject,
+                                           Log log) throws IOException {
+
+        var packageDefinition = MavenProjectUtil.getFacesPackage(mavenProject);
+        var className = "FacesConfiguration";
+        var facesConfiguratinClassPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, className);
+
+        TemplateUtil.getInstance().createFacesConfigurationFile(log,
+            Map.of(PACKAGE_NAME, packageDefinition,
+                CLASS_NAME, className
+            ),
+            facesConfiguratinClassPath
+        );
     }
 
     /**
@@ -169,27 +209,15 @@ public final class JakartaEeHelper {
     }
 
     /**
-     * Checks if the project does NOT have a dependency on the Jakarta Data API.
-     *
-     * @param mavenProject The Maven project to check.
-     * @param log          The Maven logger for output.
-     * @return {@code true} if the dependency does not exist, {@code false} otherwise.
-     */
-    public boolean hasNotJakartaDataDependency(MavenProject mavenProject, Log log) {
-        return !PomUtil.existsDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API);
-    }
-
-    /**
      * Adds the Jakarta Persistence API dependency to the Maven project for a specific Jakarta EE version.
      *
      * @param mavenProject     The Maven project to modify.
      * @param log              The Maven logger for output.
      * @param jakartaEeVersion The target Jakarta EE version (e.g., "10.0.0").
-     * @throws MojoExecutionException if an error occurs while adding the dependency.
      */
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
-                                                String jakartaEeVersion) throws MojoExecutionException {
+                                                String jakartaEeVersion) {
         var jakartaPersistenceVersion = specifications.getJsonObject(jakartaEeVersion)
             .getString(JAKARTA_PERSISTENCE_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
@@ -252,20 +280,12 @@ public final class JakartaEeHelper {
                                          Log log,
                                          String jakartaEeVersion) throws MojoExecutionException {
         var jakartaPersistenceVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_DATA_API);
-        PomUtil.addDependency(mavenProject, log, JAKARTA_DATA, JAKARTA_DATA_API, jakartaPersistenceVersion);
-    }
-
-    /**
-     * Validates if the Jakarta Data dependency can be added, which requires the presence of the
-     * Jakarta Persistence API for Jakarta EE 11.
-     *
-     * @param mavenProject The Maven project to check.
-     * @param log          The Maven logger for output.
-     * @return {@code true} if the required dependency is present, {@code false} otherwise.
-     */
-    public boolean isValidAddJakartaDataDependency(MavenProject mavenProject, Log log) {
-        return PomUtil.existsDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
-            specifications.getJsonObject(JAKARTAEE_VERSION_11).getString(JAKARTA_PERSISTENCE_API));
+        PomUtil.addDependency(mavenProject,
+            log,
+            JAKARTA_DATA,
+            JAKARTA_DATA_API,
+            jakartaPersistenceVersion,
+            PROVIDED_SCOPE);
     }
 
     /**
@@ -294,22 +314,14 @@ public final class JakartaEeHelper {
                         try {
                             if (Strings.CS.equals(jakartaEEVersion, JAKARTAEE_VERSION_11)) {
                                 addJakartaDataDependency(mavenProject, log, jakartaEEVersion);
-                                addHibernateDependency(mavenProject, log);
-                                addHibernateProvider(mavenProject, log, definition.getString("dialect"));
                                 addJakartaInjectDependencyManagement(mavenProject, log);
                             }
                             PomUtil.addDependency(mavenProject, log, definition.getString("coordinates"));
-                        } catch (MojoExecutionException | IOException e) {
+                        } catch (MojoExecutionException e) {
                             log.error("Error adding Jakarta dependency", e);
                         }
                     });
             });
-    }
-
-    private void addHibernateProvider(MavenProject mavenProject, Log log, String dialectClass) {
-        PersistenceXmlHelper.getInstance()
-            .addProviderToPersistenceXml(mavenProject.getFile().toPath().getParent(), log,
-                dialectClass);
     }
 
     /**
@@ -325,36 +337,6 @@ public final class JakartaEeHelper {
             return Optional.of(persistenceXmlPah);
         }
         return Optional.empty();
-    }
-
-    private void addHibernateDependency(MavenProject mavenProject, Log log) throws MojoExecutionException, IOException {
-        CoffeeBuilderUtil.getDependencyConfiguration("hibernate")
-            .ifPresent(hibernate -> PomUtil.setProperty(mavenProject, log, "hibernate.version",
-                hibernate.getString("version")));
-        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-core", "${hibernate.version}");
-        PomUtil.addDependency(mavenProject, log, "org.hibernate.orm", "hibernate-processor", "${hibernate.version}");
-
-        CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
-            .ifPresent(
-                mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
-                    ORG_APACHE_MAVEN_PLUGINS,
-                    MAVEN_COMPILER_PLUGIN,
-                    mavenCompilerPlugin.getString("version"),
-                    Json.createObjectBuilder()
-                        .add("annotationProcessorPaths",
-                            Json.createObjectBuilder()
-                                .add("path",
-                                    Json.createArrayBuilder()
-                                        .add(
-                                            Json.createObjectBuilder()
-                                                .add(GROUP_ID, "org.hibernate.orm")
-                                                .add(ARTIFACT_ID, "hibernate-jpamodelgen")
-                                                .add("version", "${hibernate.version}")
-                                        )
-                                )
-                        )
-                        .build()));
-
     }
 
     /**

@@ -15,7 +15,7 @@ import ${importItem};
     </#list>
 </#if>
 
-@Entity<#if (entityName??)>( name ="${entityName}" ) </#if>
+@Entity
 <#if (tableName??)>
 @Table(name = "${tableName}")
 </#if>
