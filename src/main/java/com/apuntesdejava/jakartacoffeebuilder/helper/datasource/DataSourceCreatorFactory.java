@@ -29,20 +29,21 @@ public class DataSourceCreatorFactory {
     }
 
     /**
-     * Returns an Optional containing a DataSourceCreator based on the given declaration.
+     * Returns an Optional containing a DataSourceCreator based on the given
+     * declaration.
      *
      * @param mavenProject the Maven project
      * @param log          the logger
      * @param declare      the type of data source declaration
-     * @return an Optional containing a DataSourceCreator if the declaration matches, otherwise an empty Optional
+     * @return an Optional containing a DataSourceCreator if the declaration
+     *         matches, otherwise an empty Optional
      */
     public static Optional<DataSourceCreator> getDataSourceCreator(MavenProject mavenProject, Log log, String declare) {
-        if (declare.equals(Constants.DATASOURCE_DECLARE_WEB)) {
-            return Optional.of(new DataSourceWebCreator(mavenProject, log));
-        }
-        if (declare.equals(Constants.DATASOURCE_DECLARE_CLASS)) {
-            return Optional.of(new DataSourceClassCreator(mavenProject, log));
-        }
-        return Optional.empty();
+        return switch (declare) {
+            case Constants.DATASOURCE_DECLARE_WEB -> Optional.of(new DataSourceWebCreator(mavenProject, log));
+            case Constants.DATASOURCE_DECLARE_CLASS -> Optional.of(new DataSourceClassCreator(mavenProject, log));
+            case Constants.DATASOURCE_DECLARE_ASADMIN -> Optional.of(new DataSourceAsAdminCreator(mavenProject, log));
+            default -> Optional.empty();
+        };
     }
 }

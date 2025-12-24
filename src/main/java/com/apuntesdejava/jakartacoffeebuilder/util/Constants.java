@@ -18,8 +18,10 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import java.util.Set;
 
 /**
- * Provides a central repository for constant values used throughout the Jakarta Coffee Builder plugin.
- * This class prevents the use of magic strings and provides a single source of truth for shared
+ * Provides a central repository for constant values used throughout the Jakarta
+ * Coffee Builder plugin.
+ * This class prevents the use of magic strings and provides a single source of
+ * truth for shared
  * identifiers, keys, and URLs.
  */
 public final class Constants {
@@ -234,6 +236,11 @@ public final class Constants {
      */
     public static final String DATASOURCE_DECLARE_CLASS = "class";
     /**
+     * Indicates that the datasource should be declared using the Payara asadmin
+     * command.
+     */
+    public static final String DATASOURCE_DECLARE_ASADMIN = "asadmin";
+    /**
      * Indicates a Payara-specific datasource declaration.
      */
     public static final String DATASOURCE_PAYARA = "payara";
@@ -299,7 +306,7 @@ public final class Constants {
      * A set of annotation names that are searched for within field definitions.
      */
     public static final Set<String> SEARCH_ANNOTATIONS_FIELD_KEYS = Set.of("Column", "JoinColumn", "ManyToOne",
-        "ElementCollection");
+            "ElementCollection");
     /**
      * A set of supported strategies for the {@code @GeneratedValue} annotation.
      */
