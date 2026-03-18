@@ -81,11 +81,17 @@ public final class JakartaEeHelper {
     }
 
     private JakartaEeHelper() {
-        try {
-            CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> this.specifications = specs);
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
+    }
+
+    private JsonObject getSpecifications() {
+        if (this.specifications == null) {
+            try {
+                CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> this.specifications = specs);
+            } catch (IOException e) {
+                throw new RuntimeException("Error loading Jakarta EE specifications from remote resource", e);
+            }
         }
+        return this.specifications;
     }
 
     /**
@@ -99,7 +105,7 @@ public final class JakartaEeHelper {
     public void addJakartaCdiDependency(MavenProject mavenProject,
                                         Log log,
                                         String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaCdiVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_ENTERPRISE_CDI_API);
+        var jakartaCdiVersion = getSpecifications().getJsonObject(jakartaEeVersion).getString(JAKARTA_ENTERPRISE_CDI_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API, jakartaCdiVersion,
             PROVIDED_SCOPE);
     }
@@ -114,7 +120,7 @@ public final class JakartaEeHelper {
     public void addJakartaFacesDependency(MavenProject mavenProject,
                                           Log log,
                                           String jakartaEeVersion) {
-        var jakartaFacesVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_FACES_API);
+        var jakartaFacesVersion = getSpecifications().getJsonObject(jakartaEeVersion).getString(JAKARTA_FACES_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API, jakartaFacesVersion, PROVIDED_SCOPE);
     }
 
@@ -147,7 +153,7 @@ public final class JakartaEeHelper {
     public void addJakartaTransactionDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) {
-        Optional.ofNullable(specifications.getJsonObject(jakartaEeVersion)
+        Optional.ofNullable(getSpecifications().getJsonObject(jakartaEeVersion)
                 .getString(JAKARTA_TRANSACTION_API))
             .ifPresentOrElse(jakartaPersistenceVersion -> PomUtil.addDependency(mavenProject,
                     log,
@@ -218,7 +224,7 @@ public final class JakartaEeHelper {
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) {
-        var jakartaPersistenceVersion = specifications.getJsonObject(jakartaEeVersion)
+        var jakartaPersistenceVersion = getSpecifications().getJsonObject(jakartaEeVersion)
             .getString(JAKARTA_PERSISTENCE_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
             jakartaPersistenceVersion, PROVIDED_SCOPE);
@@ -279,7 +285,7 @@ public final class JakartaEeHelper {
     public void addJakartaDataDependency(MavenProject mavenProject,
                                          Log log,
                                          String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaPersistenceVersion = specifications.getJsonObject(jakartaEeVersion).getString(JAKARTA_DATA_API);
+        var jakartaPersistenceVersion = getSpecifications().getJsonObject(jakartaEeVersion).getString(JAKARTA_DATA_API);
         PomUtil.addDependency(mavenProject,
             log,
             JAKARTA_DATA,
@@ -301,7 +307,7 @@ public final class JakartaEeHelper {
             artifact -> {
                 var version = artifact.getVersion();
                 log.debug("Jakarta CDI dependency found: " + version);
-                specifications.entrySet().stream()
+                getSpecifications().entrySet().stream()
                     .filter(entry -> {
                         JsonObject specObject = entry.getValue().asJsonObject();
                         return specObject.containsKey(JAKARTA_ENTERPRISE_CDI_API)
