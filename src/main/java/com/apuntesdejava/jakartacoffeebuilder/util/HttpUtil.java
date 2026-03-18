@@ -14,6 +14,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DEV_BASE_URL;
@@ -58,9 +59,12 @@ public final class HttpUtil {
         var requestUrl = address + (parameters.length == 0 ? EMPTY : ("?" + queryParams));
         LOG.log(System.Logger.Level.DEBUG, () -> "Request URL:" + requestUrl);
 
-        try (var httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build()) {
+
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor();
+             var httpClient = HttpClient.newBuilder()
+                     .executor(executor)
+                     .connectTimeout(Duration.ofSeconds(10))
+                     .build()) {
 
             var httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(requestUrl))
