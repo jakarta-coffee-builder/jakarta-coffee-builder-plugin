@@ -390,13 +390,15 @@ public final class JakartaEeHelper {
      */
     public void addJacksonDependency(MavenProject mavenProject, Log log) throws IOException {
         CoffeeBuilderUtil.getDependencyConfiguration("jackson-core")
-            .ifPresent(hibernate -> PomUtil
-                .setProperty(mavenProject, log, "jackson-core.version",
-                    hibernate.getString("version")));
-        PomUtil.addDependency(mavenProject, log, "com.fasterxml.jackson.core", "jackson-core",
-            "${jackson-core.version}");
-        PomUtil.addDependency(mavenProject, log, "com.fasterxml.jackson.core", "jackson-annotations",
-            "${jackson-core.version}");
+            .ifPresent(hibernate -> {
+                PomUtil .setProperty(mavenProject, log, "jackson-core.version",
+                                hibernate.getString("version"));
+                var groupId= hibernate.getString("groupId");
+            PomUtil.addDependency(mavenProject, log, groupId, "jackson-core",
+                "${jackson-core.version}");
+            PomUtil.addDependency(mavenProject, log, groupId, "jackson-annotations",
+                "${jackson-core.version}");
+        });
     }
 
     /**
