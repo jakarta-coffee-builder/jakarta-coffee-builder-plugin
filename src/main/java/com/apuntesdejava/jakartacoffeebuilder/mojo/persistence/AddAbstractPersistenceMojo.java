@@ -148,6 +148,12 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      */
     protected MavenProject fullProject;
 
+
+    @Parameter(
+            property = "profile"
+    )
+    protected String profile;
+
     /**
      * Constructor default
      */
@@ -232,8 +238,8 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
             .ifPresent(definition -> {
                 jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
                 jakartaEeHelper.addDataSource(fullProject, log, declare,
-                    getDataSourceProperties(json, definition.getString("dataSourceClass"))
-                );
+                    getDataSourceProperties(json, definition.getString("dataSourceClass")),
+                        profile);
             });
 
 //        CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);

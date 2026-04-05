@@ -104,7 +104,8 @@ public class AddDomainModelsMojo extends AbstractMojo {
         try {
             var log = getLog();
             init();
-            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log)
+                    .orElseThrow(() -> new MojoExecutionException("Jakarta EE dependency not found. Please ensure it is present in your project."));
             var formsPath = validateFile(entitiesFile);
             var architectureHelper = ArchitectureHelper.getInstance();
             architectureHelper.checkDependency(mavenProject, log, jakartaEeVersion);

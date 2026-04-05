@@ -3,15 +3,18 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DEV_BASE_URL;
@@ -49,18 +52,31 @@ public final class HttpUtil {
     public static <T> T getContent(String address,
                                    Function<String, T> converter,
                                    Parameter... parameters) throws IOException {
-        try (final var httpClient = HttpClients.createDefault()) {
-            var queryParams = Arrays.stream(parameters)
-                    .map(p -> p.name() + "=" + URLEncoder.encode(p.value(), StandardCharsets.UTF_8))
-                    .reduce((p1, p2) -> p1 + "&" + p2)
-                    .orElse(EMPTY);
-            var requestUrl = address + (parameters.length == 0 ? EMPTY : ("?" + queryParams));
-            var httpGet = new HttpGet(requestUrl);
-            LOG.log(System.Logger.Level.DEBUG, () -> "Request URL:" + requestUrl);
-            return httpClient.execute(httpGet, response -> {
-                var responseString = EntityUtils.toString(response.getEntity());
-                return converter.apply(responseString);
-            });
+        var queryParams = Arrays.stream(parameters)
+                .map(p -> p.name() + "=" + URLEncoder.encode(p.value(), StandardCharsets.UTF_8))
+                .reduce((p1, p2) -> p1 + "&" + p2)
+                .orElse(EMPTY);
+        var requestUrl = address + (parameters.length == 0 ? EMPTY : ("?" + queryParams));
+        LOG.log(System.Logger.Level.DEBUG, () -> "Request URL:" + requestUrl);
+
+
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor();
+             var httpClient = HttpClient.newBuilder()
+                     .executor(executor)
+                     .connectTimeout(Duration.ofSeconds(10))
+                     .build()) {
+
+            var httpRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(requestUrl))
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+
+            var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            return converter.apply(response.body());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("HTTP request interrupted", e);
         }
     }
 

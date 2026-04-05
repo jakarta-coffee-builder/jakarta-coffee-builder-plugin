@@ -103,7 +103,8 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
     private void checkDependency(Log log) throws MojoExecutionException {
         log.debug("checking Jakarta Persistence dependency");
         try {
-            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log)
+                    .orElseThrow(() -> new MojoExecutionException("Jakarta EE dependency not found. Please ensure it is present in your project."));
 
             var jakartaEeHelper = JakartaEeHelper.getInstance();
             if (jakartaEeHelper.hasNotJakartaCdiDependency(fullProject, log)) {
