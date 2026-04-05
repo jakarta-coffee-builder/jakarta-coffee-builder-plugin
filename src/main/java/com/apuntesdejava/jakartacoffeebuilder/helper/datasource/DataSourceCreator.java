@@ -18,6 +18,7 @@ package com.apuntesdejava.jakartacoffeebuilder.helper.datasource;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
@@ -50,15 +51,25 @@ public abstract class DataSourceCreator {
      */
     protected JsonObject dataSourceParameters;
 
+    protected String profile;
+
+    public DataSourceCreator(MavenProject mavenProject, Log log){
+        this.log = log;
+        this.mavenProject = mavenProject;
+        this.profile = null;
+    }
+
     /**
      * Constructor for DataSourceCreator.
      *
      * @param mavenProject the Maven project
      * @param log          the logger
+     * @param profile      the profile name
      */
-    public DataSourceCreator(MavenProject mavenProject, Log log) {
+    public DataSourceCreator(MavenProject mavenProject, Log log, String profile) {
         this.log = log;
         this.mavenProject = mavenProject;
+        this.profile = profile;
     }
 
     /**
@@ -111,5 +122,5 @@ public abstract class DataSourceCreator {
      *
      * @throws IOException if an I/O error occurs
      */
-    public abstract void build() throws IOException;
+    public abstract void build() throws IOException, MojoExecutionException;
 }

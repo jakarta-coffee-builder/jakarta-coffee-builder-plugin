@@ -35,15 +35,20 @@ public class DataSourceCreatorFactory {
      * @param mavenProject the Maven project
      * @param log          the logger
      * @param declare      the type of data source declaration
+     * @param profile      the profile name
      * @return an Optional containing a DataSourceCreator if the declaration
-     *         matches, otherwise an empty Optional
+     * matches, otherwise an empty Optional
      */
-    public static Optional<DataSourceCreator> getDataSourceCreator(MavenProject mavenProject, Log log, String declare) {
+    public static Optional<DataSourceCreator> getDataSourceCreator(MavenProject mavenProject, Log log, String declare, String profile) {
         return switch (declare) {
             case Constants.DATASOURCE_DECLARE_WEB -> Optional.of(new DataSourceWebCreator(mavenProject, log));
             case Constants.DATASOURCE_DECLARE_CLASS -> Optional.of(new DataSourceClassCreator(mavenProject, log));
-            case Constants.DATASOURCE_DECLARE_ASADMIN -> Optional.of(new DataSourceAsAdminCreator(mavenProject, log));
+            case Constants.DATASOURCE_DECLARE_ASADMIN -> Optional.of(new DataSourceAsAdminCreator(mavenProject, log, profile));
             default -> Optional.empty();
         };
+    }
+
+    public static Optional<DataSourceCreator> getDataSourceCreator(MavenProject mavenProject, Log log, String declare ) {
+        return getDataSourceCreator(mavenProject,log,declare,null);
     }
 }

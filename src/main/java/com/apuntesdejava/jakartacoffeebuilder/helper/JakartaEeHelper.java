@@ -254,24 +254,33 @@ public final class JakartaEeHelper {
      * @param log          The Maven logger for output.
      * @param declare      The strategy for declaring the data source (e.g., "web.xml", "payara").
      * @param json         A {@link JsonObject} containing the data source configuration parameters.
+     * @param profile   The profile name to which the data source configuration should be applied (if applicable).
      */
     public void addDataSource(MavenProject mavenProject,
                               Log log,
                               String declare,
-                              JsonObject json) {
+                              JsonObject json,
+                              String profile) {
         log.debug("Datasource:%s".formatted(json));
         DataSourceCreatorFactory
-            .getDataSourceCreator(mavenProject, log, declare)
+            .getDataSourceCreator(mavenProject, log, declare, profile)
             .ifPresent(dataSourceCreator -> {
                 try {
                     dataSourceCreator
                         .dataSourceParameters(json)
                         .build();
-                } catch (IOException e) {
+                } catch (IOException | MojoExecutionException e) {
                     log.error("Error creating datasource", e);
                     throw new RuntimeException(e);
                 }
             });
+    }
+
+    public void addDataSource(MavenProject mavenProject,
+                              Log log,
+                              String declare,
+                              JsonObject json ) {
+        addDataSource(mavenProject, log, declare, json, null);
     }
 
     /**

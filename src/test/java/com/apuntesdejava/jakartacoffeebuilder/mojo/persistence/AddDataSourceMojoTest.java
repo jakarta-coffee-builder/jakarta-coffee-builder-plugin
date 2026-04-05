@@ -113,7 +113,7 @@ class AddDataSourceMojoTest {
 
         verify(persistenceXmlHelperMock).addDataSourceToPersistenceXml(eq(fullProject), eq(mockLog), eq("myPU"), eq("jdbc/myDS"));
         verify(jakartaEeHelperMock).checkDataDependencies(eq(fullProject), eq(mockLog), eq(jdbcConfig));
-        verify(jakartaEeHelperMock).addDataSource(eq(fullProject), eq(mockLog), eq("web"), any());
+        verify(jakartaEeHelperMock).addDataSource(eq(fullProject), eq(mockLog), eq("web"), any(), any());
         pomUtilMockedStatic.verify(() -> PomUtil.saveMavenProject(fullProject, mockLog));
     }
 }

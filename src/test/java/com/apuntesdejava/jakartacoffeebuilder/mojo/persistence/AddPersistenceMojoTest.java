@@ -82,6 +82,7 @@ class AddPersistenceMojoTest {
         setField("mavenProject", mavenProject);
         setField("mavenSession", mavenSession);
         setField("projectBuilder", projectBuilder);
+        setField("profile", "default");
     }
 
     private void setField(String fieldName, Object value) throws Exception {
@@ -123,8 +124,8 @@ class AddPersistenceMojoTest {
 
         verify(jakartaEeHelperMock).createPersistenceXml(eq(fullProject), eq(mockLog), eq("myPU"));
         verify(persistenceXmlHelperMock).addDataSourceToPersistenceXml(eq(fullProject), eq(mockLog), eq("myPU"), eq("jdbc/myDS"));
-        verify(jakartaEeHelperMock).addDataSource(eq(fullProject), eq(mockLog), eq("web"), any());
-        
+        verify(jakartaEeHelperMock).addDataSource(eq(fullProject), eq(mockLog), eq("web"), any(), any());
+
         verify(jakartaEeHelperMock).addJakartaCdiDependency(mavenProject, mockLog, "10.0.0");
         verify(jakartaEeHelperMock).addJakartaPersistenceDependency(fullProject, mockLog, "10.0.0");
         verify(jakartaEeHelperMock).addPersistenceClassProvider(mavenProject, mockLog);
