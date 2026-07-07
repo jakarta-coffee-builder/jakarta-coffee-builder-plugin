@@ -35,10 +35,9 @@ import org.apache.maven.project.ProjectBuildingException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.CLASS_NAME;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.DATASOURCE_DECLARE_WEB;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 import static com.apuntesdejava.jakartacoffeebuilder.util.DataSourceUtil.validateDataSourceName;
 
 /**
@@ -52,51 +51,51 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      * The current Maven project instance. This is automatically injected by Maven.
      */
     @Parameter(defaultValue = "${project}",
-        readonly = true)
+            readonly = true)
     protected MavenProject mavenProject;
     /**
      * The JNDI name for the data source.
      */
     @Parameter(
-        property = "datasource-name",
-        required = true,
-        defaultValue = "defaultDatasource"
+            property = "datasource-name",
+            required = true,
+            defaultValue = "defaultDatasource"
     )
     protected String datasourceName;
     /**
      * The JDBC URL for the database connection.
      */
     @Parameter(
-        property = "url",
-        defaultValue = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
+            property = "url",
+            defaultValue = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
     )
     protected String url;
     /**
      * The password for the database user.
      */
     @Parameter(
-        property = "password"
+            property = "password"
     )
     protected String password;
     /**
      * The username for the database connection.
      */
     @Parameter(
-        property = "user"
+            property = "user"
     )
     protected String user;
     /**
      * The database server name. Used for data sources that require it.
      */
     @Parameter(
-        property = "server-name"
+            property = "server-name"
     )
     protected String serverName;
     /**
      * The port number for the database server.
      */
     @Parameter(
-        property = "port-number"
+            property = "port-number"
     )
     protected Integer portNumber;
     /**
@@ -104,7 +103,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      * (e.g., "prop1=value1,prop2=value2").
      */
     @Parameter(
-        property = "properties"
+            property = PROPERTIES
     )
     protected String properties;
     /**
@@ -112,9 +111,9 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      * For example, 'web' for web.xml or a server-specific location.
      */
     @Parameter(
-        property = "declare",
-        required = true,
-        defaultValue = DATASOURCE_DECLARE_WEB
+            property = "declare",
+            required = true,
+            defaultValue = DATASOURCE_DECLARE_WEB
     )
     protected String declare;
 
@@ -128,9 +127,9 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      * The current Maven session. This is automatically injected by Maven.
      */
     @Parameter(
-        defaultValue = "${session}",
-        readonly = true,
-        required = true
+            defaultValue = "${session}",
+            readonly = true,
+            required = true
     )
     protected MavenSession mavenSession;
 
@@ -138,8 +137,8 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      * The name of the persistence unit to be created or updated in the {@code persistence.xml} file.
      */
     @Parameter(
-        defaultValue = "defaultPU",
-        property = "persistence-unit-name"
+            defaultValue = "defaultPU",
+            property = "persistence-unit-name"
     )
     protected String persistenceUnitName;
     /**
@@ -157,7 +156,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     /**
      * Constructor default
      */
-    public AddAbstractPersistenceMojo(){
+    public AddAbstractPersistenceMojo() {
 
     }
 
@@ -181,7 +180,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     protected JsonObject getDataSourceParameters() {
         datasourceName = validateDataSourceName(declare, datasourceName);
         var jsonBuilder = Json.createObjectBuilder()
-            .add(NAME, datasourceName);
+                .add(NAME, datasourceName);
 
         if (StringUtils.isNotBlank(serverName)) {
             jsonBuilder.add("serverName", serverName);
@@ -200,8 +199,15 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         }
         if (StringUtils.isNotBlank(properties)) {
             var propertiesBuilder = Json.createArrayBuilder();
-            Arrays.stream(properties.split(",")).forEach(propertiesBuilder::add);
-            jsonBuilder.add("properties", propertiesBuilder);
+            Arrays.stream(properties.split(","))
+                    .map(item -> item.split(":"))
+                    .map(item -> Json.createObjectBuilder(
+                            Map.of(
+                                    NAME, item[0],
+                                    VALUE, Json.createValue(item[1])
+                            )))
+                    .forEach(propertiesBuilder::add);
+            jsonBuilder.add(PROPERTIES, propertiesBuilder);
         }
         return jsonBuilder.build();
     }
@@ -217,9 +223,9 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
         var log = getLog();
         if (StringUtils.isNotBlank(persistenceUnitName)) {
             PersistenceXmlHelper
-                .getInstance()
-                .addDataSourceToPersistenceXml(fullProject, log, persistenceUnitName,
-                    json.getString(NAME));
+                    .getInstance()
+                    .addDataSourceToPersistenceXml(fullProject, log, persistenceUnitName,
+                            json.getString(NAME));
         }
     }
 
@@ -235,40 +241,40 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
     protected void addDataSourceConfiguration(Log log, JsonObject json) throws ProjectBuildingException, IOException {
         var jakartaEeHelper = JakartaEeHelper.getInstance();
         CoffeeBuilderUtil.getJdbcConfiguration(url)
-            .ifPresent(definition -> {
-                jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
-                jakartaEeHelper.addDataSource(fullProject, log, declare,
-                    getDataSourceProperties(json, definition.getString("dataSourceClass")),
-                        profile);
-            });
+                .ifPresent(definition -> {
+                    jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
+                    jakartaEeHelper.addDataSource(fullProject, log, declare,
+                            getDataSourceProperties(json, definition.getString("dataSourceClass")),
+                            profile);
+                });
 
 //        CoffeeBuilderUtil.updateProjectConfiguration(mavenProject.getFile().toPath().getParent(), "jdbc", json);
     }
 
     private JsonObject getDataSourceProperties(JsonObject json, String className) {
         var newValues = Json.createObjectBuilder(json)
-            .add(CLASS_NAME, className).build();
+                .add(CLASS_NAME, className).build();
         var dataSourceProps = Json.createObjectBuilder();
 
         List<String> datasourceProperties = Arrays.asList(
-            "description",
-            "name",
-            "className",
-            "serverName",
-            "portNumber",
-            "databaseName",
-            "url",
-            "user",
-            "password",
-            "property",
-            "loginTimeout",
-            "transactional",
-            "isolationLevel",
-            "initialPoolSize",
-            "maxPoolSize",
-            "minPoolSize",
-            "maxIdleTime",
-            "maxStatements");
+                "description",
+                "name",
+                "className",
+                "serverName",
+                "portNumber",
+                "databaseName",
+                "url",
+                "user",
+                "password",
+                "property",
+                "loginTimeout",
+                "transactional",
+                "isolationLevel",
+                "initialPoolSize",
+                "maxPoolSize",
+                "minPoolSize",
+                "maxIdleTime",
+                "maxStatements");
         datasourceProperties.stream().filter(newValues::containsKey).forEach(prop -> {
             var value = newValues.get(prop);
             var type = value.getValueType();
@@ -278,6 +284,9 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
                 dataSourceProps.add(prop, newValues.getString(prop));
             }
         });
+        if (newValues.containsKey(PROPERTIES) && !newValues.getJsonArray(PROPERTIES).isEmpty()) {
+            dataSourceProps.add(PROPERTIES, newValues.getJsonArray(PROPERTIES));
+        }
         return dataSourceProps.build();
     }
 

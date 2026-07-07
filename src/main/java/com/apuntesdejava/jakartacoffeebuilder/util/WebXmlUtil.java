@@ -16,7 +16,6 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.dom4j.Document;
@@ -26,9 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.JAKARTA_FACES_WEBAPP_FACES_SERVLET;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
-import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.*;
 
 /**
  * Utility class for handling operations related to the `web.xml` file in a Jakarta EE Maven project.
@@ -55,7 +52,7 @@ import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.VALUE;
  * </p>
  */
 public class WebXmlUtil {
-    
+
     private static final String WEB_APP_EXP_SEARCH = "//*[local-name()='web-app']";
 
     private WebXmlUtil() {
@@ -90,13 +87,13 @@ public class WebXmlUtil {
             try {
                 var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log).orElseThrow();
                 JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
-                    "web-app").orElseThrow();
+                        "web-app").orElseThrow();
 
                 var webAppElement = document.addElement("web-app", "https://jakarta.ee/xml/ns/jakartaee");
                 webAppElement.addAttribute("version", schemaDescription.getString("version"));
                 webAppElement.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
                 webAppElement.addAttribute("xsi:schemaLocation",
-                    "https://jakarta.ee/xml/ns/jakartaee " + schemaDescription.getString("url"));
+                        "https://jakarta.ee/xml/ns/jakartaee " + schemaDescription.getString("url"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -121,7 +118,7 @@ public class WebXmlUtil {
         var xmlUtil = XmlUtil.getInstance();
 
         var nodeList = xmlUtil.findElements(document,
-            "//*[local-name()='servlet-class' and text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
+                "//*[local-name()='servlet-class' and text()='%s']".formatted(JAKARTA_FACES_WEBAPP_FACES_SERVLET)).count();
         if (nodeList == 0) {
             xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "servlet", servlet -> {
                 xmlUtil.addElement(servlet, "description", description);
@@ -159,7 +156,7 @@ public class WebXmlUtil {
         var nodeList = xmlUtil.findElements(document, "//*[local-name()='welcome-file']").count();
         if (nodeList == 0) {
             xmlUtil.addElement(document, log, WEB_APP_EXP_SEARCH, "welcome-file-list",
-                (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
+                    (element) -> xmlUtil.addElement(element, "welcome-file", welcomeFile));
         }
     }
 
@@ -174,15 +171,14 @@ public class WebXmlUtil {
     public void addDataSource(Document document, Log log, Map<String, Object> properties) {
         var xmlUtil = XmlUtil.getInstance();
         if (xmlUtil.findElementsStream(document,
-            "//*[local-name()='data-source'][*[local-name()='name' and text()='%s']]".formatted(properties.get(NAME))).findFirst().isEmpty()) {
+                "//*[local-name()='data-source'][*[local-name()='name' and text()='%s']]".formatted(properties.get(NAME))).findFirst().isEmpty()) {
             var datasourceElem = xmlUtil.addElement(document, log, "web-app", "data-source");
             properties.forEach((key, value) -> {
                 if (value instanceof Collection<?> collection) {
-                    collection.forEach(item -> {
+                    collection.stream().map(Map.class::cast).forEach(item -> {
                         var propertyElem = xmlUtil.addElement(datasourceElem, "property");
-                        var values = StringUtils.split(item.toString(), "=");
-                        xmlUtil.addElement(propertyElem, NAME, values[0]);
-                        xmlUtil.addElement(propertyElem, VALUE, values[1]);
+                        xmlUtil.addElement(propertyElem, NAME, item.get(NAME).toString());
+                        xmlUtil.addElement(propertyElem, VALUE, item.get(VALUE).toString());
                     });
                 } else {
                     var newKey = StringsUtil.camelCaseToParamCase(key);

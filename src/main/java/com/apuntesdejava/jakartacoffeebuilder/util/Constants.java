@@ -319,6 +319,7 @@ public final class Constants {
      * The artifact ID for the OpenAPI Generator Maven Plugin.
      */
     public static final String OPENAPI_GENERATOR_MAVEN_PLUGIN = "openapi-generator-maven-plugin";
+    public static final String PROPERTIES = "properties";
 
     /**
      * Private constructor to prevent instantiation of this utility class.
