@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - develop
+  workflow_dispatch:
 
 jobs:
   build:
@@ -49,6 +50,16 @@ jobs:
           server-id: central
           server-username: OSSRH_USERNAME
           server-password: OSSRH_TOKEN
+          cache: maven
+
+      - name: Validate SNAPSHOT version
+        run: |
+          CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Current version: ${CURRENT_VERSION}"
+          if [[ "${CURRENT_VERSION}" != *-SNAPSHOT ]]; then
+            echo "develop must be deployed with a -SNAPSHOT version."
+            exit 1
+          fi
 
       - name: Deploy SNAPSHOT to Sonatype Central
         run: mvn -B deploy --file pom.xml
@@ -77,12 +88,13 @@ jobs:
           server-id: central
           server-username: OSSRH_USERNAME
           server-password: OSSRH_TOKEN
+          cache: maven
 
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHARSE }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Set release version
         id: set_version
@@ -97,14 +109,15 @@ jobs:
           # Actualiza el pom.xml en el runner a la versión de release
           mvn versions:set -DnewVersion=$RELEASE_VERSION -DgenerateBackupPoms=false
 
-
-#      - name: Deploy to Maven Central
-#        env:
-#          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-#          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-#          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-#        run: |
-#          mvn -B clean deploy -P release  -Dgpg.passphrase="$GPG_PASSPHRASE"
+      - name: Deploy release to Maven Central
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+        run: |
+          mvn -B clean deploy -P release --file pom.xml \
+            -Dgpg.passphrase="$GPG_PASSPHRASE" \
+            -Dgpg.pinentryMode=loopback
 
       - name: Create GitHub Release and Tag
         uses: softprops/action-gh-release@v2
