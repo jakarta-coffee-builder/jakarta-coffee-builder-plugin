@@ -88,7 +88,8 @@ public class AddPayaraMicroMojo extends AbstractMojo {
 
             MavenProject fullProject = MavenProjectUtil.getFullProject(mavenSession, projectBuilder, mavenProject);
 
-            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log).orElseThrow();
+            var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log)
+                    .orElseThrow(() -> new MojoExecutionException("Jakarta EE dependency not found. Please ensure it is present in your project."));
 
             PayaraMicroHelper.getInstance().addPlugin(mavenProject, getLog(), profileId, jakartaEeVersion);
 

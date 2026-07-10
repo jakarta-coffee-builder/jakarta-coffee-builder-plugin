@@ -22,6 +22,7 @@ import com.apuntesdejava.jakartacoffeebuilder.util.StringsUtil;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.commons.lang3.function.TriFunction;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -48,9 +49,9 @@ public class ClassDefinitionHelper {
 
     private final JsonObject classesDefinitions;
 
-    private ClassDefinitionHelper() {
+    private ClassDefinitionHelper(Log log) {
         try {
-            this.classesDefinitions = CoffeeBuilderUtil.getClassesDefinitions().orElseThrow();
+            this.classesDefinitions = CoffeeBuilderUtil.getClassesDefinitions(log).orElseThrow();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -61,14 +62,14 @@ public class ClassDefinitionHelper {
      *
      * @return The single instance of this class.
      */
-    public static ClassDefinitionHelper getInstance() {
-        return ClassDefinitionHelperHolder.INSTANCE;
+    public static synchronized ClassDefinitionHelper getInstance(Log log) {
+         if (INSTANCE == null){
+             INSTANCE = new ClassDefinitionHelper(log);
+         }
+         return INSTANCE;
     }
 
-    private static class ClassDefinitionHelperHolder {
-
-        private static final ClassDefinitionHelper INSTANCE = new ClassDefinitionHelper();
-    }
+    private static  ClassDefinitionHelper INSTANCE ;
 
     /**
      * Creates a list of field definitions from a JSON object representing the fields of a class.

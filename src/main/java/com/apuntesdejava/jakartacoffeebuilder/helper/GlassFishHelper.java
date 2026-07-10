@@ -98,11 +98,11 @@ public class GlassFishHelper {
      */
     public Optional<Path> download(MavenProject mavenProject, Log log, String jakartaEeVersion) throws IOException {
         return CoffeeBuilderUtil
-            .getServerDefinition("glassfish")
+            .getServerDefinition(log, "glassfish")
             .map(def -> def.getString(jakartaEeVersion))
             .map(glassfishVersion -> {
                 try {
-                    var artifact = PomUtil.getArtifactInfo("org.glassfish.main.extras", "glassfish-embedded-all",
+                    var artifact = PomUtil.getArtifactInfo(log, "org.glassfish.main.extras", "glassfish-embedded-all",
                         glassfishVersion);
                     String uri = StringUtils.replaceChars(artifact.getString("g"), ".", "/");
                     String artifactId = artifact.getString("a");

@@ -66,11 +66,11 @@ public class ArchitectureHelper {
     }
 
     private static void addMapStructDependency(MavenProject mavenProject, Log log) throws IOException {
-        var version = PomUtil.findLatestDependencyVersion(ORG_MAPSTRUCT, MAPSTRUCT).orElseThrow();
+        var version = PomUtil.findLatestDependencyVersion(log, ORG_MAPSTRUCT, MAPSTRUCT).orElseThrow();
         PomUtil.setProperty(mavenProject, log, "org.mapstruct.version", version);
         PomUtil.addDependency(mavenProject, log, ORG_MAPSTRUCT, MAPSTRUCT, "${org.mapstruct.version}");
 
-        CoffeeBuilderUtil.getDependencyConfiguration(MAVEN_COMPILER_PLUGIN)
+        CoffeeBuilderUtil.getDependencyConfiguration(log, MAVEN_COMPILER_PLUGIN)
             .ifPresent(
                 mavenCompilerPlugin -> PomUtil.addPlugin(mavenProject, log,
                     ORG_APACHE_MAVEN_PLUGINS,
@@ -137,7 +137,7 @@ public class ArchitectureHelper {
             var packageDefinition = MavenProjectUtil.getModelPackage(mavenProject);
             log.debug("Model:" + modelName);
             var modelPath = PathsUtil.getJavaPath(mavenProject, packageDefinition, modelName);
-            var classDefinitionHelper = ClassDefinitionHelper.getInstance();
+            var classDefinitionHelper = ClassDefinitionHelper.getInstance(log);
             var fieldsJson = modelDefinition.getJsonObject(FIELDS);
             var fields = classDefinitionHelper.createFieldsDefinitions(fieldsJson,
                 (fieldName, field, annotations) -> {
@@ -233,7 +233,7 @@ public class ArchitectureHelper {
             var entityDefinition = entityDefinitionValue.asJsonObject();
 
             Collection<String> importsList = new ArrayList<>(
-                ClassDefinitionHelper.getInstance().importsFromFieldsClassesType(entityDefinition.getJsonObject(FIELDS))
+                ClassDefinitionHelper.getInstance(log).importsFromFieldsClassesType(entityDefinition.getJsonObject(FIELDS))
             );
 
             importsList.addAll(List.of(
@@ -291,7 +291,7 @@ public class ArchitectureHelper {
             var entityDefinition = entityDefinitionValue.asJsonObject();
 
             Collection<String> importsList = new ArrayList<>(
-                ClassDefinitionHelper.getInstance().importsFromFieldsClassesType(entityDefinition.getJsonObject(FIELDS))
+                ClassDefinitionHelper.getInstance(log).importsFromFieldsClassesType(entityDefinition.getJsonObject(FIELDS))
             );
 
             importsList.add(

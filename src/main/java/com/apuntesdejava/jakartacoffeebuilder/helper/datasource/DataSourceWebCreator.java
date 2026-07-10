@@ -22,32 +22,32 @@ import org.apache.maven.project.MavenProject;
 import java.io.IOException;
 
 /**
- * Clase responsable de crear el DataSource en un contexto web.
+ * Class responsible for creating the DataSource in a web context.
  * <p>
- * Esta clase extiende {@link DataSourceCreator} y proporciona la implementación
- * para agregar la configuración del DataSource al archivo `web.xml` de un proyecto Jakarta EE.
- * Utiliza la utilidad {@link WebXmlUtil} para manejar las operaciones relacionadas con el archivo `web.xml`.
+ * This class extends {@link DataSourceCreator} and provides the implementation
+ * for adding the DataSource configuration to the `web.xml` file of a Jakarta EE project.
+ * It uses the {@link WebXmlUtil} utility to handle operations related to the `web.xml` file.
  * </p>
  */
 public class DataSourceWebCreator extends DataSourceCreator {
 
 
     /**
-     * Constructor de la clase DataSourceWebCreator.
+     * Creates a DataSourceWebCreator instance.
      *
-     * @param mavenProject el proyecto Maven actual
-     * @param log          el logger para registrar mensajes
+     * @param mavenProject the current Maven project
+     * @param log          the logger used to record messages
      */
     public DataSourceWebCreator(MavenProject mavenProject, Log log) {
         super(mavenProject, log);
     }
 
     /**
-     * Construye y configura el DataSource en el archivo `web.xml`.
+     * Builds and configures the DataSource in the `web.xml` file.
      * <p>
-     * Este método verifica la existencia del archivo `web.xml` en el proyecto actual,
-     * obtiene los parámetros del DataSource y los agrega al archivo. Finalmente, guarda
-     * los cambios realizados en el archivo `web.xml`.
+     * This method checks whether the `web.xml` file exists in the current project,
+     * obtains the DataSource parameters, and adds them to the file. Finally, it saves
+     * the changes made to the `web.xml` file.
      * </p>
      */
     @Override
@@ -57,7 +57,6 @@ public class DataSourceWebCreator extends DataSourceCreator {
         webXmlUtil.checkExistsFile(mavenProject, log)
                   .ifPresent(document -> {
                       var properties = getDataSourceParameters();
-                      var currentPath = mavenProject.getBasedir().toPath();
                       webXmlUtil.addDataSource(document, log, properties);
                       webXmlUtil.saveDocument(mavenProject, document, log);
                   });

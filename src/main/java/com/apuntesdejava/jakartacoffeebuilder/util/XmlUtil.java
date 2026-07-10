@@ -232,8 +232,8 @@ public class XmlUtil {
             }
             Files.createDirectories(path.getParent());
             var doc = createDocumentType == null
-                ? DocumentHelper.createDocument()
-                : createDocumentType.get();
+                    ? DocumentHelper.createDocument()
+                    : createDocumentType.get();
             Optional.ofNullable(postCreate).ifPresent(p -> p.accept(doc));
             return Optional.of(doc);
         } catch (IOException | DocumentException e) {
@@ -400,7 +400,8 @@ public class XmlUtil {
      * @param tagNameToRemove the tag name of the child element to be removed
      */
     public void removeElement(Element element, String tagNameToRemove) {
-        Optional.ofNullable((Element) element.selectSingleNode(tagNameToRemove)).ifPresent(element::remove);
+        Optional.ofNullable((Element) element.selectSingleNode("./*[local-name()='%s']".formatted(tagNameToRemove)))
+                .ifPresent(element::remove);
     }
 
     /**

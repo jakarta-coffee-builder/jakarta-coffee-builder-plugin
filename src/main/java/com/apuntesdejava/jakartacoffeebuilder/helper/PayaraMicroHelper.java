@@ -71,14 +71,15 @@ public class PayaraMicroHelper {
      */
     public void addPlugin(MavenProject mavenProject,
                           Log log,
-                          String profileId, String jakartaEeVersion) throws IOException, MojoExecutionException {
-        Optional<JsonObject> definitionOpt = CoffeeBuilderUtil.getServerDefinition("payara");
+                          String profileId,
+                          String jakartaEeVersion) throws IOException, MojoExecutionException {
+        Optional<JsonObject> definitionOpt = CoffeeBuilderUtil.getServerDefinition(log, "payara");
         if (definitionOpt.isEmpty()) return;
         var definition = definitionOpt.get();
         if (!definition.containsKey(jakartaEeVersion))
             throw new MojoExecutionException("Jakarta EE version " + jakartaEeVersion + " doesn't exist");
         var configuration = Json.createObjectBuilder()
-            .add("payaraVersion", definition.getString(jakartaEeVersion))
+            .add("payaraMicroVersion", definition.getString(jakartaEeVersion))
             .add("deployWar", "false")
             .add("commandLineOptions",
                 Json.createObjectBuilder()
@@ -98,13 +99,21 @@ public class PayaraMicroHelper {
             )
             .build();
         var build = MavenProjectUtil.getBuild(mavenProject, profileId);
-        var plugin = PomUtil.addPlugin(build, log, "fish.payara.maven.plugins",
-            "payara-micro-maven-plugin", "2.4",
-            configuration);
-        log.debug("plugin: %s".formatted(plugin));
 
+        CoffeeBuilderUtil.getDependencyConfiguration(log, "payara-micro-maven-plugin")
+                .ifPresent(pluginDef->{
+                    PomUtil.setProperty(mavenProject, log, "payara-micro-maven-plugin.version", pluginDef.getString("version"));
+                    PomUtil.addPlugin(build, log,
+                            pluginDef.getString("groupId"),
+                            pluginDef.getString("artifactId"),
+                            "${payara-micro-maven-plugin.version}",
+                            configuration
+                    );
+                });
 
     }
+
+
 
     private static class PayaraMicroHelperHolder {
 

@@ -1,0 +1,214 @@
+{{#useSwaggerAnnotations}}
+import io.swagger.annotations.*;
+{{/useSwaggerAnnotations}}
+{{#useSwaggerV3Annotations}}
+import io.swagger.v3.oas.annotations.media.Schema;
+{{/useSwaggerV3Annotations}}
+import java.util.Objects;
+{{#withXml}}
+import {{javaxPackage}}.xml.bind.annotation.XmlElement;
+import {{javaxPackage}}.xml.bind.annotation.XmlRootElement;
+import {{javaxPackage}}.xml.bind.annotation.XmlAccessType;
+import {{javaxPackage}}.xml.bind.annotation.XmlAccessorType;
+import {{javaxPackage}}.xml.bind.annotation.XmlType;
+import {{javaxPackage}}.xml.bind.annotation.XmlEnum;
+import {{javaxPackage}}.xml.bind.annotation.XmlEnumValue;
+{{/withXml}}
+
+{{#description}}/**
+ * {{.}}
+ {{#isDeprecated}}
+ * @deprecated
+ {{/isDeprecated}}
+ **/{{/description}}
+{{#isDeprecated}}
+@Deprecated
+
+{{/isDeprecated}}{{#useSwaggerAnnotations}}{{#description}}@ApiModel(description = "{{{.}}}"){{/description}}{{/useSwaggerAnnotations}}{{#useSwaggerV3Annotations}}
+@Schema({{#title}}title="{{{.}}}", {{/title}}{{#description}}description="{{{.}}}"{{/description}}{{^description}}description=""{{/description}}{{#isDeprecated}}, deprecated = true{{/isDeprecated}}){{/useSwaggerV3Annotations}}{{#useMicroProfileOpenAPIAnnotations}}
+@org.eclipse.microprofile.openapi.annotations.media.Schema({{#title}}title="{{{.}}}", {{/title}}{{#description}}description="{{{.}}}"{{/description}}{{^description}}description=""{{/description}}{{#isDeprecated}}, deprecated = true{{/isDeprecated}}){{/useMicroProfileOpenAPIAnnotations}}
+{{>generatedAnnotation}}{{>additionalModelTypeAnnotations}}{{>xmlPojoAnnotation}}
+{{#vendorExtensions.x-class-extra-annotation}}
+{{{vendorExtensions.x-class-extra-annotation}}}
+{{/vendorExtensions.x-class-extra-annotation}}
+public class {{classname}} {{#parent}}extends {{{.}}}{{/parent}} {{#vendorExtensions.x-implements}}{{#-first}}implements {{{.}}}{{/-first}}{{^-first}}, {{{.}}}{{/-first}}{{/vendorExtensions.x-implements}} {
+  {{#vars}}
+  {{#isEnum}}
+  {{^isContainer}}
+  {{>enumClass}}
+  {{/isContainer}}
+  {{#isContainer}}
+  {{#mostInnerItems}}
+  {{>enumClass}}
+  {{/mostInnerItems}}
+  {{/isContainer}}
+  {{/isEnum}}
+  {{#vendorExtensions.x-field-extra-annotation}}
+  {{{.}}}
+  {{/vendorExtensions.x-field-extra-annotation}}
+  {{#deprecated}}
+  @Deprecated
+  {{/deprecated}}
+  private {{#isContainer}}{{#useBeanValidation}}@Valid {{/useBeanValidation}}{{/isContainer}}{{{datatypeWithEnum}}} {{name}}{{#defaultValue}} = {{{.}}}{{/defaultValue}};
+  {{/vars}}
+
+  {{#generateBuilders}}
+  {{^additionalProperties}}
+  protected {{classname}}({{classname}}Builder<?, ?> b) {
+    {{#parent}}
+    super(b);
+    {{/parent}}
+    {{#vars}}
+    this.{{name}} = b.{{name}};
+    {{/vars}}
+  }
+
+  {{/additionalProperties}}
+  {{/generateBuilders}}
+  public {{classname}}() {
+  }
+
+  {{#vars}}
+  /**
+   {{#description}}
+   * {{.}}
+   {{/description}}
+   {{#minimum}}
+   * minimum: {{.}}
+   {{/minimum}}
+   {{#maximum}}
+   * maximum: {{.}}
+   {{/maximum}}
+   {{#deprecated}}
+   * @deprecated
+   {{/deprecated}}
+   **/
+  {{#deprecated}}
+  @Deprecated
+  {{/deprecated}}
+  public {{classname}} {{name}}({{{datatypeWithEnum}}} {{name}}) {
+    this.{{name}} = {{name}};
+    return this;
+  }
+
+  {{#withXml}}
+      @XmlElement(name="{{baseName}}"{{#required}}, required = {{required}}{{/required}})
+  {{/withXml}}
+  {{#deprecated}}
+  /**
+   * @deprecated
+   */
+  @Deprecated
+  {{/deprecated}}
+  {{#vendorExtensions.x-extra-annotation}}{{{vendorExtensions.x-extra-annotation}}}{{/vendorExtensions.x-extra-annotation}}{{#useSwaggerAnnotations}}
+  @ApiModelProperty({{#example}}example = "{{{.}}}", {{/example}}{{#required}}required = {{required}}, {{/required}}value = "{{{description}}}"){{/useSwaggerAnnotations}}{{#useSwaggerV3Annotations}}
+  @Schema({{#example}}example = "{{{.}}}", {{/example}}{{#required}}required = {{required}}, {{/required}}description = "{{{description}}}"{{#deprecated}}, deprecated = true{{/deprecated}}){{/useSwaggerV3Annotations}}{{#useMicroProfileOpenAPIAnnotations}}
+  @org.eclipse.microprofile.openapi.annotations.media.Schema({{#example}}example = "{{{.}}}", {{/example}}{{#required}}required = {{required}}, {{/required}}description = "{{{description}}}"{{#deprecated}}, deprecated = true{{/deprecated}}){{/useMicroProfileOpenAPIAnnotations}}
+  {{#useBeanValidation}}{{>beanValidation}}{{/useBeanValidation}}public {{>beanValidatedType}} {{getter}}() {
+    return {{name}};
+  }
+
+  {{#deprecated}}
+  /**
+   * @deprecated
+   */
+  @Deprecated
+  {{/deprecated}}
+  {{#vendorExtensions.x-setter-extra-annotation}}{{{vendorExtensions.x-setter-extra-annotation}}}
+  {{/vendorExtensions.x-setter-extra-annotation}}public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
+    this.{{name}} = {{name}};
+  }
+
+  {{#isArray}}
+  public {{classname}} add{{nameInPascalCase}}Item({{{items.datatypeWithEnum}}} {{name}}Item) {
+    if (this.{{name}} == null) {
+      this.{{name}} = {{{defaultValue}}}{{^defaultValue}}new {{#uniqueItems}}LinkedHashSet{{/uniqueItems}}{{^uniqueItems}}ArrayList{{/uniqueItems}}<>(){{/defaultValue}};
+    }
+
+    this.{{name}}.add({{name}}Item);
+    return this;
+  }
+
+  public {{classname}} remove{{nameInPascalCase}}Item({{{items.datatypeWithEnum}}} {{name}}Item) {
+    if ({{name}}Item != null && this.{{name}} != null) {
+      this.{{name}}.remove({{name}}Item);
+    }
+
+    return this;
+  }
+  {{/isArray}}
+  {{/vars}}
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }{{#hasVars}}
+    {{classname}} {{classVarName}} = ({{classname}}) o;
+    return {{#vars}}Objects.equals(this.{{name}}, {{classVarName}}.{{name}}){{^-last}} &&
+        {{/-last}}{{/vars}}{{#parent}} &&
+        super.equals(o){{/parent}};{{/hasVars}}{{^hasVars}}
+    return {{#parent}}super.equals(o){{/parent}}{{^parent}}true{{/parent}};{{/hasVars}}
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash({{#vars}}{{name}}{{^-last}}, {{/-last}}{{/vars}}{{#parent}}{{#hasVars}}, {{/hasVars}}super.hashCode(){{/parent}});
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class {{classname}} {\n");
+    {{#parent}}sb.append("    ").append(toIndentedString(super.toString())).append("\n");{{/parent}}
+    {{#vars}}sb.append("    {{name}}: ").append({{#isPassword}}"*"{{/isPassword}}{{^isPassword}}toIndentedString({{name}}){{/isPassword}}).append("\n");
+    {{/vars}}sb.append("}");
+    return sb.toString();
+  }
+
+  private String toIndentedString(Object o) {
+    return o == null ? "null" : o.toString().replace("\n", "\n    ");
+  }
+
+{{#generateBuilders}}{{^additionalProperties}}
+  public static {{classname}}Builder<?, ?> builder() {
+    return new {{classname}}BuilderImpl();
+  }
+
+  private static final class {{classname}}BuilderImpl extends {{classname}}Builder<{{classname}}, {{classname}}BuilderImpl> {
+
+    @Override
+    protected {{classname}}BuilderImpl self() {
+      return this;
+    }
+
+    @Override
+    public {{classname}} build() {
+      return new {{classname}}(this);
+    }
+  }
+
+  public static abstract class {{classname}}Builder<C extends {{classname}}, B extends {{classname}}Builder<C, B>> {{#parent}}extends {{{.}}}Builder<C, B>{{/parent}} {
+    {{#vars}}
+    private {{#removeAnnotations}}{{{datatypeWithEnum}}}{{/removeAnnotations}} {{name}}{{#defaultValue}} = {{{.}}}{{/defaultValue}};
+    {{/vars}}
+  {{^parent}}
+    protected abstract B self();
+
+    public abstract C build();
+    {{/parent}}
+
+    {{#vars}}
+    {{#deprecated}}
+    @Deprecated
+    {{/deprecated}}
+    public B {{name}}({{#removeAnnotations}}{{{datatypeWithEnum}}}{{/removeAnnotations}} {{name}}) {
+      this.{{name}} = {{name}};
+      return self();
+    }
+    {{/vars}}
+  }{{/additionalProperties}}{{/generateBuilders}}
+}

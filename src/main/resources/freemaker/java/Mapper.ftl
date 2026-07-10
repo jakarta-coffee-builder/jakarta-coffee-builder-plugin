@@ -6,8 +6,9 @@ import ${importItem};
     </#list>
 </#if>
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants.ComponentModel;
 
-@Mapper(componentModel = "jakarta")
+@Mapper(componentModel = ComponentModel.JAKARTA_CDI)
 public interface ${className} {
     ${modelName}Entity modelToEntity(${modelName} model);
 

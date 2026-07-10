@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.NAME;
+import static com.apuntesdejava.jakartacoffeebuilder.util.Constants.PROPERTIES;
 
 /**
  * Helper class for managing `persistence.xml` files. Provides methods to create and save `persistence.xml` documents.
@@ -76,7 +77,7 @@ public class PersistenceXmlHelper {
             try {
                 var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log)
                     .orElseThrow();
-                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(log,jakartaEeVersion,
                         "persistence")
                     .orElseThrow();
 
@@ -91,7 +92,7 @@ public class PersistenceXmlHelper {
                 var persistenceUnitElem = xmlUtil.addElement(persistenceElem,
                     "persistence-unit",
                     Map.of(NAME, persistenceUnitName));
-                var propertiesElement = xmlUtil.addElement(persistenceUnitElem, "properties");
+                var propertiesElement = xmlUtil.addElement(persistenceUnitElem, PROPERTIES);
                 xmlUtil.addElement(propertiesElement, "property", Map.of(
                     "name", "jakarta.persistence.schema-generation.database.action",
                     "value", "drop-and-create"

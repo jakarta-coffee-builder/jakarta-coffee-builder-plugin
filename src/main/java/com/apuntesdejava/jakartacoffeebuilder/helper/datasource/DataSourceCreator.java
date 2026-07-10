@@ -18,13 +18,17 @@ package com.apuntesdejava.jakartacoffeebuilder.helper.datasource;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class for creating a data source.
@@ -50,15 +54,25 @@ public abstract class DataSourceCreator {
      */
     protected JsonObject dataSourceParameters;
 
+    protected String profile;
+
+    public DataSourceCreator(MavenProject mavenProject, Log log) {
+        this.log = log;
+        this.mavenProject = mavenProject;
+        this.profile = null;
+    }
+
     /**
      * Constructor for DataSourceCreator.
      *
      * @param mavenProject the Maven project
      * @param log          the logger
+     * @param profile      the profile name
      */
-    public DataSourceCreator(MavenProject mavenProject, Log log) {
+    public DataSourceCreator(MavenProject mavenProject, Log log, String profile) {
         this.log = log;
         this.mavenProject = mavenProject;
+        this.profile = profile;
     }
 
     /**
@@ -89,11 +103,7 @@ public abstract class DataSourceCreator {
                     properties.put(key, switch (value.getValueType()) {
                         case STRING -> ((JsonString) value).getString();
                         case NUMBER -> ((JsonNumber) value).intValue();
-                        case ARRAY -> value.asJsonArray()
-                                           .stream()
-                                           .map(JsonString.class::cast)
-                                           .map(JsonString::getString)
-                                           .toList();
+                        case ARRAY -> convertArrayToList(value);
                         default -> value;
                     });
 
@@ -101,6 +111,30 @@ public abstract class DataSourceCreator {
             });
         });
         return properties;
+    }
+
+    private static List<LinkedHashMap<String, Object>> convertArrayToList(JsonValue value) {
+        return value.asJsonArray()
+                .stream()
+                .map(JsonObject.class::cast)
+                .map(jsonObject -> jsonObject.entrySet()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                Map.Entry::getKey,
+                                entry -> getJsonValue(entry.getValue()),
+                                (left, right) -> right,
+                                LinkedHashMap::new
+                        ))
+                )
+                .toList();
+    }
+
+    private static Object getJsonValue(JsonValue value) {
+        return switch (value.getValueType()) {
+            case STRING -> ((JsonString) value).getString();
+            case NUMBER -> ((JsonNumber) value).intValue();
+            default -> value;
+        };
     }
 
     /**
@@ -111,5 +145,5 @@ public abstract class DataSourceCreator {
      *
      * @throws IOException if an I/O error occurs
      */
-    public abstract void build() throws IOException;
+    public abstract void build() throws IOException, MojoExecutionException;
 }

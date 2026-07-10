@@ -5,7 +5,7 @@
 
     <groupId>com.apuntesdejava</groupId>
     <artifactId>jakarta-coffee-builder-plugin</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
     <packaging>maven-plugin</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -30,12 +30,12 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.version>3.9.9</maven.version>
+        <maven.version>3.9.16</maven.version>
         <maven.compiler.release>21</maven.compiler.release>
         <maven-plugin-tools.version>3.15.2</maven-plugin-tools.version>
-        <mockito.version>5.20.0</mockito.version>
-        <org.slf4j-version>2.0.17</org.slf4j-version>
-        <junit-jupiter.version>5.13.1</junit-jupiter.version>
+        <mockito.version>5.23.0</mockito.version>
+        <org.slf4j-version>2.0.18</org.slf4j-version>
+        <junit-jupiter.version>6.1.1</junit-jupiter.version>
     </properties>
     <scm>
         <connection>scm:git:git://github.com/jakarta-coffee-builder/jakarta-coffee-builder-plugin.git</connection>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.21.0</version>
+            <version>2.22.0</version>
         </dependency>
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -103,12 +103,7 @@
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>parsson</artifactId>
-            <version>1.1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <version>5.5.1</version>
+            <version>1.1.9</version>
         </dependency>
         <dependency>
             <groupId>commons-validator</groupId>
@@ -128,7 +123,19 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.20.0</version>
+            <version>1.22.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -154,12 +161,12 @@
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.6</version>
         </dependency>
     </dependencies>
 
     <build>
-        <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+        <pluginManagement>
             <plugins>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
@@ -167,11 +174,11 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.14.1</version>
+                    <version>3.15.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-plugin-plugin</artifactId>
@@ -214,11 +221,6 @@
                     <goalPrefix>jakarta-coffee-builder</goalPrefix>
                     <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                 </configuration>
-<!--                <executions>
-                    <execution>
-                        <goals><goal>descriptor</goal></goals>
-                    </execution>
-                </executions>-->
                 <executions>
                     <execution>
                         <id>mojo-descriptor</id>
@@ -253,8 +255,25 @@
                     </execution>
                 </executions>
             </plugin>
-
-
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -281,7 +300,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
+                        <version>3.4.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -313,7 +332,7 @@
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.9.0</version>
+                        <version>0.11.0</version>
                         <extensions>true</extensions>
                         <configuration>
                             <!--<publishingServerId>central-portal-snapshots</publishingServerId>-->
@@ -332,7 +351,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-invoker-plugin</artifactId>
-                        <version>3.9.1</version>
+                        <version>3.10.1</version>
                         <configuration>
                             <postBuildHookScript>verify</postBuildHookScript>
                             <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>

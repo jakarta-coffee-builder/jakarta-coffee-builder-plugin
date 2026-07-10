@@ -1,6 +1,7 @@
 package com.apuntesdejava.jakartacoffeebuilder.util;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
@@ -50,13 +51,14 @@ public final class JsonUtil {
      * Returns {@code null} for {@code JsonValue.ValueType.NULL}.
      */
     public static Object getJsonValue(JsonValue jsonValue) {
-        return switch (jsonValue.getValueType()) {
-            case ARRAY -> jsonValue.asJsonArray();
-            case OBJECT -> jsonValue.asJsonObject();
-            case STRING -> ((JsonString) jsonValue).getString();
-            case NUMBER -> ((JsonNumber) jsonValue).numberValue();
-            case TRUE -> true;
-            case FALSE -> false;
+        return switch (jsonValue) {
+            case JsonString s -> s.getString();
+            case JsonNumber n -> n.numberValue();
+            case JsonObject o -> o;
+            case JsonArray a -> a;
+            case JsonValue v when v == JsonValue.TRUE -> true;
+            case JsonValue v when v == JsonValue.FALSE -> false;
+            case JsonValue v when v == JsonValue.NULL -> null;
             default -> null;
         };
     }
@@ -111,13 +113,19 @@ public final class JsonUtil {
         jsonObject.forEach((key, value) -> {
             if (allowRepeat || config.getChild(key) == null) {
 
-                switch (value.getValueType()) {
-                    case ARRAY -> evaluateArrayElement(config, log, key, value);
-                    case OBJECT -> evaluateObjectElement(config, log, key, value, allowRepeat);
-                    default -> {
+                switch (value) {
+                    case JsonArray a -> evaluateArrayElement(config, log, key, a);
+                    case JsonObject o -> evaluateObjectElement(config, log, key, o, allowRepeat);
+                    case JsonString s -> {
                         log.debug("---- in value");
                         Xpp3Dom child = new Xpp3Dom(key);
-                        child.setValue(((JsonString) value).getString());
+                        child.setValue(s.getString());
+                        config.addChild(child);
+                    }
+                    default -> {
+                        log.debug("---- in default value");
+                        Xpp3Dom child = new Xpp3Dom(key);
+                        child.setValue(value.toString());
                         config.addChild(child);
                     }
 
