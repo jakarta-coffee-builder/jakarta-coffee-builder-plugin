@@ -106,10 +106,18 @@ jobs:
       - name: Deploy release to Maven Central
         env:
           MAVEN_GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE || secrets.GPG_PASSPHARSE }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
         run: |
+          if [ -z "$MAVEN_GPG_KEY" ]; then
+            echo "Missing GitHub secret: GPG_PRIVATE_KEY"
+            exit 1
+          fi
+          if [ -z "$MAVEN_GPG_PASSPHRASE" ]; then
+            echo "Missing GitHub secret: GPG_PASSPHRASE"
+            exit 1
+          fi
           mvn -B clean deploy -P release --file pom.xml
 
       - name: Create GitHub Release and Tag
