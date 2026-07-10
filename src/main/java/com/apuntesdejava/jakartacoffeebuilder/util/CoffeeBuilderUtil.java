@@ -19,6 +19,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 import java.util.Map;
@@ -47,13 +48,14 @@ public class CoffeeBuilderUtil {
     /**
      * Retrieves a specific dependency configuration from a remote repository.
      *
+     * @param log   The Maven logger for logging request details.
      * @param name The name of the dependency to retrieve (e.g., "maven-compiler-plugin").
      * @return An {@link Optional} containing the dependency's configuration as a {@link JsonObject},
      * or empty if not found.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getDependencyConfiguration(String name) throws IOException {
-        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DEPENDENCIES_URL),
+    public static Optional<JsonObject> getDependencyConfiguration(Log log, String name) throws IOException {
+        var response = HttpUtil.getContent(log, HttpUtil.getUrl(Constants.DEPENDENCIES_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonObject(name));
     }
@@ -61,13 +63,14 @@ public class CoffeeBuilderUtil {
     /**
      * Retrieves a specific server definition from a remote repository.
      *
+     * @param log   The Maven logger for logging request details.
      * @param name The name of the server to retrieve (e.g., "payara").
      * @return An {@link Optional} containing the server's definition as a {@link JsonObject},
      * or empty if not found.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getServerDefinition(String name) throws IOException {
-        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SERVERS_URL),
+    public static Optional<JsonObject> getServerDefinition(Log log, String name) throws IOException {
+        var response = HttpUtil.getContent(log, HttpUtil.getUrl(Constants.SERVERS_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonObject(name));
     }
@@ -78,9 +81,9 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the complete set of specification definitions.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getSpecificationsDefinitions() throws IOException {
+    public static Optional<JsonObject> getSpecificationsDefinitions(Log log) throws IOException {
         return Optional.ofNullable(
-            HttpUtil.getContent(HttpUtil.getUrl(Constants.SPECIFICATIONS_URL),
+            HttpUtil.getContent(log, HttpUtil.getUrl(Constants.SPECIFICATIONS_URL),
                 STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
         );
     }
@@ -91,9 +94,9 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the complete set of class definitions.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getClassesDefinitions() throws IOException {
+    public static Optional<JsonObject> getClassesDefinitions(Log log) throws IOException {
         return Optional.ofNullable(
-            HttpUtil.getContent(HttpUtil.getUrl(Constants.CLASSES_DEFINITIONS),
+            HttpUtil.getContent(log, HttpUtil.getUrl(Constants.CLASSES_DEFINITIONS),
                 STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
         );
     }
@@ -104,9 +107,9 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the OpenAPI generator configuration.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getOpenApiGeneratorConfiguration() throws IOException {
+    public static Optional<JsonObject> getOpenApiGeneratorConfiguration(Log log) throws IOException {
         return Optional.ofNullable(
-            HttpUtil.getContent(HttpUtil.getUrl(Constants.OPEN_API_GENERATOR_CONFIGURATION),
+            HttpUtil.getContent(log, HttpUtil.getUrl(Constants.OPEN_API_GENERATOR_CONFIGURATION),
                 STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER)
         );
     }
@@ -118,8 +121,8 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the properties as a {@link JsonArray}, or empty if not found.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonArray> getPropertiesConfiguration(String name) throws IOException {
-        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.PROPERTIES_URL),
+    public static Optional<JsonArray> getPropertiesConfiguration(Log log, String name) throws IOException {
+        var response = HttpUtil.getContent(log, HttpUtil.getUrl(Constants.PROPERTIES_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonArray(name));
     }
@@ -130,8 +133,8 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the dialect configurations.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getDialectConfiguration() throws IOException {
-        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.DIALECT_URL),
+    public static Optional<JsonObject> getDialectConfiguration(Log log) throws IOException {
+        var response = HttpUtil.getContent(log, HttpUtil.getUrl(Constants.DIALECT_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response);
     }
@@ -144,8 +147,8 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the schema definition as a {@link JsonObject}, or empty if not found.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static Optional<JsonObject> getSchema(String jakartaEeVersion, String name) throws IOException {
-        var response = HttpUtil.getContent(HttpUtil.getUrl(Constants.SCHEMAS_URL),
+    public static Optional<JsonObject> getSchema(Log log, String jakartaEeVersion, String name) throws IOException {
+        var response = HttpUtil.getContent(log, HttpUtil.getUrl(Constants.SCHEMAS_URL),
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER);
         return Optional.ofNullable(response.getJsonObject(jakartaEeVersion).getJsonObject(name));
     }
@@ -158,9 +161,9 @@ public class CoffeeBuilderUtil {
      * @return An {@link Optional} containing the JDBC configuration as a {@link JsonObject}, or empty if not found.
      * @throws IOException if an I/O error occurs while fetching the dialect configuration.
      */
-    public static Optional<JsonObject> getJdbcConfiguration(String url) throws IOException {
+    public static Optional<JsonObject> getJdbcConfiguration(Log log, String url) throws IOException {
         final String dialectKey = StringUtils.substringBetween(url, "jdbc:", ":");
-        return getDialectConfiguration().map(
+        return getDialectConfiguration(log).map(
             dialectConfiguration -> dialectConfiguration.getJsonObject(dialectKey));
 
     }

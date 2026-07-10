@@ -115,7 +115,7 @@ public class AddPersistenceMojo extends AddAbstractPersistenceMojo {
             }
             if (Strings.CI.equals(jakartaEeVersion, JAKARTAEE_VERSION_10))
                 jakartaEeHelper.addPersistenceClassProvider(mavenProject, log);
-            CoffeeBuilderUtil.getJdbcConfiguration(url)
+            CoffeeBuilderUtil.getJdbcConfiguration(log,url)
                 .ifPresent(definition
                     -> jakartaEeHelper.checkDataDependencies(mavenProject, log, definition));
 

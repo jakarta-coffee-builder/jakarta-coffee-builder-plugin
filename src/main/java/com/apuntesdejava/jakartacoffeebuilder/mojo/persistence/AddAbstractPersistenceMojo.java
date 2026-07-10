@@ -240,7 +240,7 @@ public abstract class AddAbstractPersistenceMojo extends AbstractMojo {
      */
     protected void addDataSourceConfiguration(Log log, JsonObject json) throws ProjectBuildingException, IOException {
         var jakartaEeHelper = JakartaEeHelper.getInstance();
-        CoffeeBuilderUtil.getJdbcConfiguration(url)
+        CoffeeBuilderUtil.getJdbcConfiguration(log,url)
                 .ifPresent(definition -> {
                     jakartaEeHelper.checkDataDependencies(fullProject, log, definition);
                     jakartaEeHelper.addDataSource(fullProject, log, declare,

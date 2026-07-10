@@ -83,10 +83,10 @@ public final class JakartaEeHelper {
     private JakartaEeHelper() {
     }
 
-    private JsonObject getSpecifications() {
+    private JsonObject getSpecifications(Log log) {
         if (this.specifications == null) {
             try {
-                CoffeeBuilderUtil.getSpecificationsDefinitions().ifPresent(specs -> this.specifications = specs);
+                CoffeeBuilderUtil.getSpecificationsDefinitions(log).ifPresent(specs -> this.specifications = specs);
             } catch (IOException e) {
                 throw new RuntimeException("Error loading Jakarta EE specifications from remote resource", e);
             }
@@ -105,7 +105,7 @@ public final class JakartaEeHelper {
     public void addJakartaCdiDependency(MavenProject mavenProject,
                                         Log log,
                                         String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaCdiVersion = getSpecifications().getJsonObject(jakartaEeVersion).getString(JAKARTA_ENTERPRISE_CDI_API);
+        var jakartaCdiVersion = getSpecifications(log).getJsonObject(jakartaEeVersion).getString(JAKARTA_ENTERPRISE_CDI_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_ENTERPRISE, JAKARTA_ENTERPRISE_CDI_API, jakartaCdiVersion,
             PROVIDED_SCOPE);
     }
@@ -120,7 +120,7 @@ public final class JakartaEeHelper {
     public void addJakartaFacesDependency(MavenProject mavenProject,
                                           Log log,
                                           String jakartaEeVersion) {
-        var jakartaFacesVersion = getSpecifications().getJsonObject(jakartaEeVersion).getString(JAKARTA_FACES_API);
+        var jakartaFacesVersion = getSpecifications(log).getJsonObject(jakartaEeVersion).getString(JAKARTA_FACES_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_FACES, JAKARTA_FACES_API, jakartaFacesVersion, PROVIDED_SCOPE);
     }
 
@@ -153,7 +153,7 @@ public final class JakartaEeHelper {
     public void addJakartaTransactionDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) {
-        Optional.ofNullable(getSpecifications().getJsonObject(jakartaEeVersion)
+        Optional.ofNullable(getSpecifications(log).getJsonObject(jakartaEeVersion)
                 .getString(JAKARTA_TRANSACTION_API))
             .ifPresentOrElse(jakartaPersistenceVersion -> PomUtil.addDependency(mavenProject,
                     log,
@@ -224,7 +224,7 @@ public final class JakartaEeHelper {
     public void addJakartaPersistenceDependency(MavenProject mavenProject,
                                                 Log log,
                                                 String jakartaEeVersion) {
-        var jakartaPersistenceVersion = getSpecifications().getJsonObject(jakartaEeVersion)
+        var jakartaPersistenceVersion = getSpecifications(log).getJsonObject(jakartaEeVersion)
             .getString(JAKARTA_PERSISTENCE_API);
         PomUtil.addDependency(mavenProject, log, JAKARTA_PERSISTENCE, JAKARTA_PERSISTENCE_API,
             jakartaPersistenceVersion, PROVIDED_SCOPE);
@@ -294,7 +294,7 @@ public final class JakartaEeHelper {
     public void addJakartaDataDependency(MavenProject mavenProject,
                                          Log log,
                                          String jakartaEeVersion) throws MojoExecutionException {
-        var jakartaPersistenceVersion = getSpecifications().getJsonObject(jakartaEeVersion).getString(JAKARTA_DATA_API);
+        var jakartaPersistenceVersion = getSpecifications(log).getJsonObject(jakartaEeVersion).getString(JAKARTA_DATA_API);
         PomUtil.addDependency(mavenProject,
             log,
             JAKARTA_DATA,
@@ -316,7 +316,7 @@ public final class JakartaEeHelper {
             artifact -> {
                 var version = artifact.getVersion();
                 log.debug("Jakarta CDI dependency found: " + version);
-                getSpecifications().entrySet().stream()
+                getSpecifications(log).entrySet().stream()
                     .filter(entry -> {
                         JsonObject specObject = entry.getValue().asJsonObject();
                         return specObject.containsKey(JAKARTA_ENTERPRISE_CDI_API)
@@ -398,7 +398,7 @@ public final class JakartaEeHelper {
      * @throws IOException If an I/O error occurs while fetching dependency configurations.
      */
     public void addJacksonDependency(MavenProject mavenProject, Log log) throws IOException {
-        CoffeeBuilderUtil.getDependencyConfiguration("jackson-core")
+        CoffeeBuilderUtil.getDependencyConfiguration(log, "jackson-core" )
             .ifPresent(hibernate -> {
                 PomUtil .setProperty(mavenProject, log, "jackson-core.version",
                                 hibernate.getString("version"));
@@ -419,7 +419,7 @@ public final class JakartaEeHelper {
      */
     public void addMicroprofileOpenApiApiDependency(MavenProject mavenProject,
                                                     Log log) throws IOException {
-        CoffeeBuilderUtil.getDependencyConfiguration("microprofile-openapi-api")
+        CoffeeBuilderUtil.getDependencyConfiguration(log, "microprofile-openapi-api" )
             .ifPresent(
                 openApi -> PomUtil
                     .setProperty(mavenProject, log, "microprofile-openapi-api.version",
@@ -441,7 +441,7 @@ public final class JakartaEeHelper {
     public void addJakartaValidationApiDependency(MavenProject mavenProject,
                                                   Log log,
                                                   String jakartaEeVersion) throws IOException, MojoExecutionException {
-        var openApi = CoffeeBuilderUtil.getDependencyConfiguration("jakarta.validation-api-" + jakartaEeVersion)
+        var openApi = CoffeeBuilderUtil.getDependencyConfiguration(log, "jakarta.validation-api-" + jakartaEeVersion )
             .orElseThrow(() -> new MojoExecutionException("Dependency not found"));
         PomUtil.setProperty(mavenProject, log, "jakarta.validation-api.version",
             openApi.getString("version"));
@@ -478,7 +478,7 @@ public final class JakartaEeHelper {
                 )*/
             ).build();
         PomUtil
-            .findLatestPluginVersion("org.codehaus.mojo", "build-helper-maven-plugin")
+            .findLatestPluginVersion(log, "org.codehaus.mojo", "build-helper-maven-plugin")
             .ifPresent(
                 version -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log, "org.codehaus.mojo",
                     "build-helper-maven-plugin", version, null, executions));

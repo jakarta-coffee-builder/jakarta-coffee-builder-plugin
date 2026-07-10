@@ -71,8 +71,9 @@ public class PayaraMicroHelper {
      */
     public void addPlugin(MavenProject mavenProject,
                           Log log,
-                          String profileId, String jakartaEeVersion) throws IOException, MojoExecutionException {
-        Optional<JsonObject> definitionOpt = CoffeeBuilderUtil.getServerDefinition("payara");
+                          String profileId,
+                          String jakartaEeVersion) throws IOException, MojoExecutionException {
+        Optional<JsonObject> definitionOpt = CoffeeBuilderUtil.getServerDefinition(log, "payara");
         if (definitionOpt.isEmpty()) return;
         var definition = definitionOpt.get();
         if (!definition.containsKey(jakartaEeVersion))
@@ -99,7 +100,7 @@ public class PayaraMicroHelper {
             .build();
         var build = MavenProjectUtil.getBuild(mavenProject, profileId);
 
-        CoffeeBuilderUtil.getDependencyConfiguration("payara-micro-maven-plugin")
+        CoffeeBuilderUtil.getDependencyConfiguration(log, "payara-micro-maven-plugin")
                 .ifPresent(pluginDef->{
                     PomUtil.setProperty(mavenProject, log, "payara-micro-maven-plugin.version", pluginDef.getString("version"));
                     PomUtil.addPlugin(build, log,

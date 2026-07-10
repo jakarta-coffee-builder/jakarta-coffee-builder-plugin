@@ -86,7 +86,7 @@ public class WebXmlUtil {
         return XmlUtil.getInstance().getDocument(log, webXmlPath, document -> {
             try {
                 var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log).orElseThrow();
-                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(log,jakartaEeVersion,
                         "web-app").orElseThrow();
 
                 var webAppElement = document.addElement("web-app", "https://jakarta.ee/xml/ns/jakartaee");

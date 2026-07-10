@@ -12,6 +12,27 @@ mvn com.apuntesdejava:jakarta-coffee-builder-plugin:<goal> -D<opcion>=<valor>
 
 ---
 
+## 🗄️ Persistencia y Datos
+
+### `add-persistence`
+Configura la unidad de persistencia (JPA).
+- **`-Dpersistence-unit-name=<nombre>`**: Nombre de la Persistence Unit. (Por defecto: `defaultPU`)
+- **`-Ddatasource-name=<nombre>`**: Nombre JNDI del Data Source. (Por defecto: `defaultDatasource`)
+- **`-Durl=<jdbc-url>`**: URL de conexión JDBC. (Por defecto: H2 in-memory)
+- **`-Duser=<usuario>`**: Usuario de base de datos.
+- **`-Dpassword=<clave>`**: Contraseña de base de datos.
+- **`-Ddeclare=<web|...>`**: Lugar donde declarar el recurso (Por defecto: `web`).
+
+### `add-datasource`
+Agrega la configuración de un Data Source.
+- *(Mismas opciones que `add-persistence`)*.
+
+### `add-entities`
+Integra definiciones de entidades JPA en el proyecto.
+- **`-Dentities-file=<path>`**: Ruta al archivo de definición de entidades. (**Requerido**)
+
+---
+
 ## 🏗️ Arquitectura y Scaffolding
 
 ### `add-domain-models`
@@ -46,26 +67,6 @@ Genera formularios CRUD de JSF/PrimeFaces a partir de entidades.
 - **`-Dforms-file=<path>`**: Ruta al JSON de definición de formularios. (**Requerido**)
 - **`-Dentities-file=<path>`**: Ruta al JSON de definición de entidades. (**Requerido**)
 
----
-
-## 🗄️ Persistencia y Datos
-
-### `add-persistence`
-Configura la unidad de persistencia (JPA).
-- **`-Dpersistence-unit-name=<nombre>`**: Nombre de la Persistence Unit. (Por defecto: `defaultPU`)
-- **`-Ddatasource-name=<nombre>`**: Nombre JNDI del Data Source. (Por defecto: `defaultDatasource`)
-- **`-Durl=<jdbc-url>`**: URL de conexión JDBC. (Por defecto: H2 in-memory)
-- **`-Duser=<usuario>`**: Usuario de base de datos.
-- **`-Dpassword=<clave>`**: Contraseña de base de datos.
-- **`-Ddeclare=<web|...>`**: Lugar donde declarar el recurso (Por defecto: `web`).
-
-### `add-datasource`
-Agrega la configuración de un Data Source.
-- *(Mismas opciones que `add-persistence`)*.
-
-### `add-entities`
-Integra definiciones de entidades JPA en el proyecto.
-- **`-Dentities-file=<path>`**: Ruta al archivo de definición de entidades. (**Requerido**)
 
 ---
 

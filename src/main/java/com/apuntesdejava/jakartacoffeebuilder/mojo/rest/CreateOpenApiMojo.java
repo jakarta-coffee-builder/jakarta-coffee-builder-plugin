@@ -127,7 +127,6 @@ public class CreateOpenApiMojo extends AbstractMojo {
             var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(fullProject, log)
                     .orElseThrow(() -> new MojoExecutionException("Jakarta EE dependency not found. Please ensure it is present in your project."));
 
-            jakartaEeHelper.addJacksonDependency(mavenProject, log);
             jakartaEeHelper.addMicroprofileOpenApiApiDependency(mavenProject, log);
             jakartaEeHelper.addJakartaValidationApiDependency(mavenProject, log, jakartaEeVersion);
             jakartaEeHelper.addHelperGenerateSource(mavenProject, log);

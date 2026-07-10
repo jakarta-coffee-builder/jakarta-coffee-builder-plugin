@@ -57,7 +57,8 @@ class AddEntitiesMojoTest {
         jakartaPersistenceHelperMockedStatic = mockStatic(JakartaPersistenceHelper.class);
 
         jakartaEeHelperMockedStatic.when(JakartaEeHelper::getInstance).thenReturn(jakartaEeHelperMock);
-        jakartaPersistenceHelperMockedStatic.when(JakartaPersistenceHelper::getInstance).thenReturn(jakartaPersistenceHelperMock);
+        jakartaPersistenceHelperMockedStatic.when(() -> JakartaPersistenceHelper.getInstance(mockLog))
+                .thenReturn(jakartaPersistenceHelperMock);
 
         tempFile = File.createTempFile("entities", ".json");
         tempFile.deleteOnExit();

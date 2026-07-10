@@ -102,7 +102,6 @@ class CreateOpenApiMojoTest {
 
         mojo.execute();
 
-        verify(jakartaEeHelperMock).addJacksonDependency(mavenProject, mockLog);
         verify(jakartaEeHelperMock).addMicroprofileOpenApiApiDependency(mavenProject, mockLog);
         verify(jakartaEeHelperMock).addJakartaValidationApiDependency(mavenProject, mockLog, "10.0.0");
         verify(jakartaEeHelperMock).addHelperGenerateSource(mavenProject, mockLog);

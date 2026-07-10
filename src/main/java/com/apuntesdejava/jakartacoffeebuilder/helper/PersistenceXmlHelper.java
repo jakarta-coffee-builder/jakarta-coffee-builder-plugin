@@ -77,7 +77,7 @@ public class PersistenceXmlHelper {
             try {
                 var jakartaEeVersion = PomUtil.getJakartaEeCurrentVersion(mavenProject, log)
                     .orElseThrow();
-                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(jakartaEeVersion,
+                JsonObject schemaDescription = CoffeeBuilderUtil.getSchema(log,jakartaEeVersion,
                         "persistence")
                     .orElseThrow();
 

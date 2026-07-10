@@ -27,6 +27,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,6 +65,12 @@ public class OpenApiGeneratorHelper {
      * This file lists files and directories that should not be overwritten during code generation.
      */
     public static final String OPENAPI_GENERATOR_IGNORE_FILENAME = ".openapi-generator-ignore";
+    private static final String OPENAPI_TEMPLATES_RESOURCE_DIR = "openapi-templates";
+    private static final String OPENAPI_TEMPLATES_PROJECT_DIR = "src/main/openapi-templates";
+    private static final List<String> OPENAPI_TEMPLATE_FILES = List.of(
+        "pojo.mustache",
+        "enumOuterClass.mustache"
+    );
 
     /**
      * Retrieves the singleton instance of the {@code OpenApiGeneratorHelper}.
@@ -110,19 +117,23 @@ public class OpenApiGeneratorHelper {
             throw new FileNotFoundException("File not found:" + openApiFile);
         }
         Path openApiPath = copyToProjectPath(mavenProject.getBasedir(), openApiFile);
+        Path openApiTemplatesPath = copyOpenApiTemplatesToProject(mavenProject.getBasedir());
         var apiResourcesPackage = MavenProjectUtil.getApiResourcesPackage(mavenProject);
         createIgnoreFilePath(mavenProject.getBasedir());
 
         CoffeeBuilderUtil
-            .getOpenApiGeneratorConfiguration()
+            .getOpenApiGeneratorConfiguration(log)
             .map(config -> {
                 var configOptionsBuilder = Json.createObjectBuilder(config.getJsonObject("configOptions"))
                     .add("modelPackage", apiResourcesPackage + ".model")
-                    .add("apiPackage", apiResourcesPackage);
+                    .add("apiPackage", apiResourcesPackage)
+                    .add("openApiNullable", false)
+                    .add("generateJsonCreator", false);
                 return Json.createObjectBuilder()
                     .add("generatorName", config.getString("generatorName"))
                     .add("inputSpec", openApiPath.getFileName().toString())
                     .add("ignoreFileOverride", "${project.basedir}/" + OPENAPI_GENERATOR_IGNORE_FILENAME)
+                    .add("templateDirectory", "${project.basedir}/" + openApiTemplatesPath.toString().replace("\\", "/"))
                     .add("configOptions", configOptionsBuilder)
                     .build();
             }).ifPresent(configuration -> {
@@ -138,12 +149,16 @@ public class OpenApiGeneratorHelper {
                                     )
                             ).add(CONFIGURATION, configuration))
                         .build();
-                    PomUtil.findLatestPluginVersion(Constants.ORG_OPENAPITOOLS, Constants.OPENAPI_GENERATOR_MAVEN_PLUGIN)
-                        .ifPresent(version
-                            -> PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log,
-                            Constants.ORG_OPENAPITOOLS,
-                            Constants.OPENAPI_GENERATOR_MAVEN_PLUGIN, version, null, executions)
-                        );
+                    CoffeeBuilderUtil.getDependencyConfiguration(log,Constants.OPENAPI_GENERATOR_MAVEN_PLUGIN)
+                        .ifPresent(dependency -> {
+                            PomUtil.addPlugin(mavenProject.getOriginalModel().getBuild(), log,
+                                    Constants.ORG_OPENAPITOOLS,
+                                    Constants.OPENAPI_GENERATOR_MAVEN_PLUGIN,
+                                    dependency.getString("version"),
+                                    null,
+                                    executions);
+                        });
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -155,6 +170,23 @@ public class OpenApiGeneratorHelper {
         Path path = Paths.get(basedir.getAbsolutePath(), openApiFile.getName());
         Files.copy(openApiFile.toPath(), path, StandardCopyOption.REPLACE_EXISTING);
         return path;
+    }
+
+    private Path copyOpenApiTemplatesToProject(File basedir) throws IOException {
+        Path templateDir = Paths.get(basedir.getAbsolutePath(), OPENAPI_TEMPLATES_PROJECT_DIR);
+        Files.createDirectories(templateDir);
+        for (String templateFile : OPENAPI_TEMPLATE_FILES) {
+            String resourcePath = OPENAPI_TEMPLATES_RESOURCE_DIR + "/" + templateFile;
+            try (InputStream inputStream = OpenApiGeneratorHelper.class
+                .getClassLoader()
+                .getResourceAsStream(resourcePath)) {
+                if (inputStream == null) {
+                    throw new FileNotFoundException("Resource not found:" + resourcePath);
+                }
+                Files.copy(inputStream, templateDir.resolve(templateFile), StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        return Paths.get(OPENAPI_TEMPLATES_PROJECT_DIR);
     }
 
     private static class OpenApiGeneratorHelperHolder {

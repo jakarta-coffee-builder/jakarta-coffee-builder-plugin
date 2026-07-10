@@ -110,7 +110,7 @@ public class AddEntitiesMojo extends AbstractMojo {
             var persistenceXmlPath = JakartaEeHelper.getInstance()
                     .getPersistenceXmlPath(mavenProject)
                     .orElseThrow( ()-> new FileNotFoundException("persistence.xml file not found"));
-            JakartaPersistenceHelper.getInstance()
+            JakartaPersistenceHelper.getInstance(log)
                                     .addEntities(mavenProject, log, entitiesFile.toPath(), persistenceXmlPath);
         } catch (IOException | MojoFailureException ex) {
             throw new MojoExecutionException("Error adding entities", ex);

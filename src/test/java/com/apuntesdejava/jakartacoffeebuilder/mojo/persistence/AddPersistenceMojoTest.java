@@ -109,7 +109,7 @@ class AddPersistenceMojoTest {
                 .thenReturn(fullProject);
 
         var jdbcConfig = Json.createObjectBuilder().add("dataSourceClass", "org.h2.jdbcx.JdbcDataSource").build();
-        coffeeBuilderUtilMockedStatic.when(() -> CoffeeBuilderUtil.getJdbcConfiguration("jdbc:h2:mem:test"))
+        coffeeBuilderUtilMockedStatic.when(() -> CoffeeBuilderUtil.getJdbcConfiguration(mockLog,"jdbc:h2:mem:test"))
                 .thenReturn(Optional.of(jdbcConfig));
 
         pomUtilMockedStatic.when(() -> PomUtil.getJakartaEeCurrentVersion(fullProject, mockLog))
@@ -141,7 +141,7 @@ class AddPersistenceMojoTest {
                 .thenReturn(fullProject);
 
         var jdbcConfig = Json.createObjectBuilder().add("dataSourceClass", "org.h2.jdbcx.JdbcDataSource").build();
-        coffeeBuilderUtilMockedStatic.when(() -> CoffeeBuilderUtil.getJdbcConfiguration("jdbc:h2:mem:test"))
+        coffeeBuilderUtilMockedStatic.when(() -> CoffeeBuilderUtil.getJdbcConfiguration(mockLog, "jdbc:h2:mem:test"))
                 .thenReturn(Optional.of(jdbcConfig));
 
         pomUtilMockedStatic.when(() -> PomUtil.getJakartaEeCurrentVersion(fullProject, mockLog))

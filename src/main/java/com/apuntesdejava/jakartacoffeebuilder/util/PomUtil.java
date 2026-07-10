@@ -220,8 +220,8 @@ public final class PomUtil {
             var coordinatesSplit = StringUtils.split(coordinates, ":");
             var groupId = coordinatesSplit[0];
             var artifactId = coordinatesSplit[1];
-            var version = coordinatesSplit.length == 3 ? coordinatesSplit[2] : findLatestDependencyVersion(
-                groupId,
+            var version = coordinatesSplit.length == 3
+                    ? coordinatesSplit[2] : findLatestDependencyVersion(log, groupId,
                 artifactId).orElseThrow();
             log.debug("adding dependency %s".formatted(coordinates));
             log.debug("groupId:%s | artifactId:%s | version:%s".formatted(groupId, artifactId,
@@ -236,41 +236,44 @@ public final class PomUtil {
     /**
      * Finds the latest version of a Maven dependency by querying the Maven Central search API.
      *
+     * @param log          The Maven logger.
      * @param groupId    The group ID of the dependency.
      * @param artifactId The artifact ID of the dependency.
      * @return An {@link Optional} containing the latest version string, or empty if not found.
      * @throws IOException if an error occurs during the HTTP request to Maven Central.
      */
-    public static Optional<String> findLatestDependencyVersion(String groupId, String artifactId) throws IOException {
-        return findLatestVersion(groupId, artifactId, "jar");
+    public static Optional<String> findLatestDependencyVersion(Log log, String groupId, String artifactId) throws IOException {
+        return findLatestVersion(log, groupId, artifactId, "jar");
     }
 
     /**
      * Finds the latest version of a Maven plugin by querying the Maven Central search API.
      *
+     * @param log          The Maven logger.
      * @param groupId    The group ID of the plugin.
      * @param artifactId The artifact ID of the plugin.
      * @return An {@link Optional} containing the latest version string, or empty if not found.
      * @throws IOException if an error occurs during the HTTP request to Maven Central.
      */
-    public static Optional<String> findLatestPluginVersion(String groupId, String artifactId) throws IOException {
-        return findLatestVersion(groupId, artifactId, "maven-plugin");
+    public static Optional<String> findLatestPluginVersion(Log log, String groupId, String artifactId) throws IOException {
+        return findLatestVersion(log, groupId, artifactId, "maven-plugin");
     }
 
     /**
      * Finds the latest version of a Maven artifact with a specific packaging type from Maven Central.
      *
+     * @param log          The Maven logger.
      * @param groupId    The group ID of the artifact.
      * @param artifactId The artifact ID of the artifact.
      * @param packaging  The packaging type (e.g., "jar", "maven-plugin").
      * @return An {@link Optional} containing the latest version string, or empty if not found.
      * @throws IOException if an error occurs during the HTTP request.
      */
-    public static Optional<String> findLatestVersion(String groupId,
+    public static Optional<String> findLatestVersion(Log log, String groupId,
                                                      String artifactId,
                                                      String packaging) throws IOException {
         var params = "p:%s AND a:%s AND g:%s".formatted(packaging, artifactId, groupId);
-        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select",
+        var response = HttpUtil.getContent(log, "https://search.maven.org/solrsearch/select",
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER, new HttpUtil.Parameter("q", params));
 
         JsonArray docs = response.getJsonObject("response").getJsonArray("docs");
@@ -283,15 +286,16 @@ public final class PomUtil {
     /**
      * Retrieves detailed information for a specific artifact version from Maven Central.
      *
+     * @param log          The Maven logger.
      * @param groupId    The group ID of the artifact.
      * @param artifactId The artifact ID of the artifact.
      * @param version    The version of the artifact.
      * @return A {@link JsonObject} containing the artifact's information.
      * @throws IOException if an error occurs during the HTTP request.
      */
-    public static JsonObject getArtifactInfo(String groupId, String artifactId, String version) throws IOException {
+    public static JsonObject getArtifactInfo(Log log, String groupId, String artifactId, String version) throws IOException {
         var params = "v:%s AND a:%s AND g:%s".formatted(version, artifactId, groupId);
-        var response = HttpUtil.getContent("https://search.maven.org/solrsearch/select",
+        var response = HttpUtil.getContent(log, "https://search.maven.org/solrsearch/select",
             STRING_TO_JSON_OBJECT_RESPONSE_CONVERTER, new HttpUtil.Parameter("q", params));
         return response.getJsonObject("response").getJsonArray("docs").getJsonObject(0);
     }

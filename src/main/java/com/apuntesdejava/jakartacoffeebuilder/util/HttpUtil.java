@@ -3,6 +3,7 @@ package com.apuntesdejava.jakartacoffeebuilder.util;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.maven.plugin.logging.Log;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,7 +31,6 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
  */
 public final class HttpUtil {
 
-    private static final System.Logger LOG = System.getLogger(HttpUtil.class.getName());
 
     /**
      * Private constructor to prevent instantiation of this utility class.
@@ -43,13 +43,14 @@ public final class HttpUtil {
      * the response body using a provided converter function.
      *
      * @param <T>        The target type of the response after conversion.
+     * @param log      The Maven logger for logging request details.
      * @param address    The URL for the GET request.
      * @param converter  A {@link Function} that transforms the raw response string into the target type {@code T}.
      * @param parameters An optional varargs array of {@link Parameter} objects to be sent as URL query parameters.
      * @return The converted response of type {@code T}.
      * @throws IOException if an I/O error occurs during the HTTP request.
      */
-    public static <T> T getContent(String address,
+    public static <T> T getContent(Log log, String address,
                                    Function<String, T> converter,
                                    Parameter... parameters) throws IOException {
         var queryParams = Arrays.stream(parameters)
@@ -57,8 +58,7 @@ public final class HttpUtil {
                 .reduce((p1, p2) -> p1 + "&" + p2)
                 .orElse(EMPTY);
         var requestUrl = address + (parameters.length == 0 ? EMPTY : ("?" + queryParams));
-        LOG.log(System.Logger.Level.DEBUG, () -> "Request URL:" + requestUrl);
-
+        log.debug("Request URL: " + requestUrl);
 
         try (var executor = Executors.newVirtualThreadPerTaskExecutor();
              var httpClient = HttpClient.newBuilder()
