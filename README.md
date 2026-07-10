@@ -66,22 +66,7 @@ Crea un nuevo template Facelet.
 Genera formularios CRUD de JSF/PrimeFaces a partir de entidades.
 - **`-Dforms-file=<path>`**: Ruta al JSON de definición de formularios. (**Requerido**)
 - **`-Dentities-file=<path>`**: Ruta al JSON de definición de entidades. (**Requerido**)
-
-
----
-
-## 🚀 Servidores de Aplicación y Microservicios
-
-### `add-glassfish-embedded`
-Configura un perfil de Maven para ejecutar con GlassFish Embedded.
-- **`-Dprofile=<nombre>`**: ID del perfil de Maven a crear. (Por defecto: `glassfish`)
-- **`-Dport=<puerto>`**: Puerto HTTP. (Por defecto: `8080`)
-- **`-DcontextRoot=<ruta>`**: Context root de la aplicación. (Por defecto: `${project.build.finalName}`)
-
-### `add-payaramicro`
-Configura el plugin y perfil para Payara Micro.
-- **`-Dprofile=<nombre>`**: ID del perfil de Maven a crear. (Por defecto: `payaramicro`)
-
+ 
 ---
 
 ## 🛠️ Utilidades
@@ -89,10 +74,3 @@ Configura el plugin y perfil para Payara Micro.
 ### `add-validation-api`
 Agrega las dependencias de Jakarta Validation API para habilitar validaciones mediante anotaciones (`@NotNull`, `@Size`, etc.).
 
----
-
-## 📝 Ejemplo Completo
-Para agregar una página de login utilizando un template existente y sin crear un backing bean:
-```bash
-mvn com.apuntesdejava:jakarta-coffee-builder-plugin:add-face-page -Dname=login -Dtemplate=mainTemplate -Dmanaged-bean=false
-```
